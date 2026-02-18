@@ -184,6 +184,7 @@ plot_dotmap <- function(
             na.value = "grey95",
             name = fill_label,
             limits = fill_limits,
+            oob = scales::squish,
             labels = fill_labels_fn
         ) +
         ggplot2::scale_x_discrete(expand = c(0, 0), position = "top") +
