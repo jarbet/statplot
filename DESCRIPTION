@@ -19,6 +19,7 @@ Imports:
     dplyr,
     effectsize,
     forcats,
+    ggnewscale,
     ggplot2,
     ggsurvfit,
     ggupset,
@@ -27,6 +28,7 @@ Imports:
     scales,
     stringr,
     survival,
+    tibble,
     tibble,
     UpSetR
 URL: https://statgencore.github.io/statplot/
