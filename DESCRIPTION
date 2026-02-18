@@ -25,6 +25,7 @@ Imports:
     ggupset,
     gtsummary,
     labelled,
+    rlang,
     scales,
     stringr,
     survival,
