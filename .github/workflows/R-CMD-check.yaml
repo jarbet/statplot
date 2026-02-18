@@ -4,6 +4,8 @@ on:
   push:
     branches: [main, master]
   pull_request:
+  schedule:
+    - cron: '0 0 * * 6'
 
 name: R-CMD-check.yaml
 
