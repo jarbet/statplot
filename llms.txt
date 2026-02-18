@@ -27,6 +27,9 @@ pak::pak("StatGenCore/statplot")
   : Stacked percent bar chart for two categorical variables
 - [`plot_bars()`](https://statgencore.github.io/statplot/reference/plot_bars.md)
   : Bar plot by group
+- [`plot_dotmap()`](https://statgencore.github.io/statplot/reference/plot_dotmap.md)
+  : Create a dotmap showing effect size (dot size & color) and p-value
+  (tile fill)
 - [`plot_effectsize_01_intervals()`](https://statgencore.github.io/statplot/reference/plot_effectsize_01_intervals.md)
   : Plot effect-size estimates and confidence intervals. All values must
   be between 0 and 1.
