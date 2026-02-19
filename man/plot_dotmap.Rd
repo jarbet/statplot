@@ -57,7 +57,9 @@ plot_dotmap(
 \item{patchwork_widths}{Numeric(2); widths passed to patchwork::plot_layout when adding the combined p-value barplot (default c(3, 1))}
 }
 \value{
-A ggplot2::ggplot object
+A ggplot2::ggplot object when \code{add_combined_pvalue_barplot = FALSE},
+or a patchwork composition object (from \code{patchwork}) when
+\code{add_combined_pvalue_barplot = TRUE}.
 }
 \description{
 A combined tile + point "dotmap" that visualizes an effect (size and

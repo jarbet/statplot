@@ -43,8 +43,8 @@
 #' @export
 plot_pvalue_barplot <- function(
     data,
-    x = "pvalue", # now expects raw p-values by default
-    y = "cell_line",
+    x,
+    y,
     fill = NULL, # column name to use for fill; if NULL draw solid black bars
     alpha = 0.05, # significance threshold -> vertical line at -log10(alpha)
     width = 0.6,
@@ -82,6 +82,7 @@ plot_pvalue_barplot <- function(
         length(mlog10_transform_pvalue) == 1
     )
     stopifnot(is.numeric(data[[x]]))
+    stopifnot(all(data[[x]] >= 0 & data[[x]] <= 1))
     if (mlog10_transform_pvalue) {
         stopifnot(all(is.finite(data[[x]])))
         stopifnot(all(data[[x]] > 0))
@@ -192,20 +193,6 @@ plot_pvalue_barplot <- function(
     }
     p <- p + ggplot2::scale_y_discrete(limits = y_levels, expand = c(0, 0))
 
-    # Option A: use coord_cartesian to zoom without dropping data
-    p <- p +
-        ggplot2::scale_x_continuous(
-            expand = c(0, 0),
-            breaks = xbreaks,
-            labels = x_label_fun
-        ) +
-        ggplot2::coord_cartesian(xlim = xlim)
-
-    # ---- OR ----
-
-    # Option B: keep limits on the scale but squish out-of-range values to the boundaries
-    # (maps values outside xlim to the nearest boundary instead of removing rows)
-    # requires the scales package (usually available with ggplot2)
     p <- p +
         ggplot2::scale_x_continuous(
             expand = c(0, 0),
