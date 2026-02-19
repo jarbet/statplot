@@ -66,7 +66,7 @@ plot_dotmap <- function(
     mlog10_transform_pvalue = TRUE,
     fill_limits = NULL,
     legend_pvalue_title = NULL, # new: title for the p-value/color legend
-    legend_dotsize_title = "Effect size", # new: label for the dot-size legend
+    legend_dotsize_title = expression(bold("Effect size")), # new: label for the dot-size legend
     add_combined_pvalue_barplot = FALSE, # NEW: add combined p-value barplot to the right
     combined_qvalue = FALSE,
     combine_pvalue_method = c("fisher", "cauchy", "hm"),
@@ -165,7 +165,11 @@ plot_dotmap <- function(
     )
 
     # determine fill legend title: either user-provided or automatic
-    fill_label_auto <- if (mlog10_transform_pvalue) "-log10(pvalue)" else p
+    fill_label_auto <- if (mlog10_transform_pvalue) {
+        expression(bold(-log['10'] ~ 'pvalue'))
+    } else {
+        p
+    }
     fill_label <- if (!is.null(legend_pvalue_title)) {
         legend_pvalue_title
     } else {

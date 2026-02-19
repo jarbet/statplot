@@ -18,7 +18,7 @@ plot_dotmap(
   mlog10_transform_pvalue = TRUE,
   fill_limits = NULL,
   legend_pvalue_title = NULL,
-  legend_dotsize_title = "Effect size",
+  legend_dotsize_title = expression(bold("Effect size")),
   add_combined_pvalue_barplot = FALSE,
   combined_qvalue = FALSE,
   combine_pvalue_method = c("fisher", "cauchy", "hm"),
