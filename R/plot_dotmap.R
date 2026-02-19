@@ -76,6 +76,10 @@ plot_dotmap <- function(
     )
     stopifnot(is.numeric(dot_range), length(dot_range) == 2)
     stopifnot(is.character(palette))
+    stopifnot(
+        !is.null(names(palette)),
+        all(c("positive", "negative") %in% names(palette))
+    )
     stopifnot(is.numeric(xlab_angle), length(xlab_angle) == 1)
     stopifnot(
         is.logical(mlog10_transform_pvalue),
