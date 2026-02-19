@@ -24,7 +24,7 @@ plot_pvalue_barplot(
 \arguments{
 \item{data}{A data.frame or tibble containing the variables.}
 
-\item{x}{Character, name of the column with raw p-values (default \"pvalue\").}
+\item{x}{Character, name of the column with raw p-values.}
 
 \item{y}{Character, name of the column for y-axis categories.}
 
