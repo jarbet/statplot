@@ -121,6 +121,7 @@ plot_dotmap <- function(
         length(add_combined_pvalue_barplot) == 1
     )
     stopifnot(is.numeric(patchwork_widths), length(patchwork_widths) == 2)
+    stopifnot(is.logical(combined_qvalue), length(combined_qvalue) == 1)
 
     data <- tibble::as_tibble(data) |>
         dplyr::mutate(
