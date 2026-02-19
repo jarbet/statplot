@@ -91,7 +91,7 @@ plot_dotmap(
   mlog10_transform_pvalue = TRUE,
   add_combined_pvalue_barplot = TRUE,
   combine_pvalue_method = "fisher", # can also use "cauchy" or "hm" methods for combining potentially correlated p-values
-  combine_qvalue = FALSE # set to TRUE to show q-values instead of p-values in the combined barplot (only applies if add_combined_pvalue_barplot = TRUE)
+  combined_qvalue = FALSE # set to TRUE to show q-values instead of p-values in the combined barplot (only applies if add_combined_pvalue_barplot = TRUE)
   )
 
 
