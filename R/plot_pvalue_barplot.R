@@ -4,7 +4,7 @@
 #' optional significance vertical line and optional fill mapping.
 #'
 #' @param data A data.frame or tibble containing the variables.
-#' @param x Character, name of the column with raw p-values (default \"pvalue\").
+#' @param x Character, name of the column with raw p-values.
 #' @param y Character, name of the column for y-axis categories.
 #' @param fill Character or NULL, column name to use for fill; if NULL draw solid black bars.
 #' @param alpha Numeric significance threshold for the vertical line (default 0.05).
@@ -82,6 +82,7 @@ plot_pvalue_barplot <- function(
         length(mlog10_transform_pvalue) == 1
     )
     stopifnot(is.numeric(data[[x]]))
+    stopifnot(all(!is.na(data[[x]])))
     stopifnot(all(data[[x]] >= 0 & data[[x]] <= 1))
     if (mlog10_transform_pvalue) {
         stopifnot(all(is.finite(data[[x]])))
