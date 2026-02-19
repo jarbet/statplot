@@ -251,12 +251,6 @@ plot_dotmap <- function(
                 vjust = 0,
                 margin = ggplot2::margin(t = -6, b = 0)
             )
-            # panel.grid = ggplot2::element_blank(),
-            # panel.background = ggplot2::element_blank(),
-            # plot.background = ggplot2::element_blank(),
-            # axis.text.y = ggplot2::element_text(face = "bold", vjust = 0.5),
-            # axis.ticks.y = ggplot2::element_line(),
-            # plot.margin = ggplot2::margin(t = 0, r = 0, b = 0, l = 0)
         )
 
     p_obj <- p_obj +
