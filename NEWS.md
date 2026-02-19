@@ -2,9 +2,12 @@
 
 ## Added
 
+* `combine_pvalues` function to combine pvalues to produce a single overall pvalue. 3 methods are supported: Fisher, Cauchy, and Harmonic Mean
 * `plot_pvalue_barplot`: horizontal barplot of pvalues
 * `plot_dotmap`: plot heatmap of effect sizes (dots) with cells shaded by pvalue
     + option to add Fisher's combination pvalue barplot on the right
+    + option to show q-values for the combined pvalue barplot
+    + 3 methods are supported when combining pvalues
 
 ## Changed
 

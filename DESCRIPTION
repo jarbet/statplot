@@ -13,6 +13,7 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
+    ACAT (>= 0.91),
     boot,
     BoutrosLab.plotting.general,
     broom,
@@ -24,6 +25,7 @@ Imports:
     ggsurvfit,
     ggupset,
     gtsummary,
+    harmonicmeanp,
     labelled,
     patchwork,
     poolr,
@@ -35,3 +37,5 @@ Imports:
     UpSetR
 URL: https://statgencore.github.io/statplot/
 BugReports: https://github.com/StatGenCore/statplot/issues
+Remotes:  
+    yaowuliu/ACAT

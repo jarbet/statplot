@@ -4,10 +4,10 @@
 #' direction) and a p-value (tile fill). The function returns a ggplot object.
 #'
 #' @param data data.frame or tibble containing the plotting variables
-#' @param x Character; column name for x axis
-#' @param y Character; column name for y axis
-#' @param effect Character; numeric column name used for dot size and direction
-#' @param p Character; numeric column name used for tile fill (p-value)
+#' @param x Character; name of variable in \code{data} to use for x-axis/columns
+#' @param y Character; name of variable in \code{data} to use for y-axis/rows
+#' @param effect Character; column name of numeric variable in \code{data} to use for dot size and color (direction)
+#' @param p Character; column name of numeric variable in \code{data} to use for tile fill (p-value)
 #' @param dot_size_vals Numeric vector of reference effect values used for the size legend (signed to indicate direction)
 #' @param dot_size_labels Character vector of labels for the size legend
 #' @param dot_range Numeric(2) range of point sizes (min, max)
@@ -18,6 +18,8 @@
 #' @param legend_pvalue_title Character or NULL; override title for p-value/color legend
 #' @param legend_dotsize_title Character; title for the dot-size legend
 #' @param add_combined_pvalue_barplot Logical; when TRUE adds a combined p-value barplot to the right of the dotmap
+#' @param combined_qvalue if TRUE then the combined pvalue barplot will show q-values instead of p-values (only applies if add_combined_pvalue_barplot = TRUE)
+#' @param combine_pvalue_method Character; method for combining p-values in the barplot ("fisher", "cauchy", or "hm")
 #' @param patchwork_widths Numeric(2); widths passed to patchwork::plot_layout when adding the combined p-value barplot (default c(3, 1))
 #'
 #' @return A ggplot2::ggplot object when \code{add_combined_pvalue_barplot = FALSE},
@@ -35,8 +37,17 @@
 #' plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p",
 #'             mlog10_transform_pvalue = TRUE)
 #' # Add Fisher's combination pvalue barplot on the right which combines p-values across columns for each row category
-#' plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p",
-#'             mlog10_transform_pvalue = TRUE, add_combined_pvalue_barplot = TRUE)
+#' plot_dotmap(
+#'   df,
+#'   x = "col",
+#'   y = "row",
+#'   effect = "effect",
+#'   p = "p",
+#'   mlog10_transform_pvalue = TRUE,
+#'   add_combined_pvalue_barplot = TRUE,
+#'   combine_pvalue_method = "fisher", # can also use "cauchy" or "hm" methods for combining potentially correlated p-values
+#'   combined_qvalue = FALSE # set to TRUE to show q-values instead of p-values in the combined barplot (only applies if add_combined_pvalue_barplot = TRUE)
+#'   )
 #'
 #'
 #' @export
@@ -52,13 +63,16 @@ plot_dotmap <- function(
     dot_range = c(5, 30),
     palette = c("positive" = "darkorange1", "negative" = "dodgerblue2"),
     xlab_angle = 0, # set to 45 to rotate x-axis labels
-    mlog10_transform_pvalue = FALSE,
+    mlog10_transform_pvalue = TRUE,
     fill_limits = NULL,
     legend_pvalue_title = NULL, # new: title for the p-value/color legend
-    legend_dotsize_title = "Effect size", # new: label for the dot-size legend
+    legend_dotsize_title = expression(bold("Effect size")), # new: label for the dot-size legend
     add_combined_pvalue_barplot = FALSE, # NEW: add combined p-value barplot to the right
+    combined_qvalue = FALSE,
+    combine_pvalue_method = c("fisher", "cauchy", "hm"),
     patchwork_widths = c(3, 1) # NEW: widths for patchwork layout when combined plot is requested
 ) {
+    combine_pvalue_method <- match.arg(combine_pvalue_method)
     # simple input checks (one-line checks per argument)
     stopifnot(is.data.frame(data))
     stopifnot(is.character(x), length(x) == 1, x %in% names(data))
@@ -92,17 +106,22 @@ plot_dotmap <- function(
     stopifnot(
         is.null(legend_pvalue_title) ||
             (is.character(legend_pvalue_title) &&
+                length(legend_pvalue_title) == 1) ||
+            (is.expression(legend_pvalue_title) &&
                 length(legend_pvalue_title) == 1)
     )
     stopifnot(
-        is.character(legend_dotsize_title),
-        length(legend_dotsize_title) == 1
+        (is.character(legend_dotsize_title) &&
+            length(legend_dotsize_title) == 1) ||
+            (is.expression(legend_dotsize_title) &&
+                length(legend_dotsize_title) == 1)
     )
     stopifnot(
         is.logical(add_combined_pvalue_barplot),
         length(add_combined_pvalue_barplot) == 1
     )
     stopifnot(is.numeric(patchwork_widths), length(patchwork_widths) == 2)
+    stopifnot(is.logical(combined_qvalue), length(combined_qvalue) == 1)
 
     data <- tibble::as_tibble(data) |>
         dplyr::mutate(
@@ -147,7 +166,11 @@ plot_dotmap <- function(
     )
 
     # determine fill legend title: either user-provided or automatic
-    fill_label_auto <- if (mlog10_transform_pvalue) "-log10(pvalue)" else p
+    fill_label_auto <- if (mlog10_transform_pvalue) {
+        expression(bold(-log['10'] ~ 'pvalue'))
+    } else {
+        p
+    }
     fill_label <- if (!is.null(legend_pvalue_title)) {
         legend_pvalue_title
     } else {
@@ -209,7 +232,11 @@ plot_dotmap <- function(
         ggplot2::scale_x_discrete(expand = c(0, 0), position = "top") +
         ggplot2::scale_y_discrete(
             expand = c(0, 0),
-            limits = if (is.factor(data[[y]])) levels(data[[y]]) else unique(data[[y]])
+            limits = if (is.factor(data[[y]])) {
+                levels(data[[y]])
+            } else {
+                unique(data[[y]])
+            }
         ) +
         ggnewscale::new_scale_fill() +
         # use shape 21 so the interior (fill) is the direction color and the border (colour) is white
@@ -289,11 +316,6 @@ plot_dotmap <- function(
 
     # If requested, compute combined p-values per y and attach a right-side barplot using patchwork
     if (isTRUE(add_combined_pvalue_barplot)) {
-        if (!requireNamespace("poolr", quietly = TRUE)) {
-            stop(
-                "`add_combined_pvalue_barplot = TRUE` requires the 'poolr' package. Please install it."
-            )
-        }
         if (!requireNamespace("patchwork", quietly = TRUE)) {
             stop(
                 "`add_combined_pvalue_barplot = TRUE` requires the 'patchwork' package. Please install it."
@@ -309,11 +331,17 @@ plot_dotmap <- function(
                     if (length(pv) == 0) {
                         NA_real_
                     } else {
-                        poolr::fisher(pv)$p
+                        combine_pvalues(pv, method = combine_pvalue_method)
                     }
                 },
                 .groups = "drop"
             )
+        if (isTRUE(combined_qvalue)) {
+            combined_df$p_combined <- p.adjust(
+                combined_df$p_combined,
+                method = "fdr"
+            )
+        }
 
         # preserve factor levels / order to align plots
         y_levels <- if (is.factor(data[[y]])) {
@@ -350,9 +378,16 @@ plot_dotmap <- function(
                 axis.ticks.y = ggplot2::element_blank()
             )
 
-        combined <- p_obj +
-            p_comb +
-            patchwork::plot_layout(ncol = 2, widths = patchwork_widths)
+        if (isTRUE(combined_qvalue)) {
+            p_comb <- p_comb + ggplot2::labs(x = "q-value")
+        }
+
+        combined <- patchwork::wrap_plots(
+            p_obj,
+            p_comb,
+            ncol = 2,
+            widths = patchwork_widths
+        )
         return(combined)
     }
 
