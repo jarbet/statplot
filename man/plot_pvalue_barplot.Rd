@@ -26,7 +26,7 @@ plot_pvalue_barplot(
 
 \item{x}{Character, name of the column with raw p-values (default \"pvalue\").}
 
-\item{y}{Character, name of the column for y-axis categories (default \"cell_line\").}
+\item{y}{Character, name of the column for y-axis categories.}
 
 \item{fill}{Character or NULL, column name to use for fill; if NULL draw solid black bars.}
 
