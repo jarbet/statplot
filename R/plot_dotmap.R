@@ -63,7 +63,7 @@ plot_dotmap <- function(
     dot_range = c(5, 30),
     palette = c("positive" = "darkorange1", "negative" = "dodgerblue2"),
     xlab_angle = 0, # set to 45 to rotate x-axis labels
-    mlog10_transform_pvalue = FALSE,
+    mlog10_transform_pvalue = TRUE,
     fill_limits = NULL,
     legend_pvalue_title = NULL, # new: title for the p-value/color legend
     legend_dotsize_title = "Effect size", # new: label for the dot-size legend

@@ -15,7 +15,7 @@ plot_dotmap(
   dot_range = c(5, 30),
   palette = c(positive = "darkorange1", negative = "dodgerblue2"),
   xlab_angle = 0,
-  mlog10_transform_pvalue = FALSE,
+  mlog10_transform_pvalue = TRUE,
   fill_limits = NULL,
   legend_pvalue_title = NULL,
   legend_dotsize_title = "Effect size",
@@ -90,7 +90,8 @@ plot_dotmap(
   p = "p",
   mlog10_transform_pvalue = TRUE,
   add_combined_pvalue_barplot = TRUE,
-  combine_pvalue_method = "fisher" # can also use "cauchy" or "hm" methods for combining potentially correlated p-values
+  combine_pvalue_method = "fisher", # can also use "cauchy" or "hm" methods for combining potentially correlated p-values
+  combine_qvalue = FALSE # set to TRUE to show q-values instead of p-values in the combined barplot (only applies if add_combined_pvalue_barplot = TRUE)
   )
 
 
