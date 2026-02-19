@@ -131,6 +131,8 @@ plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p",
             mlog10_transform_pvalue = TRUE)
 #> Scale for size is already present.
 #> Adding another scale for size, which will replace the existing scale.
+#> Warning: No shared levels found between `names(values)` of the manual scale and the
+#> data's shape values.
 
 # Add Fisher's combination pvalue barplot on the right which combines p-values across columns for each row category
 plot_dotmap(
@@ -150,6 +152,8 @@ plot_dotmap(
 #> Adding another scale for y, which will replace the existing scale.
 #> Scale for y is already present.
 #> Adding another scale for y, which will replace the existing scale.
+#> Warning: No shared levels found between `names(values)` of the manual scale and the
+#> data's shape values.
 
 
 ```
