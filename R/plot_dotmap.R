@@ -324,9 +324,6 @@ plot_dotmap <- function(
         combined_df[[y]] <- factor(combined_df[[y]], levels = y_levels)
 
         # ensure main plot uses the exact same discrete y limits / no expansion
-        p_obj <- p_obj +
-            ggplot2::scale_y_discrete(limits = y_levels, expand = c(0, 0))
-
         # build right-side combined p-value barplot but hide its y labels so only the left plot shows labels
         p_comb <- plot_pvalue_barplot(
             data = combined_df,
