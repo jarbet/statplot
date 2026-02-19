@@ -17,6 +17,8 @@
 #' @param fill_limits Numeric(2) or NULL; limits for the fill scale
 #' @param legend_pvalue_title Character or NULL; override title for p-value/color legend
 #' @param legend_dotsize_title Character; title for the dot-size legend
+#' @param add_combined_pvalue_barplot Logical; when TRUE adds a combined p-value barplot to the right of the dotmap
+#' @param patchwork_widths Numeric(2); widths passed to patchwork::plot_layout when adding the combined p-value barplot (default c(3, 1))
 #'
 #' @return A ggplot2::ggplot object
 #'
@@ -30,6 +32,10 @@
 #' df$row <- factor(df$row, levels = rev(genes))
 #' plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p",
 #'             mlog10_transform_pvalue = TRUE)
+#' # Add Fisher's combination pvalue barplot on the right which combines p-values across columns for each row category
+#' plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p",
+#'             mlog10_transform_pvalue = TRUE, add_combined_pvalue_barplot = TRUE)
+#'
 #'
 #' @export
 #' @importFrom ggplot2 ggplot geom_tile geom_point scale_fill_gradient scale_color_manual scale_size_continuous labs theme element_text element_blank guide_legend
@@ -47,43 +53,50 @@ plot_dotmap <- function(
     mlog10_transform_pvalue = FALSE,
     fill_limits = NULL,
     legend_pvalue_title = NULL, # new: title for the p-value/color legend
-    legend_dotsize_title = "Effect size" # new: label for the dot-size legend
+    legend_dotsize_title = "Effect size", # new: label for the dot-size legend
+    add_combined_pvalue_barplot = FALSE, # NEW: add combined p-value barplot to the right
+    patchwork_widths = c(3, 1) # NEW: widths for patchwork layout when combined plot is requested
 ) {
-    # basic input checks
+    # simple input checks (one-line checks per argument)
+    stopifnot(is.data.frame(data))
+    stopifnot(is.character(x), length(x) == 1, x %in% names(data))
+    stopifnot(is.character(y), length(y) == 1, y %in% names(data))
     stopifnot(
-        is.data.frame(data),
-        is.character(x),
-        length(x) == 1,
-        is.character(y),
-        length(y) == 1,
         is.character(effect),
         length(effect) == 1,
-        is.character(p),
-        length(p) == 1,
-        x %in% names(data),
-        y %in% names(data),
-        effect %in% names(data),
-        p %in% names(data),
-        is.numeric(dot_size_vals),
-        length(dot_size_vals) >= 1,
+        effect %in% names(data)
+    )
+    stopifnot(is.character(p), length(p) == 1, p %in% names(data))
+    stopifnot(is.numeric(dot_size_vals))
+    stopifnot(
         is.character(dot_size_labels),
-        length(dot_size_labels) == length(dot_size_vals),
-        is.numeric(dot_range),
-        length(dot_range) == 2,
-        is.character(palette),
-        all(c("positive", "negative") %in% names(palette)),
-        is.numeric(xlab_angle),
-        length(xlab_angle) == 1,
+        length(dot_size_labels) == length(dot_size_vals)
+    )
+    stopifnot(is.numeric(dot_range), length(dot_range) == 2)
+    stopifnot(is.character(palette))
+    stopifnot(is.numeric(xlab_angle), length(xlab_angle) == 1)
+    stopifnot(
         is.logical(mlog10_transform_pvalue),
-        length(mlog10_transform_pvalue) == 1,
-        (is.null(fill_limits) ||
-            (is.numeric(fill_limits) && length(fill_limits) == 2)),
-        (is.null(legend_pvalue_title) ||
+        length(mlog10_transform_pvalue) == 1
+    )
+    stopifnot(
+        is.null(fill_limits) ||
+            (is.numeric(fill_limits) && length(fill_limits) == 2)
+    )
+    stopifnot(
+        is.null(legend_pvalue_title) ||
             (is.character(legend_pvalue_title) &&
-                length(legend_pvalue_title) == 1)),
+                length(legend_pvalue_title) == 1)
+    )
+    stopifnot(
         is.character(legend_dotsize_title),
         length(legend_dotsize_title) == 1
     )
+    stopifnot(
+        is.logical(add_combined_pvalue_barplot),
+        length(add_combined_pvalue_barplot) == 1
+    )
+    stopifnot(is.numeric(patchwork_widths), length(patchwork_widths) == 2)
 
     data <- tibble::as_tibble(data) |>
         dplyr::mutate(
@@ -188,7 +201,10 @@ plot_dotmap <- function(
             labels = fill_labels_fn
         ) +
         ggplot2::scale_x_discrete(expand = c(0, 0), position = "top") +
-        ggplot2::scale_y_discrete(expand = c(0, 0)) +
+        ggplot2::scale_y_discrete(
+            expand = c(0, 0),
+            limits = levels(data[[y]])
+        ) +
         ggnewscale::new_scale_fill() +
         # use shape 21 so the interior (fill) is the direction color and the border (colour) is white
         ggplot2::geom_point(
@@ -228,11 +244,13 @@ plot_dotmap <- function(
                 angle = xlab_angle,
                 vjust = 0,
                 margin = ggplot2::margin(t = -6, b = 0)
-            ),
-            panel.grid = ggplot2::element_blank(),
-            panel.background = ggplot2::element_blank(),
-            plot.background = ggplot2::element_blank(),
-            axis.text.y = ggplot2::element_text(face = "bold")
+            )
+            # panel.grid = ggplot2::element_blank(),
+            # panel.background = ggplot2::element_blank(),
+            # plot.background = ggplot2::element_blank(),
+            # axis.text.y = ggplot2::element_text(face = "bold", vjust = 0.5),
+            # axis.ticks.y = ggplot2::element_line(),
+            # plot.margin = ggplot2::margin(t = 0, r = 0, b = 0, l = 0)
         )
 
     p_obj <- p_obj +
@@ -268,6 +286,87 @@ plot_dotmap <- function(
                 )
             )
         )
+
+    # If requested, compute combined p-values per y and attach a right-side barplot using patchwork
+    if (isTRUE(add_combined_pvalue_barplot)) {
+        if (!requireNamespace("poolr", quietly = TRUE)) {
+            stop(
+                "`add_combined_pvalue_barplot = TRUE` requires the 'poolr' package. Please install it."
+            )
+        }
+        if (!requireNamespace("patchwork", quietly = TRUE)) {
+            stop(
+                "`add_combined_pvalue_barplot = TRUE` requires the 'patchwork' package. Please install it."
+            )
+        }
+
+        combined_df <- data |>
+            dplyr::group_by(.data[[y]]) |>
+            dplyr::summarise(
+                p_combined = {
+                    pv <- .data[[p]]
+                    pv <- pv[!is.na(pv)]
+                    if (length(pv) == 0) {
+                        NA_real_
+                    } else {
+                        poolr::fisher(pv)$p
+                    }
+                },
+                .groups = "drop"
+            )
+
+        # preserve factor levels / order to align plots
+        y_levels <- if (is.factor(data[[y]])) {
+            levels(data[[y]])
+        } else {
+            unique(data[[y]])
+        }
+        combined_df[[y]] <- factor(combined_df[[y]], levels = y_levels)
+
+        # ensure main plot uses the exact same discrete y limits / no expansion
+        p_obj <- p_obj +
+            ggplot2::scale_y_discrete(limits = y_levels, expand = c(0, 0))
+
+        # build right-side combined p-value barplot but hide its y labels so only the left plot shows labels
+        p_comb <- plot_pvalue_barplot(
+            data = combined_df,
+            x = "p_combined",
+            y = y,
+            fill = NULL,
+            mlog10_transform_pvalue = mlog10_transform_pvalue,
+            show_y_labels = FALSE # <- hide labels on the right plot
+        )
+
+        n_levels <- length(y_levels)
+
+        # lock both panels to the same vertical extent
+        p_obj <- p_obj +
+            ggplot2::scale_y_discrete(limits = y_levels, expand = c(0, 0)) +
+            ggplot2::coord_cartesian(ylim = c(0.5, n_levels + 0.5)) +
+            ggplot2::theme(legend.position = "left") # move legend to left when combined
+
+        p_comb <- plot_pvalue_barplot(
+            data = combined_df,
+            x = "p_combined",
+            y = y,
+            fill = NULL,
+            mlog10_transform_pvalue = mlog10_transform_pvalue,
+            show_y_labels = FALSE
+        )
+
+        p_comb <- p_comb +
+            ggplot2::scale_y_discrete(limits = y_levels, expand = c(0, 0)) +
+            ggplot2::coord_cartesian(ylim = c(0.5, n_levels + 0.5)) +
+            ggplot2::theme(
+                axis.text.y = ggplot2::element_blank(),
+                axis.ticks.y = ggplot2::element_blank()
+            )
+
+        combined <- p_obj +
+            p_comb +
+            patchwork::plot_layout(ncol = 2, widths = patchwork_widths)
+        return(combined)
+    }
 
     p_obj
 }

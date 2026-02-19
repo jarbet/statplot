@@ -57,6 +57,37 @@ plot_pvalue_barplot <- function(
     show_y_labels = FALSE, # whether to show y-axis labels (default FALSE)
     mlog10_transform_pvalue = FALSE # when TRUE compute -log10(p) for plotting/order
 ) {
+    # ---- simple argument checks ----
+    stopifnot(is.data.frame(data))
+    stopifnot(is.character(x), length(x) == 1)
+    stopifnot(is.character(y), length(y) == 1)
+    stopifnot(x %in% names(data), y %in% names(data))
+    stopifnot(is.null(fill) || (is.character(fill) && length(fill) == 1))
+    stopifnot(is.null(fill) || fill %in% names(data))
+    stopifnot(is.numeric(alpha), length(alpha) == 1, alpha > 0, alpha < 1)
+    stopifnot(is.numeric(width), length(width) == 1, width > 0)
+    if (!is.null(xlim)) {
+        stopifnot(is.numeric(xlim), length(xlim) == 2, xlim[1] < xlim[2])
+    }
+    if (!is.null(xbreaks)) {
+        stopifnot(is.numeric(xbreaks))
+    }
+    stopifnot(is.character(xlab), length(xlab) == 1)
+    stopifnot(is.logical(vline), length(vline) == 1)
+    stopifnot(is.character(vline_linetype), length(vline_linetype) == 1)
+    stopifnot(is.character(vline_color), length(vline_color) == 1)
+    stopifnot(is.logical(show_y_labels), length(show_y_labels) == 1)
+    stopifnot(
+        is.logical(mlog10_transform_pvalue),
+        length(mlog10_transform_pvalue) == 1
+    )
+    stopifnot(is.numeric(data[[x]]))
+    if (mlog10_transform_pvalue) {
+        stopifnot(all(is.finite(data[[x]])))
+        stopifnot(all(data[[x]] > 0))
+    }
+    # ---- end checks ----
+
     # Dependencies: ggplot2, rlang
     fill_null <- is.null(fill)
 
@@ -129,12 +160,6 @@ plot_pvalue_barplot <- function(
     }
 
     p <- p +
-        ggplot2::scale_x_continuous(
-            expand = c(0, 0),
-            limits = xlim,
-            breaks = xbreaks,
-            labels = x_label_fun
-        ) +
         ggplot2::labs(
             x = xlab,
             y = NULL
@@ -154,30 +179,41 @@ plot_pvalue_barplot <- function(
     # hide y-axis labels by setting their font size to 0 when requested
     if (!show_y_labels) {
         p <- p + ggplot2::theme(axis.text.y = ggplot2::element_text(size = 0))
+    } else {
+        p <- p +
+            ggplot2::theme(axis.text.y = ggplot2::element_text(face = "bold"))
     }
+
+    # ensure discrete y uses an explicit ordering (works for factor or character)
+    y_levels <- if (is.factor(data[[y]])) {
+        levels(data[[y]])
+    } else {
+        unique(data[[y]])
+    }
+    p <- p + ggplot2::scale_y_discrete(limits = y_levels, expand = c(0, 0))
+
+    # Option A: use coord_cartesian to zoom without dropping data
+    p <- p +
+        ggplot2::scale_x_continuous(
+            expand = c(0, 0),
+            breaks = xbreaks,
+            labels = x_label_fun
+        ) +
+        ggplot2::coord_cartesian(xlim = xlim)
+
+    # ---- OR ----
+
+    # Option B: keep limits on the scale but squish out-of-range values to the boundaries
+    # (maps values outside xlim to the nearest boundary instead of removing rows)
+    # requires the scales package (usually available with ggplot2)
+    p <- p +
+        ggplot2::scale_x_continuous(
+            expand = c(0, 0),
+            limits = xlim,
+            breaks = xbreaks,
+            labels = x_label_fun,
+            oob = scales::squish
+        )
 
     p
 }
-
-# Example: demo dataset and usage (only runs interactively)
-set.seed(123)
-n <- 4
-example_df <- tibble::tibble(
-    cell_line = paste0("Cell", sprintf("%02d", 1:n)),
-    # generate raw p-values and show how to transform for plotting
-    pvalue = 10^(-runif(n, 0.2, 2.8)),
-    group = rep(c("A", "B"), length.out = n)
-)
-example_df$cell_line <- factor(
-    example_df$cell_line,
-    levels = rev(example_df$cell_line)
-) # preserve order in plot
-
-plot_pvalue_barplot(
-    data = example_df,
-    x = "pvalue",
-    y = "cell_line",
-    fill = NULL,
-    mlog10_transform_pvalue = TRUE, # compute -log10(p) internally
-    show_y_labels = TRUE
-)

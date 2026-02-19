@@ -25,6 +25,8 @@ Imports:
     ggupset,
     gtsummary,
     labelled,
+    patchwork,
+    poolr,
     rlang,
     scales,
     stringr,
