@@ -53,11 +53,13 @@ direction) and a p-value (tile fill). The function returns a ggplot object.</p>
 <span>  dot_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">30</span><span class="op">)</span>,</span>
 <span>  palette <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>positive <span class="op">=</span> <span class="st">"darkorange1"</span>, negative <span class="op">=</span> <span class="st">"dodgerblue2"</span><span class="op">)</span>,</span>
 <span>  xlab_angle <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  fill_limits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  legend_pvalue_title <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  legend_dotsize_title <span class="op">=</span> <span class="st">"Effect size"</span>,</span>
+<span>  legend_dotsize_title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="fu">bold</span><span class="op">(</span><span class="st">"Effect size"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  add_combined_pvalue_barplot <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  combined_qvalue <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  combine_pvalue_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fisher"</span>, <span class="st">"cauchy"</span>, <span class="st">"hm"</span><span class="op">)</span>,</span>
 <span>  patchwork_widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -71,19 +73,19 @@ direction) and a p-value (tile fill). The function returns a ggplot object.</p>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>Character; column name for x axis</p></dd>
+<dd><p>Character; name of variable in <code>data</code> to use for x-axis/columns</p></dd>
 
 
 <dt id="arg-y">y<a class="anchor" aria-label="anchor" href="#arg-y"></a></dt>
-<dd><p>Character; column name for y axis</p></dd>
+<dd><p>Character; name of variable in <code>data</code> to use for y-axis/rows</p></dd>
 
 
 <dt id="arg-effect">effect<a class="anchor" aria-label="anchor" href="#arg-effect"></a></dt>
-<dd><p>Character; numeric column name used for dot size and direction</p></dd>
+<dd><p>Character; column name of numeric variable in <code>data</code> to use for dot size and color (direction)</p></dd>
 
 
 <dt id="arg-p">p<a class="anchor" aria-label="anchor" href="#arg-p"></a></dt>
-<dd><p>Character; numeric column name used for tile fill (p-value)</p></dd>
+<dd><p>Character; column name of numeric variable in <code>data</code> to use for tile fill (p-value)</p></dd>
 
 
 <dt id="arg-dot-size-vals">dot_size_vals<a class="anchor" aria-label="anchor" href="#arg-dot-size-vals"></a></dt>
@@ -126,6 +128,14 @@ direction) and a p-value (tile fill). The function returns a ggplot object.</p>
 <dd><p>Logical; when TRUE adds a combined p-value barplot to the right of the dotmap</p></dd>
 
 
+<dt id="arg-combined-qvalue">combined_qvalue<a class="anchor" aria-label="anchor" href="#arg-combined-qvalue"></a></dt>
+<dd><p>if TRUE then the combined pvalue barplot will show q-values instead of p-values (only applies if add_combined_pvalue_barplot = TRUE)</p></dd>
+
+
+<dt id="arg-combine-pvalue-method">combine_pvalue_method<a class="anchor" aria-label="anchor" href="#arg-combine-pvalue-method"></a></dt>
+<dd><p>Character; method for combining p-values in the barplot ("fisher", "cauchy", or "hm")</p></dd>
+
+
 <dt id="arg-patchwork-widths">patchwork_widths<a class="anchor" aria-label="anchor" href="#arg-patchwork-widths"></a></dt>
 <dd><p>Numeric(2); widths passed to patchwork::plot_layout when adding the combined p-value barplot (default c(3, 1))</p></dd>
 
@@ -152,8 +162,17 @@ or a patchwork composition object (from <code>patchwork</code>) when
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">size</span>, which will replace the existing scale.</span>
 <span class="r-plt img"><img src="plot_dotmap-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># Add Fisher's combination pvalue barplot on the right which combines p-values across columns for each row category</span></span></span>
-<span class="r-in"><span><span class="fu">plot_dotmap</span><span class="op">(</span><span class="va">df</span>, x <span class="op">=</span> <span class="st">"col"</span>, y <span class="op">=</span> <span class="st">"row"</span>, effect <span class="op">=</span> <span class="st">"effect"</span>, p <span class="op">=</span> <span class="st">"p"</span>,</span></span>
-<span class="r-in"><span>            mlog10_transform_pvalue <span class="op">=</span> <span class="cn">TRUE</span>, add_combined_pvalue_barplot <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">plot_dotmap</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">df</span>,</span></span>
+<span class="r-in"><span>  x <span class="op">=</span> <span class="st">"col"</span>,</span></span>
+<span class="r-in"><span>  y <span class="op">=</span> <span class="st">"row"</span>,</span></span>
+<span class="r-in"><span>  effect <span class="op">=</span> <span class="st">"effect"</span>,</span></span>
+<span class="r-in"><span>  p <span class="op">=</span> <span class="st">"p"</span>,</span></span>
+<span class="r-in"><span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  add_combined_pvalue_barplot <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  combine_pvalue_method <span class="op">=</span> <span class="st">"fisher"</span>, <span class="co"># can also use "cauchy" or "hm" methods for combining potentially correlated p-values</span></span></span>
+<span class="r-in"><span>  combined_qvalue <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># set to TRUE to show q-values instead of p-values in the combined barplot (only applies if add_combined_pvalue_barplot = TRUE)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">size</span> is already present.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">size</span>, which will replace the existing scale.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">y</span> is already present.</span>

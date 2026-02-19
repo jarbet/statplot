@@ -2,6 +2,9 @@
 
 ## All functions
 
+- [`combine_pvalues()`](https://statgencore.github.io/statplot/reference/combine_pvalues.md)
+  : Combine p-values using Fisher, Cauchy (ACAT), or Harmonic Mean
+  methods
 - [`comma()`](https://statgencore.github.io/statplot/reference/comma.md)
   : Format numbers with comma as thousands separator
 - [`plot_2_categorical_vars()`](https://statgencore.github.io/statplot/reference/plot_2_categorical_vars.md)

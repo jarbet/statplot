@@ -18,11 +18,13 @@ plot_dotmap(
   dot_range = c(5, 30),
   palette = c(positive = "darkorange1", negative = "dodgerblue2"),
   xlab_angle = 0,
-  mlog10_transform_pvalue = FALSE,
+  mlog10_transform_pvalue = TRUE,
   fill_limits = NULL,
   legend_pvalue_title = NULL,
-  legend_dotsize_title = "Effect size",
+  legend_dotsize_title = expression(bold("Effect size")),
   add_combined_pvalue_barplot = FALSE,
+  combined_qvalue = FALSE,
+  combine_pvalue_method = c("fisher", "cauchy", "hm"),
   patchwork_widths = c(3, 1)
 )
 ```
@@ -35,19 +37,21 @@ plot_dotmap(
 
 - x:
 
-  Character; column name for x axis
+  Character; name of variable in `data` to use for x-axis/columns
 
 - y:
 
-  Character; column name for y axis
+  Character; name of variable in `data` to use for y-axis/rows
 
 - effect:
 
-  Character; numeric column name used for dot size and direction
+  Character; column name of numeric variable in `data` to use for dot
+  size and color (direction)
 
 - p:
 
-  Character; numeric column name used for tile fill (p-value)
+  Character; column name of numeric variable in `data` to use for tile
+  fill (p-value)
 
 - dot_size_vals:
 
@@ -92,6 +96,16 @@ plot_dotmap(
   Logical; when TRUE adds a combined p-value barplot to the right of the
   dotmap
 
+- combined_qvalue:
+
+  if TRUE then the combined pvalue barplot will show q-values instead of
+  p-values (only applies if add_combined_pvalue_barplot = TRUE)
+
+- combine_pvalue_method:
+
+  Character; method for combining p-values in the barplot ("fisher",
+  "cauchy", or "hm")
+
 - patchwork_widths:
 
   Numeric(2); widths passed to patchwork::plot_layout when adding the
@@ -119,8 +133,17 @@ plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p",
 #> Adding another scale for size, which will replace the existing scale.
 
 # Add Fisher's combination pvalue barplot on the right which combines p-values across columns for each row category
-plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p",
-            mlog10_transform_pvalue = TRUE, add_combined_pvalue_barplot = TRUE)
+plot_dotmap(
+  df,
+  x = "col",
+  y = "row",
+  effect = "effect",
+  p = "p",
+  mlog10_transform_pvalue = TRUE,
+  add_combined_pvalue_barplot = TRUE,
+  combine_pvalue_method = "fisher", # can also use "cauchy" or "hm" methods for combining potentially correlated p-values
+  combined_qvalue = FALSE # set to TRUE to show q-values instead of p-values in the combined barplot (only applies if add_combined_pvalue_barplot = TRUE)
+  )
 #> Scale for size is already present.
 #> Adding another scale for size, which will replace the existing scale.
 #> Scale for y is already present.
