@@ -29,20 +29,7 @@ combine_pvalues <- function(p, method = c("fisher", "cauchy", "hm")) {
         method,
         fisher = as.numeric(poolr::fisher(p = p)$p),
         cauchy = as.numeric(ACAT::ACAT(Pvals = p)),
-        hm = {
-            res <- harmonicmeanp::p.hmp(p = p, L = length(p))
-            if (is.list(res)) {
-                if (!is.null(res$p)) {
-                    res$p
-                } else if (!is.null(res$p.value)) {
-                    res$p.value
-                } else {
-                    as.numeric(res[[1]])
-                }
-            } else {
-                as.numeric(res)
-            }
-        }
+        hm = as.numeric(harmonicmeanp::p.hmp(p = p, L = length(p)))
     )
 
     as.numeric(pmin(pmax(pval, 0), 1))
