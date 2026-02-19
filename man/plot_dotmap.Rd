@@ -18,7 +18,9 @@ plot_dotmap(
   mlog10_transform_pvalue = FALSE,
   fill_limits = NULL,
   legend_pvalue_title = NULL,
-  legend_dotsize_title = "Effect size"
+  legend_dotsize_title = "Effect size",
+  add_combined_pvalue_barplot = FALSE,
+  patchwork_widths = c(3, 1)
 )
 }
 \arguments{
@@ -49,9 +51,15 @@ plot_dotmap(
 \item{legend_pvalue_title}{Character or NULL; override title for p-value/color legend}
 
 \item{legend_dotsize_title}{Character; title for the dot-size legend}
+
+\item{add_combined_pvalue_barplot}{Logical; when TRUE adds a combined p-value barplot to the right of the dotmap}
+
+\item{patchwork_widths}{Numeric(2); widths passed to patchwork::plot_layout when adding the combined p-value barplot (default c(3, 1))}
 }
 \value{
-A ggplot2::ggplot object
+A ggplot2::ggplot object when \code{add_combined_pvalue_barplot = FALSE},
+or a patchwork composition object (from \code{patchwork}) when
+\code{add_combined_pvalue_barplot = TRUE}.
 }
 \description{
 A combined tile + point "dotmap" that visualizes an effect (size and
@@ -67,5 +75,9 @@ df$p <- 10^(-df$mlog10_p)
 df$row <- factor(df$row, levels = rev(genes))
 plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p",
             mlog10_transform_pvalue = TRUE)
+# Add Fisher's combination pvalue barplot on the right which combines p-values across columns for each row category
+plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p",
+            mlog10_transform_pvalue = TRUE, add_combined_pvalue_barplot = TRUE)
+
 
 }
