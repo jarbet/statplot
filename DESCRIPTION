@@ -32,7 +32,6 @@ Imports:
     stringr,
     survival,
     tibble,
-    tibble,
     UpSetR
 URL: https://statgencore.github.io/statplot/
 BugReports: https://github.com/StatGenCore/statplot/issues
