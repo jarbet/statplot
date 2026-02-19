@@ -292,6 +292,7 @@ plot_dotmap <- function(
             axis.text.x = ggplot2::element_text(
                 angle = xlab_angle,
                 vjust = 0,
+                hjust = 0, # left-align when rotated, for top axis
                 margin = ggplot2::margin(t = -6, b = 0)
             )
         )
