@@ -20,7 +20,9 @@
 #' @param add_combined_pvalue_barplot Logical; when TRUE adds a combined p-value barplot to the right of the dotmap
 #' @param patchwork_widths Numeric(2); widths passed to patchwork::plot_layout when adding the combined p-value barplot (default c(3, 1))
 #'
-#' @return A ggplot2::ggplot object
+#' @return A ggplot2::ggplot object when \code{add_combined_pvalue_barplot = FALSE},
+#'   or a patchwork composition object (from \code{patchwork}) when
+#'   \code{add_combined_pvalue_barplot = TRUE}.
 #'
 #' @examples
 #' set.seed(42)
