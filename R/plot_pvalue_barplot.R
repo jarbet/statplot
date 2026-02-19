@@ -5,7 +5,7 @@
 #'
 #' @param data A data.frame or tibble containing the variables.
 #' @param x Character, name of the column with raw p-values (default \"pvalue\").
-#' @param y Character, name of the column for y-axis categories (default \"cell_line\").
+#' @param y Character, name of the column for y-axis categories.
 #' @param fill Character or NULL, column name to use for fill; if NULL draw solid black bars.
 #' @param alpha Numeric significance threshold for the vertical line (default 0.05).
 #' @param width Numeric bar width.
