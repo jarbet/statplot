@@ -345,15 +345,6 @@ plot_dotmap <- function(
             ggplot2::coord_cartesian(ylim = c(0.5, n_levels + 0.5)) +
             ggplot2::theme(legend.position = "left") # move legend to left when combined
 
-        p_comb <- plot_pvalue_barplot(
-            data = combined_df,
-            x = "p_combined",
-            y = y,
-            fill = NULL,
-            mlog10_transform_pvalue = mlog10_transform_pvalue,
-            show_y_labels = FALSE
-        )
-
         p_comb <- p_comb +
             ggplot2::scale_y_discrete(limits = y_levels, expand = c(0, 0)) +
             ggplot2::coord_cartesian(ylim = c(0.5, n_levels + 0.5)) +
