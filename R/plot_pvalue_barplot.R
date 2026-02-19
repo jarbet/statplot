@@ -17,7 +17,7 @@
 #' @param vline_color Character, color for the vertical line.
 #' @param show_y_labels Logical, whether to show y-axis labels (default FALSE).
 #' @param mlog10_transform_pvalue Logical; when TRUE compute -log10(p) for plotting/order.
-#' @return A ggplot2 object (invisible when returned from functions).
+#' @return A ggplot2 object.
 #' @examples
 #' set.seed(123)
 #' n <- 4
