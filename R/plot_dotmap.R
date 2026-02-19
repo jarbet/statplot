@@ -239,6 +239,22 @@ plot_dotmap <- function(
             }
         ) +
         ggnewscale::new_scale_fill() +
+        # NA effect marker: draw an × symbol where effect is NA
+        ggplot2::geom_point(
+            data = dplyr::filter(data, is.na(.data[[effect]])),
+            ggplot2::aes(x = .data[[x]], y = .data[[y]], shape = "Missing"),
+            size = 5,
+            colour = "grey40",
+            stroke = 1,
+            inherit.aes = FALSE
+        ) +
+        ggplot2::scale_shape_manual(
+            values = c("Missing" = 4),
+            name = NULL,
+            guide = ggplot2::guide_legend(
+                override.aes = list(colour = "grey40", stroke = 1)
+            )
+        ) +
         # use shape 21 so the interior (fill) is the direction color and the border (colour) is white
         ggplot2::geom_point(
             ggplot2::aes(size = size_val, fill = dir),
@@ -276,6 +292,7 @@ plot_dotmap <- function(
             axis.text.x = ggplot2::element_text(
                 angle = xlab_angle,
                 vjust = 0,
+                hjust = 0, # left-align when rotated, for top axis
                 margin = ggplot2::margin(t = -6, b = 0)
             )
         )
