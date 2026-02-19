@@ -203,7 +203,7 @@ plot_dotmap <- function(
         ggplot2::scale_x_discrete(expand = c(0, 0), position = "top") +
         ggplot2::scale_y_discrete(
             expand = c(0, 0),
-            limits = levels(data[[y]])
+            limits = if (is.factor(data[[y]])) levels(data[[y]]) else unique(data[[y]])
         ) +
         ggnewscale::new_scale_fill() +
         # use shape 21 so the interior (fill) is the direction color and the border (colour) is white
