@@ -8,6 +8,7 @@
     + option to add Fisher's combination pvalue barplot on the right
     + option to show q-values for the combined pvalue barplot
     + 3 methods are supported when combining pvalues
+    + show an x symbol if dot is missing
 
 ## Changed
 
