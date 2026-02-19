@@ -16,6 +16,8 @@
   be between 0 and 1.
 - [`plot_numeric_by_group()`](https://statgencore.github.io/statplot/reference/plot_numeric_by_group.md)
   : Violin + boxplot of a numeric variable by a grouping factor
+- [`plot_pvalue_barplot()`](https://statgencore.github.io/statplot/reference/plot_pvalue_barplot.md)
+  : Plot p-value barplot
 - [`plot_survival_curves()`](https://statgencore.github.io/statplot/reference/plot_survival_curves.md)
   : Kaplan–Meier plot from a Surv object
 - [`plot_upset()`](https://statgencore.github.io/statplot/reference/plot_upset.md)

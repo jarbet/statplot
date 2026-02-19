@@ -56,7 +56,9 @@ direction) and a p-value (tile fill). The function returns a ggplot object.</p>
 <span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  fill_limits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  legend_pvalue_title <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  legend_dotsize_title <span class="op">=</span> <span class="st">"Effect size"</span></span>
+<span>  legend_dotsize_title <span class="op">=</span> <span class="st">"Effect size"</span>,</span>
+<span>  add_combined_pvalue_barplot <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  patchwork_widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -119,10 +121,20 @@ direction) and a p-value (tile fill). The function returns a ggplot object.</p>
 <dt id="arg-legend-dotsize-title">legend_dotsize_title<a class="anchor" aria-label="anchor" href="#arg-legend-dotsize-title"></a></dt>
 <dd><p>Character; title for the dot-size legend</p></dd>
 
+
+<dt id="arg-add-combined-pvalue-barplot">add_combined_pvalue_barplot<a class="anchor" aria-label="anchor" href="#arg-add-combined-pvalue-barplot"></a></dt>
+<dd><p>Logical; when TRUE adds a combined p-value barplot to the right of the dotmap</p></dd>
+
+
+<dt id="arg-patchwork-widths">patchwork_widths<a class="anchor" aria-label="anchor" href="#arg-patchwork-widths"></a></dt>
+<dd><p>Numeric(2); widths passed to patchwork::plot_layout when adding the combined p-value barplot (default c(3, 1))</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A ggplot2::ggplot object</p>
+    <p>A ggplot2::ggplot object when <code>add_combined_pvalue_barplot = FALSE</code>,
+or a patchwork composition object (from <code>patchwork</code>) when
+<code>add_combined_pvalue_barplot = TRUE</code>.</p>
     </div>
 
     <div class="section level2">
@@ -139,6 +151,17 @@ direction) and a p-value (tile fill). The function returns a ggplot object.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">size</span> is already present.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">size</span>, which will replace the existing scale.</span>
 <span class="r-plt img"><img src="plot_dotmap-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span><span class="co"># Add Fisher's combination pvalue barplot on the right which combines p-values across columns for each row category</span></span></span>
+<span class="r-in"><span><span class="fu">plot_dotmap</span><span class="op">(</span><span class="va">df</span>, x <span class="op">=</span> <span class="st">"col"</span>, y <span class="op">=</span> <span class="st">"row"</span>, effect <span class="op">=</span> <span class="st">"effect"</span>, p <span class="op">=</span> <span class="st">"p"</span>,</span></span>
+<span class="r-in"><span>            mlog10_transform_pvalue <span class="op">=</span> <span class="cn">TRUE</span>, add_combined_pvalue_barplot <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">size</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">size</span>, which will replace the existing scale.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">y</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">y</span>, which will replace the existing scale.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">y</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">y</span>, which will replace the existing scale.</span>
+<span class="r-plt img"><img src="plot_dotmap-2.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

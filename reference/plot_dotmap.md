@@ -21,7 +21,9 @@ plot_dotmap(
   mlog10_transform_pvalue = FALSE,
   fill_limits = NULL,
   legend_pvalue_title = NULL,
-  legend_dotsize_title = "Effect size"
+  legend_dotsize_title = "Effect size",
+  add_combined_pvalue_barplot = FALSE,
+  patchwork_widths = c(3, 1)
 )
 ```
 
@@ -85,9 +87,21 @@ plot_dotmap(
 
   Character; title for the dot-size legend
 
+- add_combined_pvalue_barplot:
+
+  Logical; when TRUE adds a combined p-value barplot to the right of the
+  dotmap
+
+- patchwork_widths:
+
+  Numeric(2); widths passed to patchwork::plot_layout when adding the
+  combined p-value barplot (default c(3, 1))
+
 ## Value
 
-A ggplot2::ggplot object
+A ggplot2::ggplot object when `add_combined_pvalue_barplot = FALSE`, or
+a patchwork composition object (from `patchwork`) when
+`add_combined_pvalue_barplot = TRUE`.
 
 ## Examples
 
@@ -103,5 +117,16 @@ plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p",
             mlog10_transform_pvalue = TRUE)
 #> Scale for size is already present.
 #> Adding another scale for size, which will replace the existing scale.
+
+# Add Fisher's combination pvalue barplot on the right which combines p-values across columns for each row category
+plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p",
+            mlog10_transform_pvalue = TRUE, add_combined_pvalue_barplot = TRUE)
+#> Scale for size is already present.
+#> Adding another scale for size, which will replace the existing scale.
+#> Scale for y is already present.
+#> Adding another scale for y, which will replace the existing scale.
+#> Scale for y is already present.
+#> Adding another scale for y, which will replace the existing scale.
+
 
 ```
