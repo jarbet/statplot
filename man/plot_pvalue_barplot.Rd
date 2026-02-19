@@ -51,7 +51,7 @@ plot_pvalue_barplot(
 \item{mlog10_transform_pvalue}{Logical; when TRUE compute -log10(p) for plotting/order.}
 }
 \value{
-A ggplot2 object (invisible when returned from functions).
+A ggplot2 object.
 }
 \description{
 Create a horizontal barplot of p-values (optionally -log10 transformed) with an
