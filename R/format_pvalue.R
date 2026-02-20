@@ -13,7 +13,7 @@
 format_pvalue <- function(x, p_symbol = "p", include_p_symbol = TRUE) {
     stopifnot(
         is.numeric(x),
-        all(x >= 0 & x <= 1)
+        all(x >= 0 & x <= 1, na.rm = TRUE) # allow NAs through
     )
     stopifnot(
         is.character(p_symbol),

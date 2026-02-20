@@ -21,5 +21,5 @@ Vectorised helper to format numeric p-values into readable strings.
 }
 \examples{
 format_pvalue(0.0005)
-format_pvalue(c(0.0005, 0.005, 0.02))
+format_pvalue(c(0.0005, 0.005, 0.02, 0.236))
 }
