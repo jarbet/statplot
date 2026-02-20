@@ -5,7 +5,7 @@
 #' @param x Numeric vector of p-values
 #' @param p_symbol Character; symbol to prefix p-values with (default 'p')
 #' @param include_p_symbol Logical; whether to include the p_symbol prefix (default TRUE)
-#' @return Character vector of formatted p-values (prefixed with "p").
+#' @return Character vector of formatted p-values, optionally prefixed with \code{p_symbol} when \code{include_p_symbol} is TRUE.
 #' @examples
 #' format_pvalue(0.0005)
 #' format_pvalue(c(0.0005, 0.005, 0.02, 0.236))
