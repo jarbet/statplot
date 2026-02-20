@@ -8,7 +8,7 @@
 #' @return Character vector of formatted p-values (prefixed with "p").
 #' @examples
 #' format_pvalue(0.0005)
-#' format_pvalue(c(0.0005, 0.005, 0.02))
+#' format_pvalue(c(0.0005, 0.005, 0.02, 0.236))
 #' @export
 format_pvalue <- function(x, p_symbol = "p", include_p_symbol = TRUE) {
     stopifnot(
@@ -29,11 +29,7 @@ format_pvalue <- function(x, p_symbol = "p", include_p_symbol = TRUE) {
         no = ifelse(
             test = x < 0.1,
             yes = format(round(x, 3), nsmall = 3),
-            no = ifelse(
-                x > 0.01,
-                format(round(x, 2), nsmall = 2),
-                format(round(x, 3), nsmall = 3)
-            )
+            no = format(round(x, 2), nsmall = 2)
         )
     )
     if (include_p_symbol) {
