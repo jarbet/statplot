@@ -2,6 +2,7 @@
 
 ## Added
 
+* `format_pvalue`: function to format pvalues to display in plots
 * `combine_pvalues` function to combine pvalues to produce a single overall pvalue. 3 methods are supported: Fisher, Cauchy, and Harmonic Mean
 * `plot_pvalue_barplot`: horizontal barplot of pvalues
 * `plot_dotmap`: plot heatmap of effect sizes (dots) with cells shaded by pvalue
