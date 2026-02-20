@@ -4,6 +4,7 @@
 
 ### Added
 
+- `format_pvalue`: function to format pvalues to display in plots
 - `combine_pvalues` function to combine pvalues to produce a single
   overall pvalue. 3 methods are supported: Fisher, Cauchy, and Harmonic
   Mean

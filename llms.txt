@@ -26,6 +26,8 @@ pak::pak("StatGenCore/statplot")
   methods
 - [`comma()`](https://statgencore.github.io/statplot/reference/comma.md)
   : Format numbers with comma as thousands separator
+- [`format_pvalue()`](https://statgencore.github.io/statplot/reference/format_pvalue.md)
+  : Format p-values for display
 - [`plot_2_categorical_vars()`](https://statgencore.github.io/statplot/reference/plot_2_categorical_vars.md)
   : Stacked percent bar chart for two categorical variables
 - [`plot_bars()`](https://statgencore.github.io/statplot/reference/plot_bars.md)
