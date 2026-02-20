@@ -2,6 +2,7 @@
 
 export(combine_pvalues)
 export(comma)
+export(format_pvalue)
 export(plot_2_categorical_vars)
 export(plot_bars)
 export(plot_dotmap)
