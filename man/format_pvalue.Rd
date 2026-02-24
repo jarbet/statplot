@@ -14,7 +14,7 @@ format_pvalue(x, p_symbol = "p", include_p_symbol = TRUE)
 \item{include_p_symbol}{Logical; whether to include the p_symbol prefix (default TRUE)}
 }
 \value{
-Character vector of formatted p-values (prefixed with "p").
+Character vector of formatted p-values, optionally prefixed with \code{p_symbol} when \code{include_p_symbol} is TRUE.
 }
 \description{
 Vectorised helper to format numeric p-values into readable strings.
