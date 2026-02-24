@@ -24,7 +24,8 @@ format_pvalue(x, p_symbol = "p", include_p_symbol = TRUE)
 
 ## Value
 
-Character vector of formatted p-values (prefixed with "p").
+Character vector of formatted p-values, optionally prefixed with
+`p_symbol` when `include_p_symbol` is TRUE.
 
 ## Examples
 
