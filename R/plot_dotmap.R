@@ -330,7 +330,11 @@ plot_dotmap <- function(
                 )
             )
         )
-
+    y_levels <- if (is.factor(data[[y]])) {
+        levels(data[[y]])
+    } else {
+        unique(data[[y]])
+    }
     # If requested, compute combined p-values per y and attach a right-side barplot using patchwork
     if (isTRUE(add_combined_pvalue_barplot)) {
         if (!requireNamespace("patchwork", quietly = TRUE)) {
@@ -361,11 +365,6 @@ plot_dotmap <- function(
         }
 
         # preserve factor levels / order to align plots
-        y_levels <- if (is.factor(data[[y]])) {
-            levels(data[[y]])
-        } else {
-            unique(data[[y]])
-        }
         combined_df[[y]] <- factor(combined_df[[y]], levels = y_levels)
 
         # ensure main plot uses the exact same discrete y limits / no expansion
@@ -406,6 +405,24 @@ plot_dotmap <- function(
             widths = patchwork_widths
         )
         return(combined)
+    } else {
+        p_obj <- p_obj +
+            ggplot2::scale_y_discrete(expand = ggplot2::expansion(add = 0)) +
+            ggplot2::coord_cartesian(
+                clip = "on",
+                ylim = c(0.5, length(y_levels) + 0.5)
+            ) +
+            ggplot2::theme(
+                panel.grid.major = ggplot2::element_blank(),
+                panel.grid.minor = ggplot2::element_blank(),
+                plot.margin = ggplot2::margin(
+                    t = 5.5,
+                    r = 5.5,
+                    b = 5,
+                    l = 5.5,
+                    unit = "pt"
+                )
+            )
     }
 
     p_obj
