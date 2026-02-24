@@ -25,7 +25,7 @@ jobs:
           - {os: windows-latest, r: 'release'}
 
     env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_PAT: ${{ secrets.STATGENCORE_PAT }}
 
     steps:
       - uses: actions/checkout@v4
