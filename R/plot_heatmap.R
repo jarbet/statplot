@@ -22,8 +22,13 @@
 #' @param heatmap_colors A color mapping passed to
 #'   \code{\link[ComplexHeatmap]{Heatmap}}'s \code{col} argument. Default
 #'   \code{NULL} (uses ComplexHeatmap defaults).
-#' @param anno_colors Named list of named character vectors mapping annotation
-#'   levels to hex colors. Any levels not supplied are auto-colored. Default
+#' @param anno_colors Named list specifying colors for annotation covariates.
+#'   For discrete (categorical) covariates, each element should be a named
+#'   character vector mapping annotation levels to hex colors; any levels not
+#'   supplied are auto-colored. For continuous (numeric) covariates, each
+#'   element may instead be a function that maps numeric values to colors
+#'   (e.g., a function created by \code{circlize::colorRamp2}), which will be
+#'   applied to the numeric annotation values to generate colors. Default
 #'   \code{NULL}.
 #' @param scale_rows Logical. Whether to z-score scale rows. Default \code{TRUE}.
 #' @param cluster_rows Logical. Whether to cluster rows. Default \code{TRUE}.
