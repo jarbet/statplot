@@ -10,7 +10,6 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Suggests: 
-    circlize,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
@@ -18,6 +17,7 @@ Imports:
     boot,
     BoutrosLab.plotting.general,
     broom,
+    circlize,
     ComplexHeatmap,
     dplyr,
     effectsize,
