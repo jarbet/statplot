@@ -327,14 +327,14 @@ plot_heatmap <- function(
         stopifnot(length(row_split) == nrow(mat))
         stopifnot(!any(is.na(row_split)))
         if (nlevels(row_split) < 2) {
-            stop("`row_split_var` has < 2 levels; no row split will occur.")
+            stop("`row_split_var` must have at least 2 levels to perform row splitting.")
         }
     }
     if (!is.null(col_split)) {
         stopifnot(length(col_split) == ncol(mat))
         stopifnot(!any(is.na(col_split)))
         if (nlevels(col_split) < 2) {
-            stop("`col_split_var` has < 2 levels; no column split will occur.")
+            stop("`col_split_var` must have at least 2 levels to perform column splitting.")
         }
     }
 
