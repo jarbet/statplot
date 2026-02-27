@@ -17,6 +17,8 @@ Imports:
     boot,
     BoutrosLab.plotting.general,
     broom,
+    circlize,
+    ComplexHeatmap,
     dplyr,
     effectsize,
     forcats,
@@ -29,13 +31,19 @@ Imports:
     labelled,
     patchwork,
     poolr,
+    RColorBrewer,
     rlang,
     scales,
     stringr,
     survival,
     tibble,
+    tidyr,
     UpSetR
 URL: https://statgencore.github.io/statplot/
 BugReports: https://github.com/StatGenCore/statplot/issues
-Remotes:  
-    yaowuliu/ACAT
+Remotes: 
+    yaowuliu/ACAT,
+    bioc::ComplexHeatmap
+Depends: 
+    R (>= 4.1)
+LazyData: true
