@@ -333,16 +333,6 @@ plot_heatmap <- function(
         }
     }
 
-    # ---------- levels per variable
-    var_names <- unique(c(
-        row_covariates %||% character(0),
-        col_covariates %||% character(0)
-    ))
-    levels_list <- lapply(var_names, function(v) {
-        sort(unique(as.character(c(row_df[[v]], col_df[[v]]))))
-    })
-    names(levels_list) <- var_names
-
     # ---------- defaults per variable
     brewer_quals <- c(
         "Set1",
