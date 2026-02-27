@@ -42,7 +42,7 @@ Imports:
 URL: https://statgencore.github.io/statplot/
 BugReports: https://github.com/StatGenCore/statplot/issues
 Remotes: 
-    yaowuliu/ACAT
+    yaowuliu/ACAT,
     bioc::ComplexHeatmap
 Depends: 
     R (>= 3.5)
