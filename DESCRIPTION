@@ -10,6 +10,7 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Suggests: 
+    circlize,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
@@ -17,6 +18,7 @@ Imports:
     boot,
     BoutrosLab.plotting.general,
     broom,
+    ComplexHeatmap,
     dplyr,
     effectsize,
     forcats,
@@ -29,13 +31,19 @@ Imports:
     labelled,
     patchwork,
     poolr,
+    RColorBrewer,
     rlang,
     scales,
     stringr,
     survival,
     tibble,
+    tidyr,
     UpSetR
 URL: https://statgencore.github.io/statplot/
 BugReports: https://github.com/StatGenCore/statplot/issues
-Remotes:  
+Remotes: 
     yaowuliu/ACAT
+    bioc::ComplexHeatmap
+Depends: 
+    R (>= 3.5)
+LazyData: true
