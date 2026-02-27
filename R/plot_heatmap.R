@@ -124,6 +124,7 @@
 #'     row_covariates = c("log2fc", "is_immune_gene", "direction"),
 #'     col_covariates = c("qc_score", "condition", "sample_type"),
 #'     col_split_var = "group",
+#'     row_split_var = "direction",
 #'     heatmap_colors = expr_cols,
 #'     anno_colors = list(
 #'         log2fc         = col_fun_log2fc,
@@ -414,8 +415,8 @@ plot_heatmap <- function(
 
     # ---------- levels per variable (categorical only)
     var_names <- unique(c(
-        row_covariates %||% character(0),
-        col_covariates %||% character(0)
+        if (is.null(row_covariates)) character(0) else row_covariates,
+        if (is.null(col_covariates)) character(0) else col_covariates
     ))
 
     levels_list <- lapply(var_names, function(v) {

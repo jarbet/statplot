@@ -52,10 +52,17 @@ columns. Must have \eqn{\geq 2} levels. Default \code{NULL}.}
 
 \item{heatmap_colors}{A color mapping passed to
 \code{\link[ComplexHeatmap]{Heatmap}}'s \code{col} argument. Default
-\code{NULL} (uses ComplexHeatmap defaults).}
+\code{NULL}, in which case a numeric color mapping is automatically
+generated (e.g. via \code{\link[circlize]{colorRamp2}}) rather than using
+ComplexHeatmap's built-in default.}
 
-\item{anno_colors}{Named list of named character vectors mapping annotation
-levels to hex colors. Any levels not supplied are auto-colored. Default
+\item{anno_colors}{Named list specifying colors for annotation covariates.
+For discrete (categorical) covariates, each element should be a named
+character vector mapping annotation levels to hex colors; any levels not
+supplied are auto-colored. For continuous (numeric) covariates, each
+element may instead be a function that maps numeric values to colors
+(e.g., a function created by \code{circlize::colorRamp2}), which will be
+applied to the numeric annotation values to generate colors. Default
 \code{NULL}.}
 
 \item{scale_rows}{Logical. Whether to z-score scale rows. Default \code{TRUE}.}
@@ -164,6 +171,7 @@ plot_heatmap(
     row_covariates = c("log2fc", "is_immune_gene", "direction"),
     col_covariates = c("qc_score", "condition", "sample_type"),
     col_split_var = "group",
+    row_split_var = "direction",
     heatmap_colors = expr_cols,
     anno_colors = list(
         log2fc         = col_fun_log2fc,
