@@ -21,7 +21,9 @@
 #'   columns. Must have \eqn{\geq 2} levels. Default \code{NULL}.
 #' @param heatmap_colors A color mapping passed to
 #'   \code{\link[ComplexHeatmap]{Heatmap}}'s \code{col} argument. Default
-#'   \code{NULL} (uses ComplexHeatmap defaults).
+#'   \code{NULL}, in which case a numeric color mapping is automatically
+#'   generated (e.g. via \code{\link[circlize]{colorRamp2}}) rather than using
+#'   ComplexHeatmap's built-in default.
 #' @param anno_colors Named list specifying colors for annotation covariates.
 #'   For discrete (categorical) covariates, each element should be a named
 #'   character vector mapping annotation levels to hex colors; any levels not
