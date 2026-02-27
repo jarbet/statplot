@@ -4,6 +4,7 @@
 
 ### Added
 
+- `plot_heatmap`
 - `quarto_html_tabset_list`: convert a named list object to a tabset
   when knitting to HTML
 - `format_pvalue`: function to format pvalues to display in plots

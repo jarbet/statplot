@@ -7,6 +7,8 @@
   methods
 - [`comma()`](https://statgencore.github.io/statplot/reference/comma.md)
   : Format numbers with comma as thousands separator
+- [`ex_data_heatmap`](https://statgencore.github.io/statplot/reference/ex_data_heatmap.md)
+  : Example tidy expression dataset for heatmap plotting
 - [`format_pvalue()`](https://statgencore.github.io/statplot/reference/format_pvalue.md)
   : Format p-values for display
 - [`plot_2_categorical_vars()`](https://statgencore.github.io/statplot/reference/plot_2_categorical_vars.md)
@@ -19,6 +21,8 @@
 - [`plot_effectsize_01_intervals()`](https://statgencore.github.io/statplot/reference/plot_effectsize_01_intervals.md)
   : Plot effect-size estimates and confidence intervals. All values must
   be between 0 and 1.
+- [`plot_heatmap()`](https://statgencore.github.io/statplot/reference/plot_heatmap.md)
+  : Plot a heatmap from tidy data
 - [`plot_numeric_by_group()`](https://statgencore.github.io/statplot/reference/plot_numeric_by_group.md)
   : Violin + boxplot of a numeric variable by a grouping factor
 - [`plot_pvalue_barplot()`](https://statgencore.github.io/statplot/reference/plot_pvalue_barplot.md)
