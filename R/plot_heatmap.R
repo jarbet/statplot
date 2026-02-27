@@ -90,7 +90,49 @@
 #'     anno_colors = ann_cols_small,
 #'     return_details = TRUE
 #' )
+#' ### Continuous row and column covariates via colorRamp2 functions
+#' rng_log2fc <- range(ex_data_heatmap$log2fc, na.rm = TRUE)
+#' col_fun_log2fc <- circlize::colorRamp2(
+#'     c(rng_log2fc[1], 0, rng_log2fc[2]),
+#'     c("#762a83", "white", "#e66101")
+#' )
 #'
+#' rng_qc <- range(ex_data_heatmap$qc_score, na.rm = TRUE)
+#' col_fun_qc <- circlize::colorRamp2(
+#'     c(rng_qc[1], mean(rng_qc), rng_qc[2]),
+#'     c("#ffffcc", "#41b6c4", "#0c2c84")
+#' )
+#'
+#' expr_rng <- range(ex_data_heatmap$expression, na.rm = TRUE)
+#' expr_cols <- circlize::colorRamp2(
+#'     c(expr_rng[1], mean(expr_rng), expr_rng[2]),
+#'     c("#313695", "#f7f7f7", "#a50026")
+#' )
+#'
+#' plot_heatmap(
+#'     df = ex_data_heatmap,
+#'     row_var = external_gene_name,
+#'     col_var = sample,
+#'     value_var = expression,
+#'     row_covariates = c("log2fc", "is_immune_gene", "direction"),
+#'     col_covariates = c("qc_score", "condition", "sample_type"),
+#'     col_split_var = "group",
+#'     heatmap_colors = expr_cols,
+#'     anno_colors = list(
+#'         log2fc         = col_fun_log2fc,
+#'         qc_score       = col_fun_qc,
+#'         is_immune_gene = c(yes = "#e7298a", no = "#a6761d"),
+#'         direction      = c(up = "#1f78b4", down = "#e31a1c"),
+#'         condition      = c(healthy = "#1b9e77", EAE = "#d95f02"),
+#'         sample_type    = c(input = "#7570b3", IP = "#66a61e")
+#'     ),
+#'     scale_rows = FALSE,
+#'     cluster_rows = TRUE,
+#'     cluster_columns = TRUE,
+#'     show_row_names = TRUE,
+#'     row_names_side = "left",
+#'     heatmap_legend_title = "Expression"
+#' )
 #' @export
 plot_heatmap <- function(
     df,
@@ -156,6 +198,16 @@ plot_heatmap <- function(
         mat[is.na(mat)] <- 0
     }
 
+    # Recompute heatmap color scale AFTER scaling so breakpoints match the matrix
+    if (is.null(heatmap_colors)) {
+        rng <- range(mat, na.rm = TRUE)
+        mid <- mean(rng)
+        heatmap_colors <- circlize::colorRamp2(
+            c(rng[1], mid, rng[2]),
+            c("#313695", "#f7f7f7", "#a50026")
+        )
+    }
+
     if (isTRUE(cluster_rows) && nrow(mat) < 2) {
         stop("`cluster_rows=TRUE` requires at least 2 rows.")
     }
@@ -179,23 +231,60 @@ plot_heatmap <- function(
         stop("Missing column(s) on row side: ", paste(miss_r, collapse = ", "))
     }
 
-    col_df <- df |>
-        dplyr::select(dplyr::all_of(col_needed)) |>
-        dplyr::distinct() |>
-        tibble::column_to_rownames(col_key) |>
-        (\(x) x[colnames(mat), , drop = FALSE])()
+    # Build column annotation data frame - one row per unique col_var value
+    col_split_needed <- if (
+        !is.null(col_split_var) && !col_split_var %in% col_covariates
+    ) {
+        col_split_var
+    } else {
+        NULL
+    }
+    row_split_needed <- if (
+        !is.null(row_split_var) && !row_split_var %in% row_covariates
+    ) {
+        row_split_var
+    } else {
+        NULL
+    }
 
-    row_df <- df |>
-        dplyr::select(dplyr::all_of(row_needed)) |>
-        dplyr::distinct() |>
-        tibble::column_to_rownames(row_key) |>
-        (\(x) x[rownames(mat), , drop = FALSE])()
+    col_df_cols <- unique(c(col_covariates, col_split_needed))
+    row_df_cols <- unique(c(row_covariates, row_split_needed))
+
+    if (length(col_df_cols)) {
+        col_df <- df |>
+            dplyr::select(dplyr::all_of(c(col_key, col_df_cols))) |>
+            dplyr::distinct(
+                dplyr::across(dplyr::all_of(col_key)),
+                .keep_all = TRUE
+            ) |>
+            tibble::column_to_rownames(col_key)
+        col_df <- col_df[colnames(mat), , drop = FALSE]
+    } else {
+        col_df <- NULL
+    }
+
+    if (length(row_df_cols)) {
+        row_df <- df |>
+            dplyr::select(dplyr::all_of(c(row_key, row_df_cols))) |>
+            dplyr::distinct(
+                dplyr::across(dplyr::all_of(row_key)),
+                .keep_all = TRUE
+            ) |>
+            tibble::column_to_rownames(row_key)
+        row_df <- row_df[rownames(mat), , drop = FALSE]
+    } else {
+        row_df <- NULL
+    }
 
     # ---------------------------
     # ALIGNMENT CHECKS (hard stops)
     # ---------------------------
-    stopifnot(identical(rownames(row_df), rownames(mat)))
-    stopifnot(identical(rownames(col_df), colnames(mat)))
+    if (!is.null(row_df)) {
+        stopifnot(identical(rownames(row_df), rownames(mat)))
+    }
+    if (!is.null(col_df)) {
+        stopifnot(identical(rownames(col_df), colnames(mat)))
+    }
 
     chk_atomic <- function(x) is.atomic(x) && !is.list(x)
     if (length(row_covariates)) {
@@ -289,44 +378,94 @@ plot_heatmap <- function(
         stopifnot(is.list(anno_colors))
         for (nm in names(anno_colors)) {
             vec <- anno_colors[[nm]]
+            # Allow functions (colorRamp2) for continuous covariates
+            if (is.function(vec)) {
+                next
+            }
             if (length(vec)) {
                 if (is.null(names(vec)) || any(!nzchar(names(vec)))) {
                     stop(
                         "`anno_colors$",
                         nm,
-                        "` must be a *named* character vector of hex colors."
+                        "` must be a *named* character vector of hex colors ",
+                        "or a colorRamp2 function for continuous covariates."
                     )
                 }
             }
         }
     }
 
+    # Helper: is this covariate continuous?
+    is_continuous_cov <- function(v) {
+        usr <- if (!is.null(anno_colors)) anno_colors[[v]] else NULL
+        if (is.function(usr)) {
+            return(TRUE)
+        }
+        # Also treat numeric covariates with no user color spec as continuous
+        val <- c(row_df[[v]], col_df[[v]])
+        val <- val[!is.na(val)]
+        is.numeric(val) && is.null(usr)
+    }
+
+    # ---------- levels per variable (categorical only)
+    var_names <- unique(c(
+        row_covariates %||% character(0),
+        col_covariates %||% character(0)
+    ))
+
+    levels_list <- lapply(var_names, function(v) {
+        if (is_continuous_cov(v)) {
+            return(NULL)
+        }
+        sort(unique(as.character(c(row_df[[v]], col_df[[v]]))))
+    })
+    names(levels_list) <- var_names
+
     # ---------- finalize color maps
     final_colors <- vector("list", length(var_names))
     names(final_colors) <- var_names
     for (i in seq_along(var_names)) {
         v <- var_names[i]
-        lv <- levels_list[[v]]
         usr <- if (!is.null(anno_colors)) anno_colors[[v]] else NULL
 
-        if (is.null(usr)) {
-            final_colors[[v]] <- distinct_default_for_levels(lv, var_index = i)
+        if (is.function(usr)) {
+            # Continuous: pass the colorRamp2 function through directly
+            final_colors[[v]] <- usr
         } else {
-            usr <- usr[intersect(names(usr), lv)]
-            missing <- setdiff(lv, names(usr))
-            if (length(missing)) {
-                add <- distinct_default_for_levels(missing, var_index = i)
-                usr <- c(usr, add)
+            lv <- levels_list[[v]]
+            if (is.null(usr)) {
+                final_colors[[v]] <- distinct_default_for_levels(
+                    lv,
+                    var_index = i
+                )
+            } else {
+                usr <- usr[intersect(names(usr), lv)]
+                missing <- setdiff(lv, names(usr))
+                if (length(missing)) {
+                    add <- distinct_default_for_levels(missing, var_index = i)
+                    usr <- c(usr, add)
+                }
+                final_colors[[v]] <- usr[lv]
             }
-            final_colors[[v]] <- usr[lv]
         }
     }
 
     # ---------- annotations
+    # For continuous covariates, HeatmapAnnotation expects a numeric vector
+    # passed via `df=` arg, NOT via individual named args -- this is fine.
+    # But we must ensure continuous columns are NOT coerced to factor/character.
+
     ha_col <- if (length(col_covariates)) {
+        anno_df <- col_df[, col_covariates, drop = FALSE]
+        # Ensure continuous covariates remain numeric (not factor)
+        for (v in col_covariates) {
+            if (is_continuous_cov(v) && !is.numeric(anno_df[[v]])) {
+                anno_df[[v]] <- as.numeric(as.character(anno_df[[v]]))
+            }
+        }
         ComplexHeatmap::HeatmapAnnotation(
-            df = col_df[, col_covariates, drop = FALSE],
-            col = final_colors,
+            df = anno_df,
+            col = final_colors[col_covariates],
             which = "column"
         )
     } else {
@@ -334,9 +473,16 @@ plot_heatmap <- function(
     }
 
     ha_row <- if (length(row_covariates)) {
+        anno_df <- row_df[, row_covariates, drop = FALSE]
+        # Ensure continuous covariates remain numeric (not factor)
+        for (v in row_covariates) {
+            if (is_continuous_cov(v) && !is.numeric(anno_df[[v]])) {
+                anno_df[[v]] <- as.numeric(as.character(anno_df[[v]]))
+            }
+        }
         ComplexHeatmap::rowAnnotation(
-            df = row_df[, row_covariates, drop = FALSE],
-            col = final_colors
+            df = anno_df,
+            col = final_colors[row_covariates]
         )
     } else {
         NULL
