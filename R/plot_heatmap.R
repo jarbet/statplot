@@ -21,9 +21,16 @@
 #'   columns. Must have \eqn{\geq 2} levels. Default \code{NULL}.
 #' @param heatmap_colors A color mapping passed to
 #'   \code{\link[ComplexHeatmap]{Heatmap}}'s \code{col} argument. Default
-#'   \code{NULL} (uses ComplexHeatmap defaults).
-#' @param anno_colors Named list of named character vectors mapping annotation
-#'   levels to hex colors. Any levels not supplied are auto-colored. Default
+#'   \code{NULL}, in which case a numeric color mapping is automatically
+#'   generated (e.g. via \code{\link[circlize]{colorRamp2}}) rather than using
+#'   ComplexHeatmap's built-in default.
+#' @param anno_colors Named list specifying colors for annotation covariates.
+#'   For discrete (categorical) covariates, each element should be a named
+#'   character vector mapping annotation levels to hex colors; any levels not
+#'   supplied are auto-colored. For continuous (numeric) covariates, each
+#'   element may instead be a function that maps numeric values to colors
+#'   (e.g., a function created by \code{circlize::colorRamp2}), which will be
+#'   applied to the numeric annotation values to generate colors. Default
 #'   \code{NULL}.
 #' @param scale_rows Logical. Whether to z-score scale rows. Default \code{TRUE}.
 #' @param cluster_rows Logical. Whether to cluster rows. Default \code{TRUE}.
@@ -322,14 +329,14 @@ plot_heatmap <- function(
         stopifnot(length(row_split) == nrow(mat))
         stopifnot(!any(is.na(row_split)))
         if (nlevels(row_split) < 2) {
-            stop("`row_split_var` has < 2 levels; no row split will occur.")
+            stop("`row_split_var` must have at least 2 levels to perform row splitting.")
         }
     }
     if (!is.null(col_split)) {
         stopifnot(length(col_split) == ncol(mat))
         stopifnot(!any(is.na(col_split)))
         if (nlevels(col_split) < 2) {
-            stop("`col_split_var` has < 2 levels; no column split will occur.")
+            stop("`col_split_var` must have at least 2 levels to perform column splitting.")
         }
     }
 
