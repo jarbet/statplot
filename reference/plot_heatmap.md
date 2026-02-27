@@ -172,7 +172,7 @@ plot_heatmap(
     row_names_side = "left"
 )
 
-
+# custom colors
 plot_heatmap(
     df = ex_data_heatmap,
     row_var = external_gene_name,
