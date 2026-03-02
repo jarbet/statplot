@@ -18,7 +18,7 @@ plot_heatmap(
   col_split_var = NULL,
   heatmap_colors = NULL,
   anno_colors = NULL,
-  scale_rows = TRUE,
+  scale_rows = FALSE,
   cluster_rows = TRUE,
   cluster_columns = TRUE,
   show_row_names = TRUE,
@@ -94,7 +94,7 @@ plot_heatmap(
 
 - scale_rows:
 
-  Logical. Whether to z-score scale rows. Default `TRUE`.
+  Logical. Whether to z-score scale rows.
 
 - cluster_rows:
 
