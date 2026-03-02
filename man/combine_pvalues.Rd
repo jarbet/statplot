@@ -2,27 +2,23 @@
 % Please edit documentation in R/combine_pvalues.R
 \name{combine_pvalues}
 \alias{combine_pvalues}
-\title{Combine p-values using Fisher, Cauchy (ACAT), or Harmonic Mean methods}
+\title{Combine p-values}
 \usage{
-combine_pvalues(p, method = c("fisher", "cauchy", "hm"))
+combine_pvalues(p)
 }
 \arguments{
 \item{p}{Numeric vector of p-values.}
-
-\item{method}{One of "fisher", "cauchy", or "hm".}
 }
 \value{
 A numeric p-value
 }
 \description{
-Combines a numeric vector of p-values into a single p-value using one of
-three supported methods: "fisher" (poolr::fisher), "cauchy" (ACAT::ACAT),
-or "hm" (harmonicmeanp::p.hmp). NAs are removed and all p-values must be
-strictly between 0 and 1.
+Combines a numeric vector of p-values into a single p-value using a variety of methods.  Note CMC or MCM are recommended by Chen 2022.
 }
 \examples{
 pvals <- c(0.001, 0.005, 0.2)
-combine_pvalues(pvals, "fisher")
-combine_pvalues(pvals, "cauchy")
-combine_pvalues(pvals, "hm")
+combine_pvalues(pvals)
+}
+\references{
+Chen, Z. Robust tests for combining p-values under arbitrary dependency structures. Sci Rep 12, 3158 (2022). https://doi.org/10.1038/s41598-022-07094-7
 }

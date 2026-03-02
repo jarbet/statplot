@@ -1,21 +1,16 @@
-#' Combine p-values using Fisher, Cauchy (ACAT), or Harmonic Mean methods
+#' Combine p-values
 #'
-#' Combines a numeric vector of p-values into a single p-value using one of
-#' three supported methods: "fisher" (poolr::fisher), "cauchy" (ACAT::ACAT),
-#' or "hm" (harmonicmeanp::p.hmp). NAs are removed and all p-values must be
-#' strictly between 0 and 1.
+#' Combines a numeric vector of p-values into a single p-value using a variety of methods.  Note CMC or MCM are recommended by Chen 2022.
 #'
 #' @param p Numeric vector of p-values.
-#' @param method One of "fisher", "cauchy", or "hm".
 #' @return A numeric p-value
 #' @examples
 #' pvals <- c(0.001, 0.005, 0.2)
-#' combine_pvalues(pvals, "fisher")
-#' combine_pvalues(pvals, "cauchy")
-#' combine_pvalues(pvals, "hm")
+#' combine_pvalues(pvals)
+#' @references
+#' Chen, Z. Robust tests for combining p-values under arbitrary dependency structures. Sci Rep 12, 3158 (2022). https://doi.org/10.1038/s41598-022-07094-7
 #' @export
-combine_pvalues <- function(p, method = c("fisher", "cauchy", "hm")) {
-    method <- match.arg(method)
+combine_pvalues <- function(p) {
     if (!is.numeric(p)) {
         stop("p must be numeric")
     }
@@ -25,12 +20,27 @@ combine_pvalues <- function(p, method = c("fisher", "cauchy", "hm")) {
     }
     stopifnot(all(p > 0 & p < 1))
 
-    pval <- switch(
-        method,
-        fisher = as.numeric(poolr::fisher(p = p)$p),
-        cauchy = as.numeric(ACAT::ACAT(Pvals = p)),
-        hm = as.numeric(harmonicmeanp::p.hmp(p = p, L = length(p)))
-    )
+    n <- length(p)
 
-    as.numeric(pmin(pmax(pval, 0), 1))
+    fisher <- as.numeric(poolr::fisher(p = p)$p)
+
+    # https://github.com/zchen2020/Robust-P-value-combination-tests/blob/main/R%20code%20for%20all.R
+    cauchy <- 0.5 - atan(mean(tan((0.5 - p) * pi))) / pi
+    minp_bonferroni <- min(1, n * min(p))
+    mcm <- min(1, 2 * min(cauchy, minp_bonferroni))
+    cmc <- 0.5 -
+        atan(mean(c(
+            tan((0.5 - cauchy) * pi),
+            tan((0.5 - minp_bonferroni) * pi)
+        ))) /
+            pi
+
+    combined_pvalues <- c(
+        fisher = fisher,
+        CMC = cmc,
+        MCM = mcm,
+        cauchy = cauchy,
+        minp_bonferroni = minp_bonferroni
+    )
+    return(combined_pvalues)
 }

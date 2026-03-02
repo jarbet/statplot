@@ -3,6 +3,7 @@
 ## Added
 
 * `plot_heatmap`
+    + By default, white gridlines around cells
 * `quarto_html_tabset_list`: convert a named list object to a tabset when knitting to HTML
 * `format_pvalue`: function to format pvalues to display in plots
 * `combine_pvalues` function to combine pvalues to produce a single overall pvalue. 3 methods are supported: Fisher, Cauchy, and Harmonic Mean
