@@ -1,5 +1,3 @@
-library(testthat)
-
 test_that("input validation errors", {
     expect_error(combine_pvalues("not numeric"), "p must be numeric")
     expect_error(combine_pvalues(c(NA_real_)), "no p-values after removing NA")
