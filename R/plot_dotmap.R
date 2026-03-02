@@ -19,7 +19,7 @@
 #' @param legend_dotsize_title Character; title for the dot-size legend
 #' @param add_combined_pvalue_barplot Logical; when TRUE adds a combined p-value barplot to the right of the dotmap
 #' @param combined_qvalue if TRUE then the combined pvalue barplot will show q-values instead of p-values (only applies if add_combined_pvalue_barplot = TRUE)
-#' @param combine_pvalue_method Character; method for combining p-values in the barplot ("fisher", "cauchy", or "hm")
+#' @param combine_pvalue_method Character; method for combining p-values in the barplot: one of c("fisher", "CMC", "MCM", "cauchy", "minp_bonferroni")
 #' @param patchwork_widths Numeric(2); widths passed to patchwork::plot_layout when adding the combined p-value barplot (default c(3, 1))
 #'
 #' @return A ggplot2::ggplot object when \code{add_combined_pvalue_barplot = FALSE},
@@ -45,7 +45,7 @@
 #'   p = "p",
 #'   mlog10_transform_pvalue = TRUE,
 #'   add_combined_pvalue_barplot = TRUE,
-#'   combine_pvalue_method = "fisher", # can also use "cauchy" or "hm" methods for combining potentially correlated p-values
+#'   combine_pvalue_method = "CMC",
 #'   combined_qvalue = FALSE # set to TRUE to show q-values instead of p-values in the combined barplot (only applies if add_combined_pvalue_barplot = TRUE)
 #'   )
 #'
@@ -69,7 +69,13 @@ plot_dotmap <- function(
     legend_dotsize_title = expression(bold("Effect size")), # new: label for the dot-size legend
     add_combined_pvalue_barplot = FALSE, # NEW: add combined p-value barplot to the right
     combined_qvalue = FALSE,
-    combine_pvalue_method = c("fisher", "cauchy", "hm"),
+    combine_pvalue_method = c(
+        "CMC",
+        "fisher",
+        "MCM",
+        "cauchy",
+        "minp_bonferroni"
+    ),
     patchwork_widths = c(3, 1) # NEW: widths for patchwork layout when combined plot is requested
 ) {
     combine_pvalue_method <- match.arg(combine_pvalue_method)
@@ -352,7 +358,7 @@ plot_dotmap <- function(
                     if (length(pv) == 0) {
                         NA_real_
                     } else {
-                        combine_pvalues(pv, method = combine_pvalue_method)
+                        combine_pvalues(pv)[combine_pvalue_method]
                     }
                 },
                 .groups = "drop"
