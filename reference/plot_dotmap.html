@@ -59,7 +59,7 @@ direction) and a p-value (tile fill). The function returns a ggplot object.</p>
 <span>  legend_dotsize_title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="fu">bold</span><span class="op">(</span><span class="st">"Effect size"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  add_combined_pvalue_barplot <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  combined_qvalue <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  combine_pvalue_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fisher"</span>, <span class="st">"cauchy"</span>, <span class="st">"hm"</span><span class="op">)</span>,</span>
+<span>  combine_pvalue_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CMC"</span>, <span class="st">"fisher"</span>, <span class="st">"MCM"</span>, <span class="st">"cauchy"</span>, <span class="st">"minp_bonferroni"</span><span class="op">)</span>,</span>
 <span>  patchwork_widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -133,7 +133,7 @@ direction) and a p-value (tile fill). The function returns a ggplot object.</p>
 
 
 <dt id="arg-combine-pvalue-method">combine_pvalue_method<a class="anchor" aria-label="anchor" href="#arg-combine-pvalue-method"></a></dt>
-<dd><p>Character; method for combining p-values in the barplot ("fisher", "cauchy", or "hm")</p></dd>
+<dd><p>Character; method for combining p-values in the barplot: one of c("fisher", "CMC", "MCM", "cauchy", "minp_bonferroni")</p></dd>
 
 
 <dt id="arg-patchwork-widths">patchwork_widths<a class="anchor" aria-label="anchor" href="#arg-patchwork-widths"></a></dt>
@@ -174,7 +174,7 @@ or a patchwork composition object (from <code>patchwork</code>) when
 <span class="r-in"><span>  p <span class="op">=</span> <span class="st">"p"</span>,</span></span>
 <span class="r-in"><span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  add_combined_pvalue_barplot <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>  combine_pvalue_method <span class="op">=</span> <span class="st">"fisher"</span>, <span class="co"># can also use "cauchy" or "hm" methods for combining potentially correlated p-values</span></span></span>
+<span class="r-in"><span>  combine_pvalue_method <span class="op">=</span> <span class="st">"CMC"</span>,</span></span>
 <span class="r-in"><span>  combined_qvalue <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># set to TRUE to show q-values instead of p-values in the combined barplot (only applies if add_combined_pvalue_barplot = TRUE)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">size</span> is already present.</span>

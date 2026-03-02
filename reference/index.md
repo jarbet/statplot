@@ -3,8 +3,7 @@
 ## All functions
 
 - [`combine_pvalues()`](https://statgencore.github.io/statplot/reference/combine_pvalues.md)
-  : Combine p-values using Fisher, Cauchy (ACAT), or Harmonic Mean
-  methods
+  : Combine p-values
 - [`comma()`](https://statgencore.github.io/statplot/reference/comma.md)
   : Format numbers with comma as thousands separator
 - [`ex_data_heatmap`](https://statgencore.github.io/statplot/reference/ex_data_heatmap.md)

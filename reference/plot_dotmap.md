@@ -24,7 +24,7 @@ plot_dotmap(
   legend_dotsize_title = expression(bold("Effect size")),
   add_combined_pvalue_barplot = FALSE,
   combined_qvalue = FALSE,
-  combine_pvalue_method = c("fisher", "cauchy", "hm"),
+  combine_pvalue_method = c("CMC", "fisher", "MCM", "cauchy", "minp_bonferroni"),
   patchwork_widths = c(3, 1)
 )
 ```
@@ -103,8 +103,8 @@ plot_dotmap(
 
 - combine_pvalue_method:
 
-  Character; method for combining p-values in the barplot ("fisher",
-  "cauchy", or "hm")
+  Character; method for combining p-values in the barplot: one of
+  c("fisher", "CMC", "MCM", "cauchy", "minp_bonferroni")
 
 - patchwork_widths:
 
@@ -145,7 +145,7 @@ plot_dotmap(
   p = "p",
   mlog10_transform_pvalue = TRUE,
   add_combined_pvalue_barplot = TRUE,
-  combine_pvalue_method = "fisher", # can also use "cauchy" or "hm" methods for combining potentially correlated p-values
+  combine_pvalue_method = "CMC",
   combined_qvalue = FALSE # set to TRUE to show q-values instead of p-values in the combined barplot (only applies if add_combined_pvalue_barplot = TRUE)
   )
 #> Scale for size is already present.
