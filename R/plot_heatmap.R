@@ -41,6 +41,12 @@
 #' @param return_details Logical. If \code{TRUE}, returns a list with the drawn
 #'   heatmap object, final annotation colors, and levels. Default \code{FALSE}.
 #' @param heatmap_legend_title Character. Title for the heatmap legend
+#' @param rect_gp A grid::gpar object of graphical parameters for heatmap cells
+#'   (passed through to ComplexHeatmap::Heatmap's \code{rect_gp} argument).
+#'   Use it to control cell borders and lines (e.g. \code{col}, \code{lwd},
+#'   \code{lty}) or fill behavior. Default:
+#'   \code{grid::gpar(col = "white", lwd = 1)}. To hide borders use
+#'   \code{rect_gp = grid::gpar(col = NA)}.
 #' @param ... Additional arguments passed to
 #'   \code{\link[ComplexHeatmap]{Heatmap}}.
 #'
@@ -161,6 +167,7 @@ plot_heatmap <- function(
     show_column_names = TRUE,
     return_details = FALSE,
     heatmap_legend_title = 'Value',
+    rect_gp = grid::gpar(col = "white", lwd = 1),
     ...
 ) {
     # --- mapping names
@@ -507,6 +514,7 @@ plot_heatmap <- function(
         row_names_side = row_names_side,
         show_column_names = show_column_names,
         top_annotation = ha_col,
+        rect_gp = rect_gp,
         ...
     )
     if (!is.null(ha_row)) {

@@ -23,6 +23,7 @@ plot_heatmap(
   show_column_names = TRUE,
   return_details = FALSE,
   heatmap_legend_title = "Value",
+  rect_gp = grid::gpar(col = "white", lwd = 1),
   ...
 )
 }
@@ -81,6 +82,13 @@ applied to the numeric annotation values to generate colors. Default
 heatmap object, final annotation colors, and levels. Default \code{FALSE}.}
 
 \item{heatmap_legend_title}{Character. Title for the heatmap legend}
+
+\item{rect_gp}{A grid::gpar object of graphical parameters for heatmap cells
+(passed through to ComplexHeatmap::Heatmap's \code{rect_gp} argument).
+Use it to control cell borders and lines (e.g. \code{col}, \code{lwd},
+\code{lty}) or fill behavior. Default:
+\code{grid::gpar(col = "white", lwd = 1)}. To hide borders use
+\code{rect_gp = grid::gpar(col = NA)}.}
 
 \item{...}{Additional arguments passed to
 \code{\link[ComplexHeatmap]{Heatmap}}.}
