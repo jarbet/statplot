@@ -15,7 +15,7 @@ plot_heatmap(
   col_split_var = NULL,
   heatmap_colors = NULL,
   anno_colors = NULL,
-  scale_rows = TRUE,
+  scale_rows = FALSE,
   cluster_rows = TRUE,
   cluster_columns = TRUE,
   show_row_names = TRUE,
@@ -65,7 +65,7 @@ element may instead be a function that maps numeric values to colors
 applied to the numeric annotation values to generate colors. Default
 \code{NULL}.}
 
-\item{scale_rows}{Logical. Whether to z-score scale rows. Default \code{TRUE}.}
+\item{scale_rows}{Logical. Whether to z-score scale rows.}
 
 \item{cluster_rows}{Logical. Whether to cluster rows. Default \code{TRUE}.}
 
