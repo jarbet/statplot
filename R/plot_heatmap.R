@@ -32,7 +32,7 @@
 #'   (e.g., a function created by \code{circlize::colorRamp2}), which will be
 #'   applied to the numeric annotation values to generate colors. Default
 #'   \code{NULL}.
-#' @param scale_rows Logical. Whether to z-score scale rows. Default \code{TRUE}.
+#' @param scale_rows Logical. Whether to z-score scale rows.
 #' @param cluster_rows Logical. Whether to cluster rows. Default \code{TRUE}.
 #' @param cluster_columns Logical. Whether to cluster columns. Default \code{TRUE}.
 #' @param show_row_names Logical. Default \code{TRUE}.
@@ -153,7 +153,7 @@ plot_heatmap <- function(
     col_split_var = NULL,
     heatmap_colors = NULL,
     anno_colors = NULL,
-    scale_rows = TRUE,
+    scale_rows = FALSE,
     cluster_rows = TRUE,
     cluster_columns = TRUE,
     show_row_names = TRUE,
