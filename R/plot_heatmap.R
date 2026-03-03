@@ -317,38 +317,6 @@ plot_heatmap <- function(
         mat[is.na(mat)] <- 0
     }
 
-    # -- annotation colors ----------------------------------------------------
-    make_anno_colors <- function(meta, user_colors = NULL) {
-        if (is.null(meta)) {
-            return(NULL)
-        }
-        col_list <- list()
-        for (nm in colnames(meta)) {
-            if (!is.null(user_colors) && nm %in% names(user_colors)) {
-                col_list[[nm]] <- user_colors[[nm]]
-            } else {
-                vals <- meta[[nm]]
-                if (is.function(vals)) {
-                    col_list[[nm]] <- vals
-                } else if (is.numeric(vals) && !all(is.na(vals))) {
-                    rng <- range(vals, na.rm = TRUE)
-                    col_list[[nm]] <- circlize::colorRamp2(
-                        c(rng[1], mean(rng), rng[2]),
-                        c("#f7fbff", "#6baed6", "#08306b")
-                    )
-                } else {
-                    lvls <- unique(vals)
-                    lvls <- lvls[!is.na(lvls)]
-                    col_list[[nm]] <- stats::setNames(
-                        grDevices::hcl.colors(length(lvls), palette = "Dark 2"),
-                        lvls
-                    )
-                }
-            }
-        }
-        col_list
-    }
-
     # Recompute heatmap color scale AFTER scaling so breakpoints match the matrix
     if (is.null(heatmap_colors)) {
         if (value_is_numeric) {
