@@ -18,7 +18,10 @@ plot_pvalue_barplot(
   vline_linetype = "dashed",
   vline_color = "red",
   show_y_labels = FALSE,
-  mlog10_transform_pvalue = FALSE
+  mlog10_transform_pvalue = FALSE,
+  also_show_qvalue = TRUE,
+  color_qvalue = "black",
+  color_pvalue = ifelse(also_show_qvalue, "grey", "black")
 )
 }
 \arguments{
@@ -49,6 +52,14 @@ plot_pvalue_barplot(
 \item{show_y_labels}{Logical, whether to show y-axis labels (default FALSE).}
 
 \item{mlog10_transform_pvalue}{Logical; when TRUE compute -log10(p) for plotting/order.}
+
+\item{also_show_qvalue}{Logical; when TRUE compute FDR-adjusted q-values (Benjamini-Hochberg)
+and draw two overlapping bars per row: the q-value bar (black) on top of the p-value bar (darkgrey).
+When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars.}
+
+\item{color_qvalue}{Character, color for q-value bars when also_show_qvalue = TRUE.}
+
+\item{color_pvalue}{Character, color for p-value bars when also_show_qvalue}
 }
 \value{
 A ggplot2 object.
@@ -75,6 +86,7 @@ plot_pvalue_barplot(
   y = "cell_line",
   fill = NULL,
   mlog10_transform_pvalue = TRUE,
-  show_y_labels = TRUE
+  show_y_labels = TRUE,
+  also_show_qvalue = TRUE
 )
 }
