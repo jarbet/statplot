@@ -3,7 +3,7 @@
 #' Combines a numeric vector of p-values into a single p-value using a variety of methods.  Note CMC or MCM are recommended by Chen 2022.
 #'
 #' @param p Numeric vector of p-values.
-#' @return a named vector of combined p-values for each method
+#' @return A named vector of combined p-values for each method
 #' @examples
 #' pvals <- c(0.001, 0.005, 0.2)
 #' combine_pvalues(pvals)

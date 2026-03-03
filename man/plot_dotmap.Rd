@@ -20,8 +20,8 @@ plot_dotmap(
   legend_pvalue_title = NULL,
   legend_dotsize_title = expression(bold("Effect size")),
   add_combined_pvalue_barplot = FALSE,
-  combined_qvalue = FALSE,
   combine_pvalue_method = c("CMC", "fisher", "MCM", "cauchy", "minp_bonferroni"),
+  ...,
   patchwork_widths = c(3, 1)
 )
 }
@@ -38,38 +38,47 @@ plot_dotmap(
 
 \item{dot_size_vals}{Numeric vector of reference effect values used for the size legend (signed to indicate direction)}
 
-\item{dot_size_labels}{Character vector of labels for the size legend}
+\item{dot_size_labels}{Character vector of labels for the size legend; must have same length as \code{dot_size_vals}}
 
 \item{dot_range}{Numeric(2) range of point sizes (min, max)}
 
-\item{palette}{Named character vector with elements "positive" and "negative" specifying dot colors}
+\item{palette}{Named character vector with elements "positive" and "negative" specifying dot fill colours for positive/negative effects}
 
 \item{xlab_angle}{Numeric angle to rotate x-axis labels (degrees)}
 
 \item{mlog10_transform_pvalue}{Logical; when TRUE the fill uses -log10(p) instead of raw p}
 
-\item{fill_limits}{Numeric(2) or NULL; limits for the fill scale}
+\item{fill_limits}{Numeric(2) or NULL; limits for the fill scale (c(min, max)). If NULL a sensible default is used (c(0,3) for -log10(p) or c(0,1) for raw p)}
 
-\item{legend_pvalue_title}{Character or NULL; override title for p-value/color legend}
+\item{legend_pvalue_title}{Character or expression or NULL; override title for the p-value (tile fill) legend. If NULL an automatic title is used.}
 
-\item{legend_dotsize_title}{Character; title for the dot-size legend}
+\item{legend_dotsize_title}{Character or expression; title for the dot-size legend}
 
-\item{add_combined_pvalue_barplot}{Logical; when TRUE adds a combined p-value barplot to the right of the dotmap}
+\item{add_combined_pvalue_barplot}{Logical; when TRUE adds a combined p-value barplot to the right of the dotmap (requires \pkg{patchwork})}
 
-\item{combined_qvalue}{if TRUE then the combined pvalue barplot will show q-values instead of p-values (only applies if add_combined_pvalue_barplot = TRUE)}
+\item{combine_pvalue_method}{Character; method for combining p-values in the barplot. One of: "CMC", "fisher", "MCM", "cauchy", "minp_bonferroni". Defaults to "CMC".}
 
-\item{combine_pvalue_method}{Character; method for combining p-values in the barplot: one of c("fisher", "CMC", "MCM", "cauchy", "minp_bonferroni")}
+\item{...}{Additional arguments passed on to \code{plot_pvalue_barplot()} when \code{add_combined_pvalue_barplot = TRUE}}
 
-\item{patchwork_widths}{Numeric(2); widths passed to patchwork::plot_layout when adding the combined p-value barplot (default c(3, 1))}
+\item{patchwork_widths}{Numeric(2); widths passed to \pkg{patchwork}::\code{wrap_plots()} when adding the combined p-value barplot (default c(3, 1))}
 }
 \value{
-A ggplot2::ggplot object when \code{add_combined_pvalue_barplot = FALSE},
-or a patchwork composition object (from \code{patchwork}) when
+A \code{ggplot2}::\code{ggplot} object when \code{add_combined_pvalue_barplot = FALSE},
+or a \pkg{patchwork} composition object (from \pkg{patchwork}) when
 \code{add_combined_pvalue_barplot = TRUE}.
 }
 \description{
 A combined tile + point "dotmap" that visualizes an effect (size and
-direction) and a p-value (tile fill). The function returns a ggplot object.
+direction) and a p-value (tile fill). The function returns a ggplot object
+or a patchwork composition when a combined p-value barplot is requested.
+}
+\details{
+The tile fill encodes p-values (optionally transformed as -log10(p)), while
+the overplotted points encode effect size (size) and direction (fill color).
+NA values for \code{effect} are marked with an "×" symbol. When a combined
+p-value barplot is requested the function groups by \code{y} and computes the
+combined p-value using \code{combine_pvalues()}; the combined panel is aligned
+vertically with the main dotmap.
 }
 \examples{
 set.seed(42)
@@ -90,9 +99,11 @@ plot_dotmap(
   p = "p",
   mlog10_transform_pvalue = TRUE,
   add_combined_pvalue_barplot = TRUE,
-  combine_pvalue_method = "CMC",
-  combined_qvalue = FALSE # set to TRUE to show q-values instead of p-values in the combined barplot (only applies if add_combined_pvalue_barplot = TRUE)
+  combine_pvalue_method = "CMC"
   )
 
 
+}
+\seealso{
+plot_pvalue_barplot, combine_pvalues
 }
