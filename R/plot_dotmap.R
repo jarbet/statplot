@@ -307,9 +307,12 @@ plot_dotmap <- function(
         ggplot2::theme(
             axis.text.x = ggplot2::element_text(
                 angle = xlab_angle,
-                vjust = 0.5,
-                hjust = 0.5, # center-align (also when rotated), for top axis
-                margin = ggplot2::margin(t = -6, b = 0)
+                vjust = ifelse(xlab_angle == 0, 0.5, 1),
+                hjust = ifelse(xlab_angle == 0, 0.5, 0), # center when horizontal, left-align when rotated (top axis)
+                margin = ggplot2::margin(
+                    t = ifelse(xlab_angle == 0, 0, -6),
+                    b = 0
+                )
             )
         )
 
