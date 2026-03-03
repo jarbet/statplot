@@ -179,12 +179,12 @@ plot_heatmap <- function(
     stopifnot(is.data.frame(df))
     stopifnot(all(c(row_key, col_key, val_key) %in% names(df)))
 
-    if (!is.numeric(df[[val_key]])) {
-        stop(
-            "`value_var` must be numeric; got class: ",
-            paste(class(df[[val_key]]), collapse = "/")
-        )
-    }
+    # if (!is.numeric(df[[val_key]])) {
+    #     stop(
+    #         "`value_var` must be numeric; got class: ",
+    #         paste(class(df[[val_key]]), collapse = "/")
+    #     )
+    # }
 
     if (all(is.na(df[[val_key]]))) {
         stop("All values in `value_var` are NA.")
