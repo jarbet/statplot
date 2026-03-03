@@ -10,7 +10,7 @@ combine_pvalues(p)
 \item{p}{Numeric vector of p-values.}
 }
 \value{
-a named vector of combined p-values for each method
+A named vector of combined p-values for each method
 }
 \description{
 Combines a numeric vector of p-values into a single p-value using a variety of methods.  Note CMC or MCM are recommended by Chen 2022.

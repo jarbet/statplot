@@ -59,7 +59,7 @@ When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars
 
 \item{color_qvalue}{Character, color for q-value bars when also_show_qvalue = TRUE.}
 
-\item{color_pvalue}{Character, color for p-value bars when also_show_qvalue}
+\item{color_pvalue}{Character, color for p-value bars when also_show_qvalue = TRUE.}
 }
 \value{
 A ggplot2 object.

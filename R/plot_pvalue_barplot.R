@@ -21,7 +21,7 @@
 #'   and draw two overlapping bars per row: the q-value bar (black) on top of the p-value bar (darkgrey).
 #'   When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars.
 #' @param color_qvalue Character, color for q-value bars when also_show_qvalue = TRUE.
-#' @param color_pvalue Character, color for p-value bars when also_show_qvalue
+#' @param color_pvalue Character, color for p-value bars when also_show_qvalue = TRUE.
 #' @return A ggplot2 object.
 #' @examples
 #' set.seed(123)
@@ -98,6 +98,9 @@ plot_pvalue_barplot <- function(
         stopifnot(all(is.finite(data[[x]])))
         stopifnot(all(data[[x]] > 0))
     }
+    stopifnot(is.character(color_qvalue), length(color_qvalue) == 1)
+    stopifnot(is.character(color_pvalue), length(color_pvalue) == 1)
+    stopifnot(is.logical(also_show_qvalue), length(also_show_qvalue) == 1)
     # ---- end checks ----
 
     # Dependencies: ggplot2, rlang, stats
