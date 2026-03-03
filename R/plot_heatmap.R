@@ -310,8 +310,14 @@ plot_heatmap <- function(
     }
 
     # -- scale rows -----------------------------------------------------------
-    # Optional row scaling
+    # Optional row scaling (numeric matrices only)
     if (scale_rows) {
+        if (!value_is_numeric) {
+            stop(
+                "scale_rows = TRUE requires a numeric value_var; got class: ",
+                paste(class(df[[val_key]]), collapse = "/")
+            )
+        }
         mat <- t(scale(t(mat)))
         mat[is.na(mat)] <- 0
     }
