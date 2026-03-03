@@ -300,7 +300,6 @@ plot_heatmap <- function(
         as.matrix()
 
     # -- convert matrix to correct type ---------------------------------------
-    mat <- as.matrix(mat)
     # Use mode() rather than is.numeric() to robustly detect numeric storage
     value_is_numeric <- mode(mat) == "numeric"
 
