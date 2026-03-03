@@ -147,6 +147,55 @@
 #'     row_names_side = "left",
 #'     heatmap_legend_title = "Expression"
 #' )
+#' ##### make a categorical heatmap
+#' cat_data <- ex_data_heatmap
+#' cat_data$expression <- as.character(cut(
+#'     cat_data$expression,
+#'     breaks = c(-Inf, 3, 6, Inf),
+#'     labels = c("low", "medium", "high")
+#' ))
+#'
+#'
+#' # default colors
+#' plot_heatmap(
+#'     df = cat_data,
+#'     row_var = external_gene_name,
+#'     col_var = sample,
+#'     value_var = expression,
+#'     row_covariates = c("is_immune_gene", "direction"),
+#'     col_covariates = c("sample_type", "condition", "group"),
+#'     row_split_var = "direction", # up vs down (2 slices)
+#'     col_split_var = "group", # G1 vs G2 (2 slices)
+#'     scale_rows = FALSE,
+#'     cluster_rows = TRUE,
+#'     cluster_columns = TRUE,
+#'     return_details = TRUE,
+#'     row_names_side = "left"
+#' )
+#'
+#' # custom colors
+#' heat_cat_colors <- c(
+#'     low = "#313695",
+#'     medium = "#f7f7f7",
+#'     high = "#a50026"
+#' )
+#'
+#' plot_heatmap(
+#'     df = cat_data,
+#'     row_var = external_gene_name,
+#'     col_var = sample,
+#'     heatmap_colors = heat_cat_colors,
+#'     value_var = expression,
+#'     row_covariates = c("is_immune_gene", "direction"),
+#'     col_covariates = c("sample_type", "condition", "group"),
+#'     row_split_var = "direction", # up vs down (2 slices)
+#'     col_split_var = "group", # G1 vs G2 (2 slices)
+#'     scale_rows = FALSE,
+#'     cluster_rows = TRUE,
+#'     cluster_columns = TRUE,
+#'     return_details = TRUE,
+#'     row_names_side = "left"
+#' )
 #' @export
 plot_heatmap <- function(
     df,
@@ -201,26 +250,53 @@ plot_heatmap <- function(
         tibble::column_to_rownames(row_key) |>
         as.matrix()
 
+    # -- convert matrix to correct type ---------------------------------------
+    # Use mode() rather than is.numeric() to robustly detect numeric storage
+    value_is_numeric <- mode(mat) == "numeric"
+
     if (nrow(mat) == 0L || ncol(mat) == 0L) {
         stop(
             "After pivoting, the matrix has zero rows or columns. Check your keys and data."
         )
     }
 
-    # Optional row scaling
+    # -- scale rows -----------------------------------------------------------
+    # Optional row scaling (numeric matrices only)
     if (scale_rows) {
+        if (!value_is_numeric) {
+            stop(
+                "scale_rows = TRUE requires a numeric value_var; got class: ",
+                paste(class(df[[val_key]]), collapse = "/")
+            )
+        }
         mat <- t(scale(t(mat)))
         mat[is.na(mat)] <- 0
     }
 
     # Recompute heatmap color scale AFTER scaling so breakpoints match the matrix
     if (is.null(heatmap_colors)) {
-        rng <- range(mat, na.rm = TRUE)
-        mid <- mean(rng)
-        heatmap_colors <- circlize::colorRamp2(
-            c(rng[1], mid, rng[2]),
-            c("#313695", "#f7f7f7", "#a50026")
+        if (value_is_numeric) {
+            rng <- range(mat, na.rm = TRUE)
+            heatmap_colors <- circlize::colorRamp2(
+                c(rng[1], mean(rng), rng[2]),
+                c("#145afc", "white", "#ee4445")
+            )
+        } else {
+            # character / factor  → discrete color mapping
+            lvls <- unique(as.vector(mat))
+            lvls <- lvls[!is.na(lvls)]
+            pal <- grDevices::hcl.colors(length(lvls), palette = "Dark 2")
+            heatmap_colors <- stats::setNames(pal, lvls)
+        }
+    } else if (is.function(heatmap_colors) && !value_is_numeric) {
+        warning(
+            "heatmap_colors is a colorRamp2 function but value_var is not numeric. ",
+            "Switching to discrete colors."
         )
+        lvls <- unique(as.vector(mat))
+        lvls <- lvls[!is.na(lvls)]
+        pal <- grDevices::hcl.colors(length(lvls), palette = "Dark 2")
+        heatmap_colors <- stats::setNames(pal, lvls)
     }
 
     if (isTRUE(cluster_rows) && nrow(mat) < 2) {

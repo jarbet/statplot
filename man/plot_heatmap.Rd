@@ -196,4 +196,53 @@ plot_heatmap(
     row_names_side = "left",
     heatmap_legend_title = "Expression"
 )
+##### make a categorical heatmap
+cat_data <- ex_data_heatmap
+cat_data$expression <- as.character(cut(
+    cat_data$expression,
+    breaks = c(-Inf, 3, 6, Inf),
+    labels = c("low", "medium", "high")
+))
+
+
+# default colors
+plot_heatmap(
+    df = cat_data,
+    row_var = external_gene_name,
+    col_var = sample,
+    value_var = expression,
+    row_covariates = c("is_immune_gene", "direction"),
+    col_covariates = c("sample_type", "condition", "group"),
+    row_split_var = "direction", # up vs down (2 slices)
+    col_split_var = "group", # G1 vs G2 (2 slices)
+    scale_rows = FALSE,
+    cluster_rows = TRUE,
+    cluster_columns = TRUE,
+    return_details = TRUE,
+    row_names_side = "left"
+)
+
+# custom colors
+heat_cat_colors <- c(
+    low = "#313695",
+    medium = "#f7f7f7",
+    high = "#a50026"
+)
+
+plot_heatmap(
+    df = cat_data,
+    row_var = external_gene_name,
+    col_var = sample,
+    heatmap_colors = heat_cat_colors,
+    value_var = expression,
+    row_covariates = c("is_immune_gene", "direction"),
+    col_covariates = c("sample_type", "condition", "group"),
+    row_split_var = "direction", # up vs down (2 slices)
+    col_split_var = "group", # G1 vs G2 (2 slices)
+    scale_rows = FALSE,
+    cluster_rows = TRUE,
+    cluster_columns = TRUE,
+    return_details = TRUE,
+    row_names_side = "left"
+)
 }
