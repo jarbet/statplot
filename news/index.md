@@ -13,6 +13,7 @@
   overall pvalue
   - Updated methods for contemporary best practices
 - `plot_pvalue_barplot`: horizontal barplot of pvalues
+  - By default now shows both pvalues and qvalues stacked
 - `plot_dotmap`: plot heatmap of effect sizes (dots) with cells shaded
   by pvalue
   - option to add combined pvalue barplot on the right
@@ -22,8 +23,6 @@
   - show an x symbol if dot is missing
 
 ### Changed
-
-- …
 
 ### Fixed
 
