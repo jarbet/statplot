@@ -299,6 +299,15 @@ plot_pvalue_barplot <- function(
             breaks = xbreaks,
             labels = x_label_fun,
             oob = scales::squish
+        ) + # add extra right padding so the barplot has more white space on the right
+        ggplot2::theme(
+            plot.margin = ggplot2::margin(
+                t = 5.5,
+                r = 30,
+                b = 5.5,
+                l = 5.5,
+                unit = "pt"
+            )
         )
 
     p

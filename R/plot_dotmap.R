@@ -403,18 +403,7 @@ plot_dotmap <- function(
             ggplot2::theme(
                 axis.text.y = ggplot2::element_blank(),
                 axis.ticks.y = ggplot2::element_blank()
-            ) +
-            # add extra right padding so the barplot has more white space on the right
-            ggplot2::theme(
-                plot.margin = ggplot2::margin(
-                    t = 5.5,
-                    r = 30,
-                    b = 5.5,
-                    l = 5.5,
-                    unit = "pt"
-                )
             )
-
         combined <- patchwork::wrap_plots(
             p_obj,
             p_comb,
