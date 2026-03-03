@@ -271,12 +271,20 @@ plot_heatmap(
 )
 
 
-# custom colors
+# custom colors and clustering
 heat_cat_colors <- c(
     low = "#313695",
     medium = "#f7f7f7",
     high = "#a50026"
 )
+
+
+clust_dist_gower <- function(x) {
+   # x is the matrix supplied by Heatmap; convert to factors if needed
+   df <- as.data.frame(x)
+   df[] <- lapply(df, factor)
+   stats::as.dist(cluster::daisy(df, metric = "gower"))
+}
 
 plot_heatmap(
     df = cat_data,
@@ -292,6 +300,8 @@ plot_heatmap(
     cluster_rows = TRUE,
     cluster_columns = TRUE,
     return_details = TRUE,
-    row_names_side = "left"
+    row_names_side = "left",
+    clustering_distance_rows = clust_dist_gower,
+    clustering_distance_columns = clust_dist_gower
 )
 ```
