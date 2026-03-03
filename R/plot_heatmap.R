@@ -251,7 +251,6 @@ plot_heatmap <- function(
         as.matrix()
 
     # -- convert matrix to correct type ---------------------------------------
-    mat <- as.matrix(mat)
     # Use mode() rather than is.numeric() to robustly detect numeric storage
     value_is_numeric <- mode(mat) == "numeric"
 
@@ -262,42 +261,16 @@ plot_heatmap <- function(
     }
 
     # -- scale rows -----------------------------------------------------------
-    # Optional row scaling
+    # Optional row scaling (numeric matrices only)
     if (scale_rows) {
+        if (!value_is_numeric) {
+            stop(
+                "scale_rows = TRUE requires a numeric value_var; got class: ",
+                paste(class(df[[val_key]]), collapse = "/")
+            )
+        }
         mat <- t(scale(t(mat)))
         mat[is.na(mat)] <- 0
-    }
-
-    # -- annotation colors ----------------------------------------------------
-    make_anno_colors <- function(meta, user_colors = NULL) {
-        if (is.null(meta)) {
-            return(NULL)
-        }
-        col_list <- list()
-        for (nm in colnames(meta)) {
-            if (!is.null(user_colors) && nm %in% names(user_colors)) {
-                col_list[[nm]] <- user_colors[[nm]]
-            } else {
-                vals <- meta[[nm]]
-                if (is.function(vals)) {
-                    col_list[[nm]] <- vals
-                } else if (is.numeric(vals) && !all(is.na(vals))) {
-                    rng <- range(vals, na.rm = TRUE)
-                    col_list[[nm]] <- circlize::colorRamp2(
-                        c(rng[1], mean(rng), rng[2]),
-                        c("#f7fbff", "#6baed6", "#08306b")
-                    )
-                } else {
-                    lvls <- unique(vals)
-                    lvls <- lvls[!is.na(lvls)]
-                    col_list[[nm]] <- stats::setNames(
-                        grDevices::hcl.colors(length(lvls), palette = "Dark 2"),
-                        lvls
-                    )
-                }
-            }
-        }
-        col_list
     }
 
     # Recompute heatmap color scale AFTER scaling so breakpoints match the matrix
