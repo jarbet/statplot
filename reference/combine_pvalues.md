@@ -17,7 +17,7 @@ combine_pvalues(p)
 
 ## Value
 
-A numeric p-value
+A named vector of combined p-values for each method
 
 ## References
 

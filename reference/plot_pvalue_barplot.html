@@ -56,7 +56,10 @@ optional significance vertical line and optional fill mapping.</p>
 <span>  vline_linetype <span class="op">=</span> <span class="st">"dashed"</span>,</span>
 <span>  vline_color <span class="op">=</span> <span class="st">"red"</span>,</span>
 <span>  show_y_labels <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  also_show_qvalue <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  color_qvalue <span class="op">=</span> <span class="st">"black"</span>,</span>
+<span>  color_pvalue <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">also_show_qvalue</span>, <span class="st">"grey"</span>, <span class="st">"black"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -119,6 +122,20 @@ optional significance vertical line and optional fill mapping.</p>
 <dt id="arg-mlog-transform-pvalue">mlog10_transform_pvalue<a class="anchor" aria-label="anchor" href="#arg-mlog-transform-pvalue"></a></dt>
 <dd><p>Logical; when TRUE compute -log10(p) for plotting/order.</p></dd>
 
+
+<dt id="arg-also-show-qvalue">also_show_qvalue<a class="anchor" aria-label="anchor" href="#arg-also-show-qvalue"></a></dt>
+<dd><p>Logical; when TRUE compute FDR-adjusted q-values (Benjamini-Hochberg)
+and draw two overlapping bars per row: the q-value bar (black) on top of the p-value bar (darkgrey).
+When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars.</p></dd>
+
+
+<dt id="arg-color-qvalue">color_qvalue<a class="anchor" aria-label="anchor" href="#arg-color-qvalue"></a></dt>
+<dd><p>Character, color for q-value bars when also_show_qvalue = TRUE.</p></dd>
+
+
+<dt id="arg-color-pvalue">color_pvalue<a class="anchor" aria-label="anchor" href="#arg-color-pvalue"></a></dt>
+<dd><p>Character, color for p-value bars when also_show_qvalue = TRUE.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -144,7 +161,8 @@ optional significance vertical line and optional fill mapping.</p>
 <span class="r-in"><span>  y <span class="op">=</span> <span class="st">"cell_line"</span>,</span></span>
 <span class="r-in"><span>  fill <span class="op">=</span> <span class="cn">NULL</span>,</span></span>
 <span class="r-in"><span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>  show_y_labels <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>  show_y_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  also_show_qvalue <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot_pvalue_barplot-1.png" alt="" width="700" height="433"></span>
 </code></pre></div>

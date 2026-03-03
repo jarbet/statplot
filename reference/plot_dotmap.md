@@ -2,7 +2,8 @@
 
 A combined tile + point "dotmap" that visualizes an effect (size and
 direction) and a p-value (tile fill). The function returns a ggplot
-object.
+object or a patchwork composition when a combined p-value barplot is
+requested.
 
 ## Usage
 
@@ -23,8 +24,8 @@ plot_dotmap(
   legend_pvalue_title = NULL,
   legend_dotsize_title = expression(bold("Effect size")),
   add_combined_pvalue_barplot = FALSE,
-  combined_qvalue = FALSE,
   combine_pvalue_method = c("CMC", "fisher", "MCM", "cauchy", "minp_bonferroni"),
+  ...,
   patchwork_widths = c(3, 1)
 )
 ```
@@ -60,7 +61,8 @@ plot_dotmap(
 
 - dot_size_labels:
 
-  Character vector of labels for the size legend
+  Character vector of labels for the size legend; must have same length
+  as `dot_size_vals`
 
 - dot_range:
 
@@ -69,7 +71,7 @@ plot_dotmap(
 - palette:
 
   Named character vector with elements "positive" and "negative"
-  specifying dot colors
+  specifying dot fill colours for positive/negative effects
 
 - xlab_angle:
 
@@ -81,41 +83,59 @@ plot_dotmap(
 
 - fill_limits:
 
-  Numeric(2) or NULL; limits for the fill scale
+  Numeric(2) or NULL; limits for the fill scale (c(min, max)). If NULL a
+  sensible default is used (c(0,3) for -log10(p) or c(0,1) for raw p)
 
 - legend_pvalue_title:
 
-  Character or NULL; override title for p-value/color legend
+  Character or expression or NULL; override title for the p-value (tile
+  fill) legend. If NULL an automatic title is used.
 
 - legend_dotsize_title:
 
-  Character; title for the dot-size legend
+  Character or expression; title for the dot-size legend
 
 - add_combined_pvalue_barplot:
 
   Logical; when TRUE adds a combined p-value barplot to the right of the
-  dotmap
-
-- combined_qvalue:
-
-  if TRUE then the combined pvalue barplot will show q-values instead of
-  p-values (only applies if add_combined_pvalue_barplot = TRUE)
+  dotmap (requires patchwork)
 
 - combine_pvalue_method:
 
-  Character; method for combining p-values in the barplot: one of
-  c("fisher", "CMC", "MCM", "cauchy", "minp_bonferroni")
+  Character; method for combining p-values in the barplot. One of:
+  "CMC", "fisher", "MCM", "cauchy", "minp_bonferroni". Defaults to
+  "CMC".
+
+- ...:
+
+  Additional arguments passed on to
+  [`plot_pvalue_barplot()`](https://statgencore.github.io/statplot/reference/plot_pvalue_barplot.md)
+  when `add_combined_pvalue_barplot = TRUE`
 
 - patchwork_widths:
 
-  Numeric(2); widths passed to patchwork::plot_layout when adding the
+  Numeric(2); widths passed to patchwork::`wrap_plots()` when adding the
   combined p-value barplot (default c(3, 1))
 
 ## Value
 
-A ggplot2::ggplot object when `add_combined_pvalue_barplot = FALSE`, or
-a patchwork composition object (from `patchwork`) when
+A `ggplot2`::`ggplot` object when `add_combined_pvalue_barplot = FALSE`,
+or a patchwork composition object (from patchwork) when
 `add_combined_pvalue_barplot = TRUE`.
+
+## Details
+
+The tile fill encodes p-values (optionally transformed as -log10(p)),
+while the overplotted points encode effect size (size) and direction
+(fill color). NA values for `effect` are marked with an "×" symbol. When
+a combined p-value barplot is requested the function groups by `y` and
+computes the combined p-value using
+[`combine_pvalues()`](https://statgencore.github.io/statplot/reference/combine_pvalues.md);
+the combined panel is aligned vertically with the main dotmap.
+
+## See also
+
+plot_pvalue_barplot, combine_pvalues
 
 ## Examples
 
@@ -145,8 +165,7 @@ plot_dotmap(
   p = "p",
   mlog10_transform_pvalue = TRUE,
   add_combined_pvalue_barplot = TRUE,
-  combine_pvalue_method = "CMC",
-  combined_qvalue = FALSE # set to TRUE to show q-values instead of p-values in the combined barplot (only applies if add_combined_pvalue_barplot = TRUE)
+  combine_pvalue_method = "CMC"
   )
 #> Scale for size is already present.
 #> Adding another scale for size, which will replace the existing scale.
