@@ -4,7 +4,7 @@
 #' optional significance vertical line and optional fill mapping.
 #'
 #' @param data A data.frame or tibble containing the variables.
-#' @param x Character, name of the column with raw p-values (numeric in [0,1]).
+#' @param x Character, name of the column with raw p-values
 #' @param y Character, name of the column for y-axis categories (factor or character).
 #' @param fill Character or NULL, column name to use for fill; if NULL draw solid black bars.
 #'   Ignored when also_show_qvalue = TRUE.
@@ -30,7 +30,7 @@
 #'   When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars.
 #' @param custom_qvalues Character or NULL; column name in `data` containing user-supplied
 #'   q-values. When supplied and `also_show_qvalue = TRUE`, these values are used instead of
-#'   computing FDR-adjusted q-values. Must be numeric in [0,1].
+#'   computing FDR-adjusted q-values.
 #' @param color_qvalue Character, color for q-value bars when also_show_qvalue = TRUE.
 #' @param color_pvalue Character, color for p-value bars when also_show_qvalue = TRUE.
 #' @return A ggplot2 object (invisible plot object returned).
