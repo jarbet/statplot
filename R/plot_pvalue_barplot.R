@@ -4,11 +4,13 @@
 #' optional significance vertical line and optional fill mapping.
 #'
 #' @param data A data.frame or tibble containing the variables.
-#' @param x Character, name of the column with raw p-values.
-#' @param y Character, name of the column for y-axis categories.
+#' @param x Character, name of the column with raw p-values (numeric in [0,1]).
+#' @param y Character, name of the column for y-axis categories (factor or character).
 #' @param fill Character or NULL, column name to use for fill; if NULL draw solid black bars.
-#' @param alpha Numeric significance threshold for the vertical line (default 0.05).
-#' @param width Numeric bar width.
+#'   Ignored when also_show_qvalue = TRUE.
+#' @param alpha Numeric significance threshold for the vertical line (default 0.05). When
+#'   mlog10_transform_pvalue = TRUE the vertical line is drawn at -log10(alpha).
+#' @param width Numeric bar width (passed to geom_col).
 #' @param xlim Numeric vector of length 2 giving x-axis limits; computed if NULL.
 #' @param xbreaks Numeric vector of x-axis breaks; computed if NULL.
 #' @param xlab Character, x-axis label.
@@ -16,13 +18,22 @@
 #' @param vline_linetype Character, linetype for the vertical line.
 #' @param vline_color Character, color for the vertical line.
 #' @param show_y_labels Logical, whether to show y-axis labels (default FALSE).
-#' @param mlog10_transform_pvalue Logical; when TRUE compute -log10(p) for plotting/order.
+#' @param mlog10_transform_pvalue Logical; when TRUE compute -log10(p) for plotting/order and
+#'   format x-axis tick labels as p-values (10^-x).
 #' @param also_show_qvalue Logical; when TRUE compute FDR-adjusted q-values (Benjamini-Hochberg)
-#'   and draw two overlapping bars per row: the q-value bar (black) on top of the p-value bar (darkgrey).
+#'   (or use custom_qvalues if supplied) and draw two overlapping bars per row: both p and q
+#'   are shown. Note on drawing order:
+#'   - If mlog10_transform_pvalue = TRUE the p-value bar is drawn first (behind) and the q-value
+#'     bar is drawn on top.
+#'   - If mlog10_transform_pvalue = FALSE the q-value bar is drawn first (behind) and the p-value
+#'     bar is drawn on top.
 #'   When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars.
+#' @param custom_qvalues Character or NULL; column name in `data` containing user-supplied
+#'   q-values. When supplied and `also_show_qvalue = TRUE`, these values are used instead of
+#'   computing FDR-adjusted q-values. Must be numeric in [0,1].
 #' @param color_qvalue Character, color for q-value bars when also_show_qvalue = TRUE.
 #' @param color_pvalue Character, color for p-value bars when also_show_qvalue = TRUE.
-#' @return A ggplot2 object.
+#' @return A ggplot2 object (invisible plot object returned).
 #' @examples
 #' set.seed(123)
 #' n <- 4
@@ -45,7 +56,9 @@
 #'   also_show_qvalue = TRUE
 #' )
 #' @importFrom rlang sym
-#' @importFrom ggplot2 ggplot aes geom_col scale_x_continuous scale_y_discrete scale_fill_manual labs geom_vline theme element_text
+#' @importFrom ggplot2 ggplot aes geom_col scale_x_continuous scale_y_discrete scale_fill_manual labs geom_vline theme element_text element_rect theme_bw margin scale_x_continuous
+#' @importFrom scales squish
+#' @importFrom stats p.adjust
 #' @export
 plot_pvalue_barplot <- function(
     data,
@@ -63,8 +76,9 @@ plot_pvalue_barplot <- function(
     show_y_labels = FALSE, # whether to show y-axis labels (default FALSE)
     mlog10_transform_pvalue = FALSE, # when TRUE compute -log10(p) for plotting/order
     also_show_qvalue = TRUE, # when TRUE compute q-values (FDR) and draw p-values (grey, behind) plus q-values (black, on top) per row
-    color_qvalue = 'black',
-    color_pvalue = ifelse(also_show_qvalue, 'grey', 'black')
+    custom_qvalues = NULL, # column name in `data` containing user-supplied q-values
+    color_qvalue = 'grey',
+    color_pvalue = 'black'
 ) {
     # ---- simple argument checks ----
     stopifnot(is.data.frame(data))
@@ -91,6 +105,13 @@ plot_pvalue_barplot <- function(
         length(mlog10_transform_pvalue) == 1
     )
     stopifnot(is.logical(also_show_qvalue), length(also_show_qvalue) == 1)
+    stopifnot(
+        is.null(custom_qvalues) ||
+            (is.character(custom_qvalues) && length(custom_qvalues) == 1)
+    )
+    if (!is.null(custom_qvalues)) {
+        stopifnot(custom_qvalues %in% names(data))
+    }
     stopifnot(is.numeric(data[[x]]))
     stopifnot(all(!is.na(data[[x]])))
     stopifnot(all(data[[x]] >= 0 & data[[x]] <= 1))
@@ -101,6 +122,16 @@ plot_pvalue_barplot <- function(
     stopifnot(is.character(color_qvalue), length(color_qvalue) == 1)
     stopifnot(is.character(color_pvalue), length(color_pvalue) == 1)
     stopifnot(is.logical(also_show_qvalue), length(also_show_qvalue) == 1)
+    if (!is.null(custom_qvalues)) {
+        stopifnot(is.numeric(data[[custom_qvalues]]))
+        stopifnot(all(!is.na(data[[custom_qvalues]])))
+        stopifnot(all(
+            data[[custom_qvalues]] >= 0 & data[[custom_qvalues]] <= 1
+        ))
+        if (mlog10_transform_pvalue) {
+            stopifnot(all(data[[custom_qvalues]] > 0))
+        }
+    }
     # ---- end checks ----
 
     # Dependencies: ggplot2, rlang, stats
@@ -113,7 +144,11 @@ plot_pvalue_barplot <- function(
                 "Argument 'fill' is ignored when also_show_qvalue = TRUE; p/q bars use fixed colors."
             )
         }
-        data[[".qvalue_raw"]] <- stats::p.adjust(data[[x]], method = "fdr")
+        if (!is.null(custom_qvalues)) {
+            data[[".qvalue_raw"]] <- data[[custom_qvalues]]
+        } else {
+            data[[".qvalue_raw"]] <- stats::p.adjust(data[[x]], method = "fdr")
+        }
         stopifnot(is.numeric(data[[".qvalue_raw"]]))
         stopifnot(all(!is.na(data[[".qvalue_raw"]])))
         stopifnot(all(data[[".qvalue_raw"]] >= 0 & data[[".qvalue_raw"]] <= 1))
@@ -122,6 +157,8 @@ plot_pvalue_barplot <- function(
         if (mlog10_transform_pvalue) {
             data[[".plot_p"]] <- -log10(data[[x]])
             data[[".plot_q"]] <- -log10(data[[".qvalue_raw"]])
+            print(data[[".plot_q"]])
+            print(data[[".plot_p"]])
             # ensure transformed q is finite (should be since original p > 0)
             stopifnot(all(is.finite(data[[".plot_q"]])))
         } else {
@@ -191,22 +228,41 @@ plot_pvalue_barplot <- function(
             ggplot2::aes(
                 y = !!y_sym
             )
-        ) +
-            # p-value behind (darkgrey) - full width, mapped to fill for legend
-            ggplot2::geom_col(
-                ggplot2::aes(x = !!p_sym, fill = "p-value"),
-                width = width,
-                position = "identity",
-                alpha = 1
-            ) +
-            # q-value on top (black) - full width, mapped to fill for legend so it's visible
-            ggplot2::geom_col(
-                ggplot2::aes(x = !!q_sym, fill = "q-value"),
-                width = width,
-                position = "identity",
-                alpha = 1
-            ) +
-            # legend colors / ordering (q first)
+        )
+
+        if (mlog10_transform_pvalue) {
+            # -log10(q) <= -log10(p), so draw p first (behind), q on top
+            p <- p +
+                ggplot2::geom_col(
+                    ggplot2::aes(x = !!p_sym, fill = "p-value"),
+                    width = width,
+                    position = "identity",
+                    alpha = 1
+                ) +
+                ggplot2::geom_col(
+                    ggplot2::aes(x = !!q_sym, fill = "q-value"),
+                    width = width,
+                    position = "identity",
+                    alpha = 1
+                )
+        } else {
+            # q >= p (FDR adjustment), so draw q first (behind), p on top
+            p <- p +
+                ggplot2::geom_col(
+                    ggplot2::aes(x = !!q_sym, fill = "q-value"),
+                    width = width,
+                    position = "identity",
+                    alpha = 1
+                ) +
+                ggplot2::geom_col(
+                    ggplot2::aes(x = !!p_sym, fill = "p-value"),
+                    width = width,
+                    position = "identity",
+                    alpha = 1
+                )
+        }
+
+        p <- p +
             ggplot2::scale_fill_manual(
                 values = c("q-value" = color_qvalue, "p-value" = color_pvalue),
                 breaks = c("q-value", "p-value"),
