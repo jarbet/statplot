@@ -20,22 +20,25 @@ plot_pvalue_barplot(
   show_y_labels = FALSE,
   mlog10_transform_pvalue = FALSE,
   also_show_qvalue = TRUE,
-  color_qvalue = "black",
-  color_pvalue = ifelse(also_show_qvalue, "grey", "black")
+  custom_qvalues = NULL,
+  color_qvalue = "grey",
+  color_pvalue = "black"
 )
 }
 \arguments{
 \item{data}{A data.frame or tibble containing the variables.}
 
-\item{x}{Character, name of the column with raw p-values.}
+\item{x}{Character, name of the column with raw p-values}
 
-\item{y}{Character, name of the column for y-axis categories.}
+\item{y}{Character, name of the column for y-axis categories (factor or character).}
 
-\item{fill}{Character or NULL, column name to use for fill; if NULL draw solid black bars.}
+\item{fill}{Character or NULL, column name to use for fill; if NULL draw solid black bars.
+Ignored when also_show_qvalue = TRUE.}
 
-\item{alpha}{Numeric significance threshold for the vertical line (default 0.05).}
+\item{alpha}{Numeric significance threshold for the vertical line (default 0.05). When
+mlog10_transform_pvalue = TRUE the vertical line is drawn at -log10(alpha).}
 
-\item{width}{Numeric bar width.}
+\item{width}{Numeric bar width (passed to geom_col).}
 
 \item{xlim}{Numeric vector of length 2 giving x-axis limits; computed if NULL.}
 
@@ -51,18 +54,30 @@ plot_pvalue_barplot(
 
 \item{show_y_labels}{Logical, whether to show y-axis labels (default FALSE).}
 
-\item{mlog10_transform_pvalue}{Logical; when TRUE compute -log10(p) for plotting/order.}
+\item{mlog10_transform_pvalue}{Logical; when TRUE compute -log10(p) for plotting/order and
+format x-axis tick labels as p-values (10^-x).}
 
 \item{also_show_qvalue}{Logical; when TRUE compute FDR-adjusted q-values (Benjamini-Hochberg)
-and draw two overlapping bars per row: the q-value bar (black) on top of the p-value bar (darkgrey).
-When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars.}
+(or use custom_qvalues if supplied) and draw two overlapping bars per row: both p and q
+are shown. Note on drawing order:
+\itemize{
+\item If mlog10_transform_pvalue = TRUE the p-value bar is drawn first (behind) and the q-value
+bar is drawn on top.
+\item If mlog10_transform_pvalue = FALSE the q-value bar is drawn first (behind) and the p-value
+bar is drawn on top.
+When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars.
+}}
+
+\item{custom_qvalues}{Character or NULL; column name in \code{data} containing user-supplied
+q-values. When supplied and \code{also_show_qvalue = TRUE}, these values are used instead of
+computing FDR-adjusted q-values.}
 
 \item{color_qvalue}{Character, color for q-value bars when also_show_qvalue = TRUE.}
 
 \item{color_pvalue}{Character, color for p-value bars when also_show_qvalue = TRUE.}
 }
 \value{
-A ggplot2 object.
+A ggplot2 object (invisible plot object returned).
 }
 \description{
 Create a horizontal barplot of p-values (optionally -log10 transformed) with an

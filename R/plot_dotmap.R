@@ -20,8 +20,10 @@
 #' @param legend_dotsize_title Character or expression; title for the dot-size legend
 #' @param add_combined_pvalue_barplot Logical; when TRUE adds a combined p-value barplot to the right of the dotmap (requires \pkg{patchwork})
 #' @param combine_pvalue_method Character; method for combining p-values in the barplot. One of: "CMC", "fisher", "MCM", "cauchy", "minp_bonferroni". Defaults to "CMC".
+#' @param sort_by_pvalue Logical; when TRUE (default) rows (levels of `y`) are sorted by the combined p-value (ascending). Requires p-values present per group.
 #' @param ... Additional arguments passed on to \code{plot_pvalue_barplot()} when \code{add_combined_pvalue_barplot = TRUE}
 #' @param patchwork_widths Numeric(2); widths passed to \pkg{patchwork}::\code{wrap_plots()} when adding the combined p-value barplot (default c(3, 1))
+#' @param only_show_top_sig Numeric(1) or NULL; when adding the combined p-value barplot, if this is a positive integer then only the top X most significant rows by combined p-value are shown (default NULL, show all)
 #'
 #' @return A \code{ggplot2}::\code{ggplot} object when \code{add_combined_pvalue_barplot = FALSE},
 #'   or a \pkg{patchwork} composition object (from \pkg{patchwork}) when
@@ -86,6 +88,8 @@ plot_dotmap <- function(
         "cauchy",
         "minp_bonferroni"
     ),
+    sort_by_pvalue = TRUE, # NEW: whether to sort rows by combined p-value
+    only_show_top_sig = NULL, # NULL (show all) or positive integer: show top X by combined p-value (only used when add_combined_pvalue_barplot = TRUE)
     ...,
     patchwork_widths = c(3, 1) # NEW: widths for patchwork layout when combined plot is requested
 ) {
@@ -137,6 +141,14 @@ plot_dotmap <- function(
         is.logical(add_combined_pvalue_barplot),
         length(add_combined_pvalue_barplot) == 1
     )
+    stopifnot(is.logical(sort_by_pvalue), length(sort_by_pvalue) == 1)
+    stopifnot(
+        is.null(only_show_top_sig) ||
+            (is.numeric(only_show_top_sig) &&
+                length(only_show_top_sig) == 1 &&
+                only_show_top_sig > 0 &&
+                (as.integer(only_show_top_sig) == only_show_top_sig))
+    )
     stopifnot(is.numeric(patchwork_widths), length(patchwork_widths) == 2)
 
     data <- tibble::as_tibble(data) |>
@@ -153,6 +165,30 @@ plot_dotmap <- function(
                 .data[[p]]
             }
         )
+
+    # compute combined p-values when needed for sorting or for the right-side barplot
+    if (isTRUE(sort_by_pvalue) || isTRUE(add_combined_pvalue_barplot)) {
+        combined_df <- data |>
+            dplyr::group_by(.data[[y]]) |>
+            dplyr::summarise(
+                p_combined = {
+                    pv <- .data[[p]]
+                    pv <- pv[!is.na(pv)]
+                    if (length(pv) == 0) {
+                        NA_real_
+                    } else {
+                        combine_pvalues(pv)[combine_pvalue_method]
+                    }
+                },
+                .groups = "drop"
+            )
+        if (isTRUE(sort_by_pvalue)) {
+            ordered_levels <- combined_df |>
+                dplyr::arrange(is.na(p_combined), -1 * p_combined) |>
+                dplyr::pull(1)
+            data[[y]] <- factor(data[[y]], levels = ordered_levels)
+        }
+    }
 
     if (!is.null(fill_limits)) {
         if (!is.numeric(fill_limits) || length(fill_limits) != 2) {
@@ -362,22 +398,41 @@ plot_dotmap <- function(
             )
         }
 
-        combined_df <- data |>
-            dplyr::group_by(.data[[y]]) |>
-            dplyr::summarise(
-                p_combined = {
-                    pv <- .data[[p]]
-                    pv <- pv[!is.na(pv)]
-                    if (length(pv) == 0) {
-                        NA_real_
-                    } else {
-                        combine_pvalues(pv)[combine_pvalue_method]
-                    }
-                },
-                .groups = "drop"
-            )
+        # compute combined_df if not already computed above
+        if (!exists("combined_df")) {
+            combined_df <- data |>
+                dplyr::group_by(.data[[y]]) |>
+                dplyr::summarise(
+                    p_combined = {
+                        pv <- .data[[p]]
+                        pv <- pv[!is.na(pv)]
+                        if (length(pv) == 0) {
+                            NA_real_
+                        } else {
+                            combine_pvalues(pv)[combine_pvalue_method]
+                        }
+                    },
+                    .groups = "drop"
+                )
+        }
 
-        # preserve factor levels / order to align plots
+        # compute FDR q-values for the combined p-values and pass them to the barplot
+        combined_df$q_combined <- stats::p.adjust(
+            combined_df$p_combined,
+            method = "fdr"
+        )
+
+        # If requested, restrict to top X most significant rows by combined p-value
+        if (!is.null(only_show_top_sig)) {
+            n_show <- as.integer(only_show_top_sig)
+            combined_df <- combined_df |>
+                dplyr::arrange(is.na(p_combined), p_combined) |>
+                dplyr::slice_head(n = n_show)
+            # update the y-levels to only include the selected top levels (preserve order)
+            y_levels <- rev(as.character(combined_df[[y]]))
+        }
+
+        # preserve factor levels / order to align plots (use possibly-updated y_levels)
         combined_df[[y]] <- factor(combined_df[[y]], levels = y_levels)
 
         # ensure main plot uses the exact same discrete y limits / no expansion
@@ -389,6 +444,7 @@ plot_dotmap <- function(
             fill = NULL,
             mlog10_transform_pvalue = mlog10_transform_pvalue,
             show_y_labels = FALSE, # <- hide labels on the right plot
+            custom_qvalues = 'q_combined',
             ...
         )
 
