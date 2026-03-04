@@ -410,6 +410,12 @@ plot_dotmap <- function(
         # preserve factor levels / order to align plots
         combined_df[[y]] <- factor(combined_df[[y]], levels = y_levels)
 
+        # compute FDR q-values for the combined p-values and pass them to the barplot
+        combined_df$q_combined <- stats::p.adjust(
+            combined_df$p_combined,
+            method = "fdr"
+        )
+
         # ensure main plot uses the exact same discrete y limits / no expansion
         # build right-side combined p-value barplot but hide its y labels so only the left plot shows labels
         p_comb <- plot_pvalue_barplot(
@@ -419,6 +425,7 @@ plot_dotmap <- function(
             fill = NULL,
             mlog10_transform_pvalue = mlog10_transform_pvalue,
             show_y_labels = FALSE, # <- hide labels on the right plot
+            custom_qvalues = 'q_combined',
             ...
         )
 
