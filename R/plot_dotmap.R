@@ -23,6 +23,7 @@
 #' @param sort_by_pvalue Logical; when TRUE (default) rows (levels of `y`) are sorted by the combined p-value (ascending). Requires p-values present per group.
 #' @param ... Additional arguments passed on to \code{plot_pvalue_barplot()} when \code{add_combined_pvalue_barplot = TRUE}
 #' @param patchwork_widths Numeric(2); widths passed to \pkg{patchwork}::\code{wrap_plots()} when adding the combined p-value barplot (default c(3, 1))
+#' @param only_show_top_sig Numeric(1) or NULL; when adding the combined p-value barplot, if this is a positive integer then only the top X most significant rows by combined p-value are shown (default NULL, show all)
 #'
 #' @return A \code{ggplot2}::\code{ggplot} object when \code{add_combined_pvalue_barplot = FALSE},
 #'   or a \pkg{patchwork} composition object (from \pkg{patchwork}) when
