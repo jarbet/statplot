@@ -22,6 +22,7 @@ plot_dotmap(
   add_combined_pvalue_barplot = FALSE,
   combine_pvalue_method = c("CMC", "fisher", "MCM", "cauchy", "minp_bonferroni"),
   sort_by_pvalue = TRUE,
+  only_show_top_sig = NULL,
   ...,
   patchwork_widths = c(3, 1)
 )

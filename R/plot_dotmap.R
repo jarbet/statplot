@@ -88,6 +88,7 @@ plot_dotmap <- function(
         "minp_bonferroni"
     ),
     sort_by_pvalue = TRUE, # NEW: whether to sort rows by combined p-value
+    only_show_top_sig = NULL, # NULL (show all) or positive integer: show top X by combined p-value (only used when add_combined_pvalue_barplot = TRUE)
     ...,
     patchwork_widths = c(3, 1) # NEW: widths for patchwork layout when combined plot is requested
 ) {
@@ -140,6 +141,13 @@ plot_dotmap <- function(
         length(add_combined_pvalue_barplot) == 1
     )
     stopifnot(is.logical(sort_by_pvalue), length(sort_by_pvalue) == 1)
+    stopifnot(
+        is.null(only_show_top_sig) ||
+            (is.numeric(only_show_top_sig) &&
+                length(only_show_top_sig) == 1 &&
+                only_show_top_sig > 0 &&
+                (as.integer(only_show_top_sig) == only_show_top_sig))
+    )
     stopifnot(is.numeric(patchwork_widths), length(patchwork_widths) == 2)
 
     data <- tibble::as_tibble(data) |>
@@ -407,14 +415,24 @@ plot_dotmap <- function(
                 )
         }
 
-        # preserve factor levels / order to align plots
-        combined_df[[y]] <- factor(combined_df[[y]], levels = y_levels)
-
         # compute FDR q-values for the combined p-values and pass them to the barplot
         combined_df$q_combined <- stats::p.adjust(
             combined_df$p_combined,
             method = "fdr"
         )
+
+        # If requested, restrict to top X most significant rows by combined p-value
+        if (!is.null(only_show_top_sig)) {
+            n_show <- as.integer(only_show_top_sig)
+            combined_df <- combined_df |>
+                dplyr::arrange(is.na(p_combined), p_combined) |>
+                dplyr::slice_head(n = n_show)
+            # update the y-levels to only include the selected top levels (preserve order)
+            y_levels <- rev(as.character(combined_df[[y]]))
+        }
+
+        # preserve factor levels / order to align plots (use possibly-updated y_levels)
+        combined_df[[y]] <- factor(combined_df[[y]], levels = y_levels)
 
         # ensure main plot uses the exact same discrete y limits / no expansion
         # build right-side combined p-value barplot but hide its y labels so only the left plot shows labels
