@@ -22,8 +22,9 @@ plot_pvalue_barplot(
   show_y_labels = FALSE,
   mlog10_transform_pvalue = FALSE,
   also_show_qvalue = TRUE,
-  color_qvalue = "black",
-  color_pvalue = ifelse(also_show_qvalue, "grey", "black")
+  custom_qvalues = NULL,
+  color_qvalue = "grey",
+  color_pvalue = "black"
 )
 ```
 
@@ -35,24 +36,27 @@ plot_pvalue_barplot(
 
 - x:
 
-  Character, name of the column with raw p-values.
+  Character, name of the column with raw p-values
 
 - y:
 
-  Character, name of the column for y-axis categories.
+  Character, name of the column for y-axis categories (factor or
+  character).
 
 - fill:
 
   Character or NULL, column name to use for fill; if NULL draw solid
-  black bars.
+  black bars. Ignored when also_show_qvalue = TRUE.
 
 - alpha:
 
   Numeric significance threshold for the vertical line (default 0.05).
+  When mlog10_transform_pvalue = TRUE the vertical line is drawn at
+  -log10(alpha).
 
 - width:
 
-  Numeric bar width.
+  Numeric bar width (passed to geom_col).
 
 - xlim:
 
@@ -84,14 +88,27 @@ plot_pvalue_barplot(
 
 - mlog10_transform_pvalue:
 
-  Logical; when TRUE compute -log10(p) for plotting/order.
+  Logical; when TRUE compute -log10(p) for plotting/order and format
+  x-axis tick labels as p-values (10^-x).
 
 - also_show_qvalue:
 
   Logical; when TRUE compute FDR-adjusted q-values (Benjamini-Hochberg)
-  and draw two overlapping bars per row: the q-value bar (black) on top
-  of the p-value bar (darkgrey). When TRUE, the 'fill' argument is
-  ignored and fixed colors are used for p/q bars.
+  (or use custom_qvalues if supplied) and draw two overlapping bars per
+  row: both p and q are shown. Note on drawing order:
+
+  - If mlog10_transform_pvalue = TRUE the p-value bar is drawn first
+    (behind) and the q-value bar is drawn on top.
+
+  - If mlog10_transform_pvalue = FALSE the q-value bar is drawn first
+    (behind) and the p-value bar is drawn on top. When TRUE, the 'fill'
+    argument is ignored and fixed colors are used for p/q bars.
+
+- custom_qvalues:
+
+  Character or NULL; column name in `data` containing user-supplied
+  q-values. When supplied and `also_show_qvalue = TRUE`, these values
+  are used instead of computing FDR-adjusted q-values.
 
 - color_qvalue:
 
@@ -103,7 +120,7 @@ plot_pvalue_barplot(
 
 ## Value
 
-A ggplot2 object.
+A ggplot2 object (invisible plot object returned).
 
 ## Examples
 

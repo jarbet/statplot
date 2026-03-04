@@ -62,6 +62,8 @@ or a patchwork composition when a combined p-value barplot is requested.</p>
 <span>  legend_dotsize_title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="fu">bold</span><span class="op">(</span><span class="st">"Effect size"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  add_combined_pvalue_barplot <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  combine_pvalue_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CMC"</span>, <span class="st">"fisher"</span>, <span class="st">"MCM"</span>, <span class="st">"cauchy"</span>, <span class="st">"minp_bonferroni"</span><span class="op">)</span>,</span>
+<span>  sort_by_pvalue <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  only_show_top_sig <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span>,</span>
 <span>  patchwork_widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -133,6 +135,14 @@ or a patchwork composition when a combined p-value barplot is requested.</p>
 
 <dt id="arg-combine-pvalue-method">combine_pvalue_method<a class="anchor" aria-label="anchor" href="#arg-combine-pvalue-method"></a></dt>
 <dd><p>Character; method for combining p-values in the barplot. One of: "CMC", "fisher", "MCM", "cauchy", "minp_bonferroni". Defaults to "CMC".</p></dd>
+
+
+<dt id="arg-sort-by-pvalue">sort_by_pvalue<a class="anchor" aria-label="anchor" href="#arg-sort-by-pvalue"></a></dt>
+<dd><p>Logical; when TRUE (default) rows (levels of <code>y</code>) are sorted by the combined p-value (ascending). Requires p-values present per group.</p></dd>
+
+
+<dt id="arg-only-show-top-sig">only_show_top_sig<a class="anchor" aria-label="anchor" href="#arg-only-show-top-sig"></a></dt>
+<dd><p>Numeric(1) or NULL; when adding the combined p-value barplot, if this is a positive integer then only the top X most significant rows by combined p-value are shown (default NULL, show all)</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

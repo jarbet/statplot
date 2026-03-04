@@ -58,8 +58,9 @@ optional significance vertical line and optional fill mapping.</p>
 <span>  show_y_labels <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  also_show_qvalue <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  color_qvalue <span class="op">=</span> <span class="st">"black"</span>,</span>
-<span>  color_pvalue <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">also_show_qvalue</span>, <span class="st">"grey"</span>, <span class="st">"black"</span><span class="op">)</span></span>
+<span>  custom_qvalues <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  color_qvalue <span class="op">=</span> <span class="st">"grey"</span>,</span>
+<span>  color_pvalue <span class="op">=</span> <span class="st">"black"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -72,23 +73,25 @@ optional significance vertical line and optional fill mapping.</p>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>Character, name of the column with raw p-values.</p></dd>
+<dd><p>Character, name of the column with raw p-values</p></dd>
 
 
 <dt id="arg-y">y<a class="anchor" aria-label="anchor" href="#arg-y"></a></dt>
-<dd><p>Character, name of the column for y-axis categories.</p></dd>
+<dd><p>Character, name of the column for y-axis categories (factor or character).</p></dd>
 
 
 <dt id="arg-fill">fill<a class="anchor" aria-label="anchor" href="#arg-fill"></a></dt>
-<dd><p>Character or NULL, column name to use for fill; if NULL draw solid black bars.</p></dd>
+<dd><p>Character or NULL, column name to use for fill; if NULL draw solid black bars.
+Ignored when also_show_qvalue = TRUE.</p></dd>
 
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
-<dd><p>Numeric significance threshold for the vertical line (default 0.05).</p></dd>
+<dd><p>Numeric significance threshold for the vertical line (default 0.05). When
+mlog10_transform_pvalue = TRUE the vertical line is drawn at -log10(alpha).</p></dd>
 
 
 <dt id="arg-width">width<a class="anchor" aria-label="anchor" href="#arg-width"></a></dt>
-<dd><p>Numeric bar width.</p></dd>
+<dd><p>Numeric bar width (passed to geom_col).</p></dd>
 
 
 <dt id="arg-xlim">xlim<a class="anchor" aria-label="anchor" href="#arg-xlim"></a></dt>
@@ -120,13 +123,25 @@ optional significance vertical line and optional fill mapping.</p>
 
 
 <dt id="arg-mlog-transform-pvalue">mlog10_transform_pvalue<a class="anchor" aria-label="anchor" href="#arg-mlog-transform-pvalue"></a></dt>
-<dd><p>Logical; when TRUE compute -log10(p) for plotting/order.</p></dd>
+<dd><p>Logical; when TRUE compute -log10(p) for plotting/order and
+format x-axis tick labels as p-values (10^-x).</p></dd>
 
 
 <dt id="arg-also-show-qvalue">also_show_qvalue<a class="anchor" aria-label="anchor" href="#arg-also-show-qvalue"></a></dt>
 <dd><p>Logical; when TRUE compute FDR-adjusted q-values (Benjamini-Hochberg)
-and draw two overlapping bars per row: the q-value bar (black) on top of the p-value bar (darkgrey).
-When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars.</p></dd>
+(or use custom_qvalues if supplied) and draw two overlapping bars per row: both p and q
+are shown. Note on drawing order:</p><ul><li><p>If mlog10_transform_pvalue = TRUE the p-value bar is drawn first (behind) and the q-value
+bar is drawn on top.</p></li>
+<li><p>If mlog10_transform_pvalue = FALSE the q-value bar is drawn first (behind) and the p-value
+bar is drawn on top.
+When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars.</p></li>
+</ul></dd>
+
+
+<dt id="arg-custom-qvalues">custom_qvalues<a class="anchor" aria-label="anchor" href="#arg-custom-qvalues"></a></dt>
+<dd><p>Character or NULL; column name in <code>data</code> containing user-supplied
+q-values. When supplied and <code>also_show_qvalue = TRUE</code>, these values are used instead of
+computing FDR-adjusted q-values.</p></dd>
 
 
 <dt id="arg-color-qvalue">color_qvalue<a class="anchor" aria-label="anchor" href="#arg-color-qvalue"></a></dt>
@@ -139,7 +154,7 @@ When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A ggplot2 object.</p>
+    <p>A ggplot2 object (invisible plot object returned).</p>
     </div>
 
     <div class="section level2">

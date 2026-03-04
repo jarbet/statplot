@@ -25,6 +25,8 @@ plot_dotmap(
   legend_dotsize_title = expression(bold("Effect size")),
   add_combined_pvalue_barplot = FALSE,
   combine_pvalue_method = c("CMC", "fisher", "MCM", "cauchy", "minp_bonferroni"),
+  sort_by_pvalue = TRUE,
+  only_show_top_sig = NULL,
   ...,
   patchwork_widths = c(3, 1)
 )
@@ -105,6 +107,17 @@ plot_dotmap(
   Character; method for combining p-values in the barplot. One of:
   "CMC", "fisher", "MCM", "cauchy", "minp_bonferroni". Defaults to
   "CMC".
+
+- sort_by_pvalue:
+
+  Logical; when TRUE (default) rows (levels of `y`) are sorted by the
+  combined p-value (ascending). Requires p-values present per group.
+
+- only_show_top_sig:
+
+  Numeric(1) or NULL; when adding the combined p-value barplot, if this
+  is a positive integer then only the top X most significant rows by
+  combined p-value are shown (default NULL, show all)
 
 - ...:
 
