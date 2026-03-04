@@ -157,8 +157,6 @@ plot_pvalue_barplot <- function(
         if (mlog10_transform_pvalue) {
             data[[".plot_p"]] <- -log10(data[[x]])
             data[[".plot_q"]] <- -log10(data[[".qvalue_raw"]])
-            print(data[[".plot_q"]])
-            print(data[[".plot_p"]])
             # ensure transformed q is finite (should be since original p > 0)
             stopifnot(all(is.finite(data[[".plot_q"]])))
         } else {
