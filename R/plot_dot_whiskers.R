@@ -1,0 +1,389 @@
+#' Dot-and-whisker plot of estimates with confidence intervals
+#'
+#' Create a horizontal dot-and-whisker plot showing point estimates and
+#' confidence intervals for labeled rows. Optionally offset points and use
+#' different shapes or colors when a grouping column is supplied. Optionally
+#' append a p-value barplot to the right via patchwork.
+#'
+#' @param data A data.frame or tibble containing the columns referenced by
+#'   `x`, `xmin`, `xmax`, and `label_col`.
+#' @param group_col Optional string name of a **factor** grouping column. When
+#'   provided, points are offset by group for visibility. Factor levels
+#'   control the ordering and direction of the dodge offset: the first level
+#'   is plotted at the top of each row.
+#' @param x String name of the estimate column. Default `"est"`.
+#' @param xmin String name of the lower-interval column. Default `"conf.low"`.
+#' @param xmax String name of the upper-interval column. Default `"conf.high"`.
+#' @param label_col String name of the label/row identifier column. Must be a
+#'   **factor**; factor levels control the top-to-bottom row ordering (first
+#'   level appears at the top). Default `"cell_line"`.
+#' @param dodge_width Numeric. Total vertical spread across groups. Default `0.3`.
+#' @param style String. Controls group encoding when `group_col` is supplied.
+#'   `"color"` (default) uses different colors per group and draws horizontal
+#'   separator lines between rows. `"shape"` uses the same color per
+#'   `label_col` row and different point shapes per group.
+#' @param sep_linetype Line type for row separator lines when `style = "color"`. Default `"solid"`.
+#' @param sep_linewidth Line width for row separator lines when `style = "color"`. Default `0.4`.
+#' @param sep_color Color for row separator lines when `style = "color"`. Default `"black"`.
+#' @param vline_xintercept Numeric. Position of the vertical reference line. Default `0`.
+#' @param vline_linetype Line type for the vertical reference line. Default `"dashed"`.
+#' @param vline_color Color for the vertical reference line. Default `"black"`.
+#' @param point_shapes Integer vector of point shapes to use when
+#'   `style = "shape"`. Must have at least as many elements as there are
+#'   levels in `group_col`. Defaults to `c(21, 24, 22, 25, 23)` (up to 5
+#'   groups). See [graphics::points()] for shape codes.
+#' @param pvalue_col Optional string name of a column in `data` containing one
+#'   p-value per `label_col` row. When supplied, a [plot_pvalue_barplot()] is
+#'   appended to the right using patchwork. The p-value used for each row is
+#'   taken from the first occurrence within that `label_col` group, so the
+#'   column must be constant within each row. Requires the \pkg{patchwork}
+#'   package.
+#' @param pvalue_plot_width Relative width of the p-value panel passed to
+#'   `patchwork::wrap_plots()` `widths`. Default `0.3`.
+#' @param ... Additional arguments passed to [plot_pvalue_barplot()] when
+#'   `pvalue_col` is supplied.
+#'
+#' @return A `ggplot2` object, or a `patchwork` object when `pvalue_col` is
+#'   supplied.
+#' @export
+#'
+#' @examples
+#' df <- data.frame(
+#'   cell_line = factor(c("A", "A", "B", "B", "C", "C"), levels = c('A', 'B', 'C')),
+#'   est       = c(0.2, 0.35, -0.1, 0.05, 0.5, 0.3),
+#'   conf.low  = c(0.0, 0.10, -0.3, -0.10, 0.2, 0.1),
+#'   conf.high = c(0.4, 0.60,  0.1,  0.20, 0.8, 0.5),
+#'   group     = factor(c("g1", "g2", "g1", "g2", "g1", "g2"), levels = c("g1", "g2")),
+#'   pvalue    = c(0.01, 0.01, 0.4, 0.4, 0.001, 0.001)
+#' )
+#'
+#' # color style: groups distinguished by color, separator lines between rows
+#' plot_dot_whiskers(df, group_col = "group", style = "color")
+#'
+#' # shape style: groups distinguished by point shape, rows colored by label
+#' plot_dot_whiskers(df, group_col = "group", style = "shape")
+#'
+#' # with p-value barplot appended on the right
+#' plot_dot_whiskers(
+#'   df,
+#'   group_col  = "group",
+#'   style      = "color",
+#'   pvalue_col = "pvalue",
+#'   mlog10_transform_pvalue = TRUE
+#' )
+plot_dot_whiskers <- function(
+    data,
+    group_col = NULL,
+    x = "est",
+    xmin = "conf.low",
+    xmax = "conf.high",
+    label_col = "cell_line",
+    dodge_width = 0.3,
+    style = c("color", "shape"),
+    sep_linetype = "solid",
+    sep_linewidth = 0.4,
+    sep_color = "black",
+    vline_xintercept = 0,
+    vline_linetype = "dashed",
+    vline_color = "black",
+    point_shapes = c(21, 24, 22, 25, 23),
+    pvalue_col = NULL,
+    pvalue_plot_width = 0.3,
+    ...
+) {
+    style <- match.arg(style)
+
+    # ---- input validation ----
+    stopifnot(
+        "data must be a data.frame or tibble" = is.data.frame(data),
+        "x must be a single string" = is.character(x) && length(x) == 1,
+        "xmin must be a single string" = is.character(xmin) &&
+            length(xmin) == 1,
+        "xmax must be a single string" = is.character(xmax) &&
+            length(xmax) == 1,
+        "label_col must be a single string" = is.character(label_col) &&
+            length(label_col) == 1,
+        "x must be a column in data" = x %in% names(data),
+        "xmin must be a column in data" = xmin %in% names(data),
+        "xmax must be a column in data" = xmax %in% names(data),
+        "label_col must be a column in data" = label_col %in% names(data),
+        "label_col must be a factor" = is.factor(data[[label_col]]),
+        "group_col must be NULL or a single string" = is.null(group_col) ||
+            (is.character(group_col) && length(group_col) == 1),
+        "group_col must be a column in data" = is.null(group_col) ||
+            group_col %in% names(data),
+        "group_col must be a factor" = is.null(group_col) ||
+            is.factor(data[[group_col]]),
+        "group_col must have more than 1 level" = is.null(group_col) ||
+            nlevels(data[[group_col]]) > 1,
+        "pvalue_col must be NULL or a single string" = is.null(pvalue_col) ||
+            (is.character(pvalue_col) && length(pvalue_col) == 1),
+        "pvalue_col must be a column in data" = is.null(pvalue_col) ||
+            pvalue_col %in% names(data),
+        "dodge_width must be a single non-negative number" = is.numeric(
+            dodge_width
+        ) &&
+            length(dodge_width) == 1 &&
+            dodge_width >= 0,
+        "sep_linewidth must be a single positive number" = is.numeric(
+            sep_linewidth
+        ) &&
+            length(sep_linewidth) == 1 &&
+            sep_linewidth > 0,
+        "sep_linetype must be a single string" = is.character(sep_linetype) &&
+            length(sep_linetype) == 1,
+        "sep_color must be a single string" = is.character(sep_color) &&
+            length(sep_color) == 1,
+        "vline_xintercept must be a single number" = is.numeric(
+            vline_xintercept
+        ) &&
+            length(vline_xintercept) == 1,
+        "vline_linetype must be a single string" = is.character(
+            vline_linetype
+        ) &&
+            length(vline_linetype) == 1,
+        "vline_color must be a single string" = is.character(vline_color) &&
+            length(vline_color) == 1,
+        "pvalue_plot_width must be a single positive number" = is.numeric(
+            pvalue_plot_width
+        ) &&
+            length(pvalue_plot_width) == 1 &&
+            pvalue_plot_width > 0,
+        "point_shapes must be a numeric or integer vector" = is.numeric(
+            point_shapes
+        ) &&
+            length(point_shapes) >= 1
+    )
+
+    # Validate point_shapes length against number of groups when style = "shape"
+    if (!is.null(group_col) && style == "shape") {
+        n_groups_check <- nlevels(data[[group_col]])
+        if (length(point_shapes) < n_groups_check) {
+            stop(
+                "point_shapes has ",
+                length(point_shapes),
+                " element(s) but ",
+                "group_col '",
+                group_col,
+                "' has ",
+                n_groups_check,
+                " levels. ",
+                "Provide a point_shapes vector with at least ",
+                n_groups_check,
+                " elements."
+            )
+        }
+    }
+
+    d <- data
+
+    # ---- y positions from factor levels ----
+    # label levels run top-to-bottom: first level -> highest y value
+    units <- levels(d[[label_col]]) # e.g. c("C", "B", "A") -> C on top
+    n_units <- length(units)
+    y_num_map <- setNames(rev(seq_len(n_units)), units) # C->3, B->2, A->1... wait
+    # first level should be at TOP (highest numeric y), so:
+    # units[1] gets n_units, units[n_units] gets 1
+    y_num_map <- setNames(seq(n_units, 1), units)
+    d$y_num <- y_num_map[as.character(d[[label_col]])]
+
+    # ---- dodged y positions from group factor levels ----
+    if (!is.null(group_col)) {
+        groups <- levels(d[[group_col]])
+        n_groups <- length(groups)
+        # first level -> top offset (positive), last -> bottom (negative)
+        offsets <- seq(dodge_width / 2, -dodge_width / 2, length.out = n_groups)
+        names(offsets) <- groups
+        d$y_pos <- d$y_num + offsets[as.character(d[[group_col]])] # fix: was offsets[d[[group_col]]]
+    } else {
+        d$y_pos <- d$y_num
+    }
+
+    # ---- base plot ----
+    p <- ggplot2::ggplot(d, ggplot2::aes(x = .data[[x]])) +
+        ggplot2::geom_vline(
+            xintercept = vline_xintercept,
+            linetype = vline_linetype,
+            linewidth = 0.6,
+            color = vline_color
+        )
+
+    # ---- row separator lines (style = "color" only) ----
+    if (!is.null(group_col) && style == "color" && n_units > 1) {
+        separators <- seq_len(n_units - 1) + 0.5
+        p <- p +
+            ggplot2::geom_hline(
+                yintercept = separators,
+                linetype = sep_linetype,
+                linewidth = sep_linewidth,
+                color = sep_color
+            )
+    }
+
+    # ---- segments ----
+    if (!is.null(group_col) && style == "color") {
+        p <- p +
+            ggplot2::geom_segment(
+                ggplot2::aes(
+                    x = .data[[xmin]],
+                    xend = .data[[xmax]],
+                    y = y_pos,
+                    yend = y_pos,
+                    color = .data[[group_col]]
+                ),
+                linewidth = 0.8,
+                show.legend = TRUE
+            )
+    } else {
+        p <- p +
+            ggplot2::geom_segment(
+                ggplot2::aes(
+                    x = .data[[xmin]],
+                    xend = .data[[xmax]],
+                    y = y_pos,
+                    yend = y_pos,
+                    color = .data[[label_col]]
+                ),
+                linewidth = 0.8,
+                show.legend = TRUE
+            )
+    }
+
+    # ---- points ----
+    if (is.null(group_col)) {
+        p <- p +
+            ggplot2::geom_point(
+                ggplot2::aes(y = y_pos, fill = .data[[label_col]]),
+                size = 4,
+                stroke = 0.4,
+                color = "black",
+                shape = 21,
+                show.legend = FALSE
+            )
+    } else if (style == "shape") {
+        p <- p +
+            ggplot2::geom_point(
+                ggplot2::aes(
+                    y = y_pos,
+                    fill = .data[[label_col]],
+                    shape = .data[[group_col]]
+                ),
+                size = 4,
+                stroke = 0.4,
+                color = "black",
+                show.legend = c(fill = FALSE, shape = TRUE)
+            ) +
+            ggplot2::scale_shape_manual(
+                values = point_shapes[seq_len(nlevels(d[[group_col]]))]
+            ) +
+            ggplot2::guides(
+                color = ggplot2::guide_legend(
+                    override.aes = list(linewidth = 1.2)
+                ),
+                shape = ggplot2::guide_legend(
+                    override.aes = list(linetype = 0, linewidth = 0)
+                )
+            )
+    } else {
+        p <- p +
+            ggplot2::geom_point(
+                ggplot2::aes(y = y_pos, fill = .data[[group_col]]),
+                size = 4,
+                stroke = 0.4,
+                color = "black",
+                shape = 21,
+                show.legend = FALSE
+            ) +
+            ggplot2::guides(
+                color = ggplot2::guide_legend(
+                    override.aes = list(linewidth = 1.2)
+                )
+            )
+    }
+
+    # ---- scales & theme ----
+    p <- p +
+        ggplot2::scale_y_continuous(
+            breaks = seq_len(n_units),
+            labels = rev(units), # y=1 is bottom, so rev() maps units back correctly
+            limits = c(min(d$y_pos) - 0.5, max(d$y_pos) + 0.5),
+            expand = c(0, 0)
+        ) +
+        ggplot2::labs(x = "Estimate", y = NULL) +
+        ggplot2::theme_bw() +
+        ggplot2::theme(axis.text.y = ggplot2::element_text(face = "bold"))
+
+    # ---- optional p-value panel ----
+    if (!is.null(pvalue_col)) {
+        if (!requireNamespace("patchwork", quietly = TRUE)) {
+            stop("Package 'patchwork' is required when pvalue_col is supplied.")
+        }
+
+        # Check that pvalue_col is constant (ignoring NA) within each label_col group
+        non_constant <- vapply(
+            units,
+            function(u) {
+                vals <- d[[pvalue_col]][as.character(d[[label_col]]) == u]
+                vals <- vals[!is.na(vals)]
+                length(unique(vals)) > 1
+            },
+            logical(1)
+        )
+
+        if (any(non_constant)) {
+            bad <- units[non_constant]
+            stop(
+                "pvalue_col must be constant within each ",
+                label_col,
+                " group. ",
+                "Non-constant values found in: ",
+                paste(bad, collapse = ", ")
+            )
+        }
+
+        p <- p +
+            ggplot2::theme(
+                legend.position = "left",
+                plot.margin = ggplot2::margin(5.5, 5.5, 5.5, 5.5)
+            )
+
+        # one row per label_col unit, preserving factor level order
+        pv_data <- do.call(
+            rbind,
+            lapply(units, function(u) {
+                rows <- d[as.character(d[[label_col]]) == u, , drop = FALSE]
+                rows[1, c(label_col, pvalue_col), drop = FALSE]
+            })
+        )
+
+        pv_data[[label_col]] <- factor(
+            pv_data[[label_col]],
+            levels = rev(units)
+        )
+
+        pv_plot <- plot_pvalue_barplot(
+            data = pv_data,
+            x = pvalue_col,
+            y = label_col,
+            show_y_labels = FALSE,
+            ...
+        ) +
+            ggplot2::scale_y_discrete(
+                limits = rev(units),
+                expand = c(0, 0)
+            ) +
+            ggplot2::coord_cartesian(ylim = c(0.5, n_units + 0.5)) +
+            ggplot2::theme(plot.margin = ggplot2::margin(5.5, 5.5, 5.5, 0))
+
+        return(
+            patchwork::wrap_plots(
+                p,
+                pv_plot,
+                widths = c(1, pvalue_plot_width)
+            ) +
+                patchwork::plot_layout(axes = "collect_y")
+        )
+    }
+
+    p
+}

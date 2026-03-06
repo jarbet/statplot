@@ -2,6 +2,17 @@
 
 ## Added
 
+## Changed
+
+## Fixed
+
+* ...
+
+# statplot 0.2.0 - 2026-03-06
+
+## Added
+
+* `plot_dot_whiskers` for plotting effect sizes and confidence intervals, optionally by group and with pvalue barplot
 * `plot_heatmap`
     + By default, white gridlines around cells
     + Add support for categorical heatmaps
@@ -18,12 +29,6 @@
     + option to show q-values for the combined pvalue barplot
     + 5 methods are supported when combining pvalues
     + show an x symbol if dot is missing
-
-## Changed
-
-## Fixed
-
-* ...
 
 # statplot 0.1.0 - 2026-01-01
 
