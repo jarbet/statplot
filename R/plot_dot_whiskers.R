@@ -15,7 +15,7 @@
 #' @param label_col String name of the label/row identifier column. Default `"cell_line"`.
 #' @param dodge_width Numeric. Total vertical spread across groups. Default `0.3`.
 #' @param style String. Controls group encoding when `group_col` is supplied.
-#'   `"shape"` (default) uses the same color per `label_col` row and different
+#'   `"shape"` uses the same color per `label_col` row and different
 #'   point shapes per group. `"color"` uses the same point shape for all groups
 #'   but different colors per group, and draws horizontal lines between rows.
 #' @param sep_linetype Line type for row separator lines when `style = "color"`. Default `"solid"`.
@@ -35,7 +35,6 @@
 #'   `pvalue_col` is supplied.
 #' @return A ggplot2 object, or a patchwork object when `pvalue_col` is supplied.
 #' @export
-#' @import ggplot2
 #' @examples
 #' df <- data.frame(
 #'   cell_line = c("A", "A", "B", "B", "C", "C"),
@@ -71,6 +70,60 @@ plot_dot_whiskers <- function(
     ...
 ) {
     style <- match.arg(style)
+
+    # ---- input validation ----
+    stopifnot(
+        "data must be a data.frame or tibble" = is.data.frame(data),
+        "x must be a single string" = is.character(x) && length(x) == 1,
+        "xmin must be a single string" = is.character(xmin) &&
+            length(xmin) == 1,
+        "xmax must be a single string" = is.character(xmax) &&
+            length(xmax) == 1,
+        "label_col must be a single string" = is.character(label_col) &&
+            length(label_col) == 1,
+        "x must be a column in data" = x %in% names(data),
+        "xmin must be a column in data" = xmin %in% names(data),
+        "xmax must be a column in data" = xmax %in% names(data),
+        "label_col must be a column in data" = label_col %in% names(data),
+        "group_col must be NULL or a single string" = is.null(group_col) ||
+            (is.character(group_col) && length(group_col) == 1),
+        "group_col must be a column in data" = is.null(group_col) ||
+            group_col %in% names(data),
+        "pvalue_col must be NULL or a single string" = is.null(pvalue_col) ||
+            (is.character(pvalue_col) && length(pvalue_col) == 1),
+        "pvalue_col must be a column in data" = is.null(pvalue_col) ||
+            pvalue_col %in% names(data),
+        "dodge_width must be a single non-negative number" = is.numeric(
+            dodge_width
+        ) &&
+            length(dodge_width) == 1 &&
+            dodge_width >= 0,
+        "sep_linewidth must be a single positive number" = is.numeric(
+            sep_linewidth
+        ) &&
+            length(sep_linewidth) == 1 &&
+            sep_linewidth > 0,
+        "sep_linetype must be a single string" = is.character(sep_linetype) &&
+            length(sep_linetype) == 1,
+        "sep_color must be a single string" = is.character(sep_color) &&
+            length(sep_color) == 1,
+        "vline_xintercept must be a single number" = is.numeric(
+            vline_xintercept
+        ) &&
+            length(vline_xintercept) == 1,
+        "vline_linetype must be a single string" = is.character(
+            vline_linetype
+        ) &&
+            length(vline_linetype) == 1,
+        "vline_color must be a single string" = is.character(vline_color) &&
+            length(vline_color) == 1,
+        "pvalue_plot_width must be a single positive number" = is.numeric(
+            pvalue_plot_width
+        ) &&
+            length(pvalue_plot_width) == 1 &&
+            pvalue_plot_width > 0
+    )
+
     d <- data
 
     # ---- auto-generate y_num ----
@@ -82,11 +135,7 @@ plot_dot_whiskers <- function(
     if (!is.null(group_col)) {
         groups <- sort(unique(d[[group_col]]))
         n_groups <- length(groups)
-        offsets <- seq(
-            from = dodge_width / 2 * (n_groups - 1),
-            to = -dodge_width / 2 * (n_groups - 1),
-            length.out = n_groups
-        )
+        offsets <- seq(dodge_width / 2, -dodge_width / 2, length.out = n_groups)
         names(offsets) <- groups
         d$y_pos <- d$y_num + offsets[d[[group_col]]]
     } else {
@@ -125,7 +174,8 @@ plot_dot_whiskers <- function(
                     yend = y_pos,
                     color = .data[[group_col]]
                 ),
-                linewidth = 0.8
+                linewidth = 0.8,
+                show.legend = TRUE
             )
     } else {
         p <- p +
@@ -137,7 +187,8 @@ plot_dot_whiskers <- function(
                     yend = y_pos,
                     color = .data[[label_col]]
                 ),
-                linewidth = 0.8
+                linewidth = 0.8,
+                show.legend = TRUE # drives the color legend for style = "shape"
             )
     }
 
@@ -149,7 +200,8 @@ plot_dot_whiskers <- function(
                 size = 4,
                 stroke = 0.4,
                 color = "black",
-                shape = 21
+                shape = 21,
+                show.legend = FALSE # legend already shown via segments
             )
     } else if (style == "shape") {
         p <- p +
@@ -161,7 +213,21 @@ plot_dot_whiskers <- function(
                 ),
                 size = 4,
                 stroke = 0.4,
-                color = "black"
+                color = "black",
+                show.legend = c(fill = FALSE, shape = TRUE) # only shape legend from points
+            ) +
+            ggplot2::scale_shape_manual(
+                values = c(21, 24, 22, 25, 23)[seq_along(sort(unique(d[[
+                    group_col
+                ]])))]
+            ) +
+            ggplot2::guides(
+                color = ggplot2::guide_legend(
+                    override.aes = list(linewidth = 1.2)
+                ),
+                shape = ggplot2::guide_legend(
+                    override.aes = list(linetype = 0, linewidth = 0)
+                )
             )
     } else {
         p <- p +
@@ -170,7 +236,13 @@ plot_dot_whiskers <- function(
                 size = 4,
                 stroke = 0.4,
                 color = "black",
-                shape = 21
+                shape = 21,
+                show.legend = FALSE
+            ) +
+            ggplot2::guides(
+                color = ggplot2::guide_legend(
+                    override.aes = list(linewidth = 1.2)
+                )
             )
     }
 
@@ -182,7 +254,7 @@ plot_dot_whiskers <- function(
         ggplot2::scale_y_continuous(
             breaks = y_breaks,
             labels = names(y_breaks),
-            limits = c(0.5, length(units) + 0.5),
+            limits = c(min(d$y_pos) - 0.5, max(d$y_pos) + 0.5),
             expand = c(0, 0)
         ) +
         ggplot2::labs(x = "Estimate", y = NULL) +
@@ -225,7 +297,10 @@ plot_dot_whiskers <- function(
         ) +
             ggplot2::scale_y_discrete(
                 limits = rev(units),
-                expand = ggplot2::expansion(add = 0.5)
+                expand = c(0, 0)
+            ) +
+            ggplot2::coord_cartesian(
+                ylim = c(0.5, length(units) + 0.5)
             ) +
             ggplot2::theme(
                 plot.margin = ggplot2::margin(5.5, 5.5, 5.5, 0)

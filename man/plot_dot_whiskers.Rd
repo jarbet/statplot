@@ -42,7 +42,7 @@ points are offset by group for visibility.}
 \item{dodge_width}{Numeric. Total vertical spread across groups. Default \code{0.3}.}
 
 \item{style}{String. Controls group encoding when \code{group_col} is supplied.
-\code{"shape"} (default) uses the same color per \code{label_col} row and different
+\code{"shape"} uses the same color per \code{label_col} row and different
 point shapes per group. \code{"color"} uses the same point shape for all groups
 but different colors per group, and draws horizontal lines between rows.}
 
