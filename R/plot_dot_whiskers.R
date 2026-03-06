@@ -127,17 +127,17 @@ plot_dot_whiskers <- function(
     d <- data
 
     # ---- auto-generate y_num ----
-    units <- unique(d[[label_col]])
+    units <- unique(as.character(d[[label_col]]))
     y_num_map <- setNames(rev(seq_along(units)), units)
-    d$y_num <- y_num_map[d[[label_col]]]
+    d$y_num <- y_num_map[as.character(d[[label_col]])]
 
     # ---- auto-generate y_pos (dodged per group) ----
     if (!is.null(group_col)) {
-        groups <- sort(unique(d[[group_col]]))
+        groups <- sort(unique(as.character(d[[group_col]])))
         n_groups <- length(groups)
         offsets <- seq(dodge_width / 2, -dodge_width / 2, length.out = n_groups)
         names(offsets) <- groups
-        d$y_pos <- d$y_num + offsets[d[[group_col]]]
+        d$y_pos <- d$y_num + offsets[as.character(d[[group_col]])]
     } else {
         d$y_pos <- d$y_num
     }
