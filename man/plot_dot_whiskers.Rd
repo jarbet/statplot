@@ -28,8 +28,10 @@ plot_dot_whiskers(
 \item{data}{A data.frame or tibble containing the columns referenced by
 \code{x}, \code{xmin}, \code{xmax}, and \code{label_col}.}
 
-\item{group_col}{Optional string name of a grouping column. When provided,
-points are offset by group for visibility.}
+\item{group_col}{Optional string name of a \strong{factor} grouping column. When
+provided, points are offset by group for visibility. Factor levels
+control the ordering and direction of the dodge offset: the first level
+is plotted at the top of each row.}
 
 \item{x}{String name of the estimate column. Default \code{"est"}.}
 
@@ -37,14 +39,16 @@ points are offset by group for visibility.}
 
 \item{xmax}{String name of the upper-interval column. Default \code{"conf.high"}.}
 
-\item{label_col}{String name of the label/row identifier column. Default \code{"cell_line"}.}
+\item{label_col}{String name of the label/row identifier column. Must be a
+\strong{factor}; factor levels control the top-to-bottom row ordering (first
+level appears at the top). Default \code{"cell_line"}.}
 
 \item{dodge_width}{Numeric. Total vertical spread across groups. Default \code{0.3}.}
 
 \item{style}{String. Controls group encoding when \code{group_col} is supplied.
-\code{"shape"} uses the same color per \code{label_col} row and different
-point shapes per group. \code{"color"} uses the same point shape for all groups
-but different colors per group, and draws horizontal lines between rows.}
+\code{"color"} (default) uses different colors per group and draws horizontal
+separator lines between rows. \code{"shape"} uses the same color per
+\code{label_col} row and different point shapes per group.}
 
 \item{sep_linetype}{Line type for row separator lines when \code{style = "color"}. Default \code{"solid"}.}
 
@@ -60,18 +64,20 @@ but different colors per group, and draws horizontal lines between rows.}
 
 \item{pvalue_col}{Optional string name of a column in \code{data} containing one
 p-value per \code{label_col} row. When supplied, a \code{\link[=plot_pvalue_barplot]{plot_pvalue_barplot()}} is
-appended to the right using patchwork. The p-value data is derived by
-taking the first value per \code{label_col} group, so the column must be
-constant within each row. Requires the \pkg{patchwork} package.}
+appended to the right using patchwork. The p-value used for each row is
+taken from the first occurrence within that \code{label_col} group, so the
+column must be constant within each row. Requires the \pkg{patchwork}
+package.}
 
 \item{pvalue_plot_width}{Relative width of the p-value panel passed to
-patchwork \code{widths}. Default \code{0.3}.}
+\code{patchwork::wrap_plots()} \code{widths}. Default \code{0.3}.}
 
 \item{...}{Additional arguments passed to \code{\link[=plot_pvalue_barplot]{plot_pvalue_barplot()}} when
 \code{pvalue_col} is supplied.}
 }
 \value{
-A ggplot2 object, or a patchwork object when \code{pvalue_col} is supplied.
+A \code{ggplot2} object, or a \code{patchwork} object when \code{pvalue_col} is
+supplied.
 }
 \description{
 Create a horizontal dot-and-whisker plot showing point estimates and
@@ -81,17 +87,26 @@ append a p-value barplot to the right via patchwork.
 }
 \examples{
 df <- data.frame(
-  cell_line = c("A", "A", "B", "B", "C", "C"),
+  cell_line = factor(c("A", "A", "B", "B", "C", "C"), levels = c('A', 'B', 'C')),
   est       = c(0.2, 0.35, -0.1, 0.05, 0.5, 0.3),
   conf.low  = c(0.0, 0.10, -0.3, -0.10, 0.2, 0.1),
   conf.high = c(0.4, 0.60,  0.1,  0.20, 0.8, 0.5),
-  group     = c("g1", "g2", "g1", "g2", "g1", "g2"),
+  group     = factor(c("g1", "g2", "g1", "g2", "g1", "g2"), levels = c("g1", "g2")),
   pvalue    = c(0.01, 0.01, 0.4, 0.4, 0.001, 0.001)
 )
+
+# color style: groups distinguished by color, separator lines between rows
 plot_dot_whiskers(df, group_col = "group", style = "color")
+
+# shape style: groups distinguished by point shape, rows colored by label
 plot_dot_whiskers(df, group_col = "group", style = "shape")
+
+# with p-value barplot appended on the right
 plot_dot_whiskers(
-  df, group_col = "group", style = "color",
-  pvalue_col = "pvalue", mlog10_transform_pvalue = TRUE
+  df,
+  group_col  = "group",
+  style      = "color",
+  pvalue_col = "pvalue",
+  mlog10_transform_pvalue = TRUE
 )
 }
