@@ -19,6 +19,7 @@ plot_dot_whiskers(
   vline_xintercept = 0,
   vline_linetype = "dashed",
   vline_color = "black",
+  point_shapes = c(21, 24, 22, 25, 23),
   pvalue_col = NULL,
   pvalue_plot_width = 0.3,
   ...
@@ -61,6 +62,11 @@ separator lines between rows. \code{"shape"} uses the same color per
 \item{vline_linetype}{Line type for the vertical reference line. Default \code{"dashed"}.}
 
 \item{vline_color}{Color for the vertical reference line. Default \code{"black"}.}
+
+\item{point_shapes}{Integer vector of point shapes to use when
+\code{style = "shape"}. Must have at least as many elements as there are
+levels in \code{group_col}. Defaults to \code{c(21, 24, 22, 25, 23)} (up to 5
+groups). See \code{\link[graphics:points]{graphics::points()}} for shape codes.}
 
 \item{pvalue_col}{Optional string name of a column in \code{data} containing one
 p-value per \code{label_col} row. When supplied, a \code{\link[=plot_pvalue_barplot]{plot_pvalue_barplot()}} is

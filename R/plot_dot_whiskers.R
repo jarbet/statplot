@@ -28,6 +28,10 @@
 #' @param vline_xintercept Numeric. Position of the vertical reference line. Default `0`.
 #' @param vline_linetype Line type for the vertical reference line. Default `"dashed"`.
 #' @param vline_color Color for the vertical reference line. Default `"black"`.
+#' @param point_shapes Integer vector of point shapes to use when
+#'   `style = "shape"`. Must have at least as many elements as there are
+#'   levels in `group_col`. Defaults to `c(21, 24, 22, 25, 23)` (up to 5
+#'   groups). See [graphics::points()] for shape codes.
 #' @param pvalue_col Optional string name of a column in `data` containing one
 #'   p-value per `label_col` row. When supplied, a [plot_pvalue_barplot()] is
 #'   appended to the right using patchwork. The p-value used for each row is
@@ -82,6 +86,7 @@ plot_dot_whiskers <- function(
     vline_xintercept = 0,
     vline_linetype = "dashed",
     vline_color = "black",
+    point_shapes = c(21, 24, 22, 25, 23),
     pvalue_col = NULL,
     pvalue_plot_width = 0.3,
     ...
@@ -143,8 +148,32 @@ plot_dot_whiskers <- function(
             pvalue_plot_width
         ) &&
             length(pvalue_plot_width) == 1 &&
-            pvalue_plot_width > 0
+            pvalue_plot_width > 0,
+        "point_shapes must be a numeric or integer vector" = is.numeric(
+            point_shapes
+        ) &&
+            length(point_shapes) >= 1
     )
+
+    # Validate point_shapes length against number of groups when style = "shape"
+    if (!is.null(group_col) && style == "shape") {
+        n_groups_check <- nlevels(data[[group_col]])
+        if (length(point_shapes) < n_groups_check) {
+            stop(
+                "point_shapes has ",
+                length(point_shapes),
+                " element(s) but ",
+                "group_col '",
+                group_col,
+                "' has ",
+                n_groups_check,
+                " levels. ",
+                "Provide a point_shapes vector with at least ",
+                n_groups_check,
+                " elements."
+            )
+        }
+    }
 
     d <- data
 
@@ -245,9 +274,7 @@ plot_dot_whiskers <- function(
                 show.legend = c(fill = FALSE, shape = TRUE)
             ) +
             ggplot2::scale_shape_manual(
-                values = c(21, 24, 22, 25, 23)[seq_along(levels(d[[
-                    group_col
-                ]]))]
+                values = point_shapes[seq_len(nlevels(d[[group_col]]))]
             ) +
             ggplot2::guides(
                 color = ggplot2::guide_legend(
