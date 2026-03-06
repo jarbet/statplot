@@ -2,6 +2,7 @@
 
 ## Added
 
+* `plot_dot_whiskers` for plotting effect sizes and confidence intervals, optionally by group and with pvalue barplot
 * `plot_heatmap`
     + By default, white gridlines around cells
     + Add support for categorical heatmaps
