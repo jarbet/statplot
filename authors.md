@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/StatGenCore/statplot/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/StatGenCore/statplot/blob/v0.2.0/DESCRIPTION)
 
 Jaron Arbet (2026). *statplot: Convenient Tools for Generating Standard
 Statistical Plots*. R package version 0.2.0,
