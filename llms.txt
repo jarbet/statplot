@@ -33,6 +33,8 @@ pak::pak("StatGenCore/statplot")
   : Stacked percent bar chart for two categorical variables
 - [`plot_bars()`](https://statgencore.github.io/statplot/reference/plot_bars.md)
   : Bar plot by group
+- [`plot_dot_whiskers()`](https://statgencore.github.io/statplot/reference/plot_dot_whiskers.md)
+  : Dot-and-whisker plot of estimates with confidence intervals
 - [`plot_dotmap()`](https://statgencore.github.io/statplot/reference/plot_dotmap.md)
   : Create a dotmap showing effect size (dot size & color) and p-value
   (tile fill)
