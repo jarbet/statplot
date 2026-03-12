@@ -24,7 +24,9 @@
   be between 0 and 1.
 - [`plot_heatmap()`](https://statgencore.github.io/statplot/reference/plot_heatmap.md)
   : Plot a heatmap from tidy data
-- [`plot_numeric_by_group()`](https://statgencore.github.io/statplot/reference/plot_numeric_by_group.md)
+- [`plot_numeric_by_2groups()`](https://statgencore.github.io/statplot/reference/plot_numeric_by_2groups.md)
+  : Violin + boxplot with Wilcoxon rank-sum test
+- [`plot_numeric_by_3plusgroups()`](https://statgencore.github.io/statplot/reference/plot_numeric_by_3plusgroups.md)
   : Violin + boxplot of a numeric variable by a grouping factor
 - [`plot_pvalue_barplot()`](https://statgencore.github.io/statplot/reference/plot_pvalue_barplot.md)
   : Plot p-value barplot

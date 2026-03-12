@@ -165,4 +165,22 @@ plot_dot_whiskers(
 )
 #> Scale for y is already present.
 #> Adding another scale for y, which will replace the existing scale.
+
+
+# no grouping, with p-value barplot appended on the right
+df_single <- data.frame(
+  cell_line = factor(c("A", "B", "C"), levels = c("A", "B", "C")),
+  est       = c(0.2, -0.1, 0.5),
+  conf.low  = c(0.0, -0.3, 0.2),
+  conf.high = c(0.4,  0.1, 0.8),
+  pvalue    = c(0.01, 0.4, 0.001)
+)
+
+plot_dot_whiskers(
+  df_single,
+  pvalue_col = "pvalue",
+  mlog10_transform_pvalue = TRUE
+)
+#> Scale for y is already present.
+#> Adding another scale for y, which will replace the existing scale.
 ```
