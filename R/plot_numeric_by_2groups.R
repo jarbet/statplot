@@ -55,7 +55,7 @@ plot_numeric_by_2groups <- function(
     wilcox_res <- broom::tidy(w, conf.int = TRUE)
     wilcox_res$outcome <- yvar
     pval <- w$p.value
-    pval_text <- statplot::format_pvalue(pval)
+    pval_text <- format_pvalue(pval)
 
     fmt <- paste0(
         'Median difference: %.',
