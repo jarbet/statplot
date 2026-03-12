@@ -36,12 +36,20 @@ plot_numeric_by_2groups <- function(
     stopifnot(is.numeric(digits), length(digits) == 1, digits >= 0)
 
     d_sub <- d[!is.na(d[[yvar]]) & !is.na(d[[group]]), ]
-    d_sub[[group]] <- as.factor(d_sub[[group]])
 
-    if (nrow(d_sub) == 0L || length(levels(d_sub[[group]])) != 2L) {
+    # drop any leftover factor levels for the grouping variable so that later
+    # checks and coloring logic reflect only the observed groups.  This also
+    # ensures an early, friendly error if one of the two original levels
+    # disappears after filtering (see tests).
+    d_sub[[group]] <- droplevels(d_sub[[group]])
+
+    # require that both levels are present with at least one observation each
+    counts <- table(d_sub[[group]])
+    if (length(counts) != 2L || any(counts == 0L)) {
         stop(
-            "After removing missing values, '", group,
-            "' must have exactly 2 non-empty levels with at least one observation each."
+            "must have observations in both levels of '",
+            group,
+            "' after removing missing values"
         )
     }
 
