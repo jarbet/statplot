@@ -38,14 +38,10 @@ plot_numeric_by_2groups <- function(
     d_sub <- d[!is.na(d[[yvar]]) & !is.na(d[[group]]), ]
     d_sub[[group]] <- as.factor(d_sub[[group]])
 
-    # after filtering, ensure both factor levels still have observations; otherwise
-    # wilcox.test will fail with "grouping factor must have exactly 2 levels"
-    freq <- table(d_sub[[group]])
-    if (length(freq) != 2 || any(freq == 0)) {
+    if (nrow(d_sub) == 0L || length(levels(d_sub[[group]])) != 2L) {
         stop(
-            "after removing missing values, '",
-            group,
-            "' must have observations in both levels"
+            "After removing missing values, '", group,
+            "' must have exactly 2 non-empty levels with at least one observation each."
         )
     }
 
@@ -66,7 +62,7 @@ plot_numeric_by_2groups <- function(
     wilcox_res <- broom::tidy(w, conf.int = TRUE)
     wilcox_res$outcome <- yvar
     pval <- w$p.value
-    pval_text <- statplot::format_pvalue(pval)
+    pval_text <- format_pvalue(pval)
 
     fmt <- paste0(
         'Median difference: %.',
