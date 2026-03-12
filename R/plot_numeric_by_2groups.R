@@ -37,6 +37,12 @@ plot_numeric_by_2groups <- function(
 
     d_sub <- d[!is.na(d[[yvar]]) & !is.na(d[[group]]), ]
     d_sub[[group]] <- as.factor(d_sub[[group]])
+    if (nrow(d_sub) == 0L || length(levels(d_sub[[group]])) != 2L) {
+        stop(
+            "After removing missing values, '", group,
+            "' must have exactly 2 non-empty levels with at least one observation each."
+        )
+    }
     if (is.null(title)) {
         title <- paste0(yvar, " by ", group)
     }
