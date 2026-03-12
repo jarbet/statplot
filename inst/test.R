@@ -1,33 +1,31 @@
 devtools::load_all()
+library(ggpubr)
+library(rstatix) # optional: for tidy tests
 
-set.seed(42)
-genes <- paste0("gene", 1:6)
-df <- expand.grid(
-    col = c("Aaaaaaaaaaaaaaaa", "Bbbbbbbbbbbbb", "Cccccccccccccc"),
-    row = genes,
-    stringsAsFactors = FALSE
+# df: columns group (factor), value (numeric), maybe subgroup (factor)
+set.seed(123)
+df <- data.frame(
+    group = rep(c("A", "B", "C"), each = 30),
+    value = rnorm(90, mean = rep(c(5.0, 5.8, 6.3), each = 30), sd = 1)
 )
-df$effect <- rnorm(nrow(df), mean = 0, sd = 1.2) # realistic effect sizes
-df$mlog10_p <- runif(nrow(df), min = 0, max = 3) # -log10(p) between 0 and 3
-df$p <- 10^(-df$mlog10_p)
-df$row <- factor(df$row, levels = rev(genes))
-plot_dotmap(
+
+# Prism-style barplot with mean ± SE and p-values by pairwise t-tests
+ggbarplot(
     df,
-    x = "col",
-    y = "row",
-    effect = "effect",
-    p = "p",
-    mlog10_transform_pvalue = TRUE
-)
-# Add Fisher's combination pvalue barplot on the right which combines p-values across columns for each row category
-plot_dotmap(
-    df,
-    x = "col",
-    y = "row",
-    effect = "effect",
-    p = "p",
-    mlog10_transform_pvalue = TRUE,
-    add_combined_pvalue_barplot = TRUE,
-    combine_pvalue_method = "CMC",
-    xlab_angle = 45
-)
+    x = "group",
+    y = "value",
+    add = "mean_se",
+    color = "group",
+    fill = "group",
+    palette = "npg", # or "jco", "aaas", etc.
+    width = 0.7
+) +
+    stat_compare_means(method = "anova") + # overall test
+    stat_compare_means(
+        comparisons = list(c("A", "B"), c("A", "C"), c("B", "C")),
+        method = "t.test",
+        label = "p.signif",
+        hide.ns = TRUE
+    ) +
+    labs(x = NULL, y = "Outcome (mean ± SE)") +
+    theme_pubr(base_size = 12)
