@@ -22,7 +22,7 @@ plot_numeric_by_2groups(
 
 \item{title}{character Optional plot title. If NULL, a default is generated.}
 
-\item{colors}{character vector Length-2 vector of fill colours (default c('white', 'white')); if NULL the default ggplot2 fill scale is used.}
+\item{colors}{character vector Length-2 vector of fill colours (default c('white', 'white')); if NULL the default ggplot2 fill scale is used.  When supplied, must be a character vector with length equal to the number of groups (two after filtering); if it has names, they must exactly match the factor levels.}
 
 \item{digits}{numeric(1) Number of decimal places to use in the subtitle statistics.}
 }

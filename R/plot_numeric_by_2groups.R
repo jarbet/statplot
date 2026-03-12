@@ -7,7 +7,7 @@
 #' @param group character(1) Name of the factor column in `d` (must have 2 levels).
 #' @param d data.frame Data containing `yvar` and `group`.
 #' @param title character Optional plot title. If NULL, a default is generated.
-#' @param colors character vector Length-2 vector of fill colours (default c('white', 'white')); if NULL the default ggplot2 fill scale is used.
+#' @param colors character vector Length-2 vector of fill colours (default c('white', 'white')); if NULL the default ggplot2 fill scale is used.  When supplied, must be a character vector with length equal to the number of groups (two after filtering); if it has names, they must exactly match the factor levels.
 #' @param digits numeric(1) Number of decimal places to use in the subtitle statistics.
 #' @return A list with elements:
 #' \describe{
@@ -19,7 +19,7 @@
 #' res <- plot_numeric_by_2groups("mpg", "am", mtcars)
 #' res$ggplot
 #' res$wilcox
-#' @importFrom stats wilcox.test
+#' @importFrom stats wilcox.test reformulate
 #' @importFrom broom tidy
 #' @export
 plot_numeric_by_2groups <- function(
@@ -37,12 +37,29 @@ plot_numeric_by_2groups <- function(
 
     d_sub <- d[!is.na(d[[yvar]]) & !is.na(d[[group]]), ]
     d_sub[[group]] <- as.factor(d_sub[[group]])
+
+    # after filtering, ensure both factor levels still have observations; otherwise
+    # wilcox.test will fail with "grouping factor must have exactly 2 levels"
+    freq <- table(d_sub[[group]])
+    if (length(freq) != 2 || any(freq == 0)) {
+        stop(
+            "after removing missing values, '",
+            group,
+            "' must have observations in both levels"
+        )
+    }
+
     if (is.null(title)) {
         title <- paste0(yvar, " by ", group)
     }
 
+    # build formula with backticks so names with spaces or symbols are supported
+    f <- stats::reformulate(
+        sprintf("`%s`", group),
+        response = sprintf("`%s`", yvar)
+    )
     w <- stats::wilcox.test(
-        stats::as.formula(paste0(yvar, " ~ ", group)),
+        f,
         data = d_sub,
         conf.int = TRUE
     )
@@ -97,7 +114,13 @@ plot_numeric_by_2groups <- function(
     x_labels <- paste0(group_levels, "\n(n=", counts, ")")
     p <- p + ggplot2::scale_x_discrete(labels = x_labels)
 
+    # validate colours if supplied; checks mirror plot_numeric_by_3plusgroups
     if (!is.null(colors)) {
+        stopifnot(is.character(colors))
+        stopifnot(length(colors) == length(group_levels))
+        if (!is.null(names(colors))) {
+            stopifnot(setequal(names(colors), group_levels))
+        }
         p <- p + ggplot2::scale_fill_manual(values = colors)
     }
 
