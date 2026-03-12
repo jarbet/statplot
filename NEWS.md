@@ -2,7 +2,13 @@
 
 ## Added
 
+* `plot_numeric_by_3plusgroups` for creating violin + boxplots of a numeric variable by a grouping factor, with optional effect size and pairwise Wilcoxon test letters.
+* `plot_numeric_by_2groups` for creating violin + boxplots of a numeric variable by a grouping factor with exactly 2 levels
+
 ## Changed
+
+* Use `stats::reformulate()` with backticks when building formulas in numeric-by-group plotting functions to support non-syntactic column names (fixes issue with spaces/hyphens).
+
 
 ## Fixed
 
