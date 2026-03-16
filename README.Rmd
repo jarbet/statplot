@@ -29,4 +29,7 @@ You can install the development version of statplot from [GitHub](https://github
 
 ``` r
 pak::pak("StatGenCore/statplot")
+
+# Or you can try remotes:
+# remotes::install_github("StatGenCore/statplot")
 ```

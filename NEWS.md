@@ -2,6 +2,16 @@
 
 ## Added
 
+* `run_gsea`: wrapper around `clusterProfiler::GSEA()` for gene set enrichment
+  analysis on a pre-ranked gene vector; returns results alongside the inputs
+  needed by the pathway plotting functions below.
+* `plot_pathways`: gene–pathway bipartite network (cnetplot) showing the top
+  GSEA pathways and their constituent genes, with nodes colored by fold change.
+* `plot_pathway_correlation_network`: gene–gene Pearson correlation network for
+  a single pathway, with edges filtered by a correlation threshold and nodes
+  colored by fold change and sized by degree (hub genes appear larger).
+* Example datasets `ex_expr_pathway`, `ex_log2fc_pathway`, and `hallmark_t2g`
+  bundled to support pathway analysis examples and vignettes.
 * `plot_numeric_by_3plusgroups` for creating violin + boxplots of a numeric variable by a grouping factor, with optional effect size and pairwise Wilcoxon test letters.
 * `plot_numeric_by_2groups` for creating violin + boxplots of a numeric variable by a grouping factor with exactly 2 levels
 

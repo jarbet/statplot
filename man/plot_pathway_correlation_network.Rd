@@ -20,7 +20,8 @@ plot_pathway_correlation_network(
   title = sprintf("Gene-Gene correlation network for pathway: \%s", pathway),
   label_size = 3,
   label_bold = TRUE,
-  show_size_legend = TRUE
+  show_size_legend = TRUE,
+  seed = 42L
 )
 }
 \arguments{
@@ -72,6 +73,13 @@ values.  Defaults to the 2nd color of the \code{PiYG} palette.}
 
 \item{show_size_legend}{logical(1) Whether to display the node-size legend
 ("# connections") (default \code{TRUE}).}
+
+\item{seed}{integer(1) or \code{NULL}.  Random seed used for the
+Fruchterman-Reingold layout so the graph is drawn the same way each time.
+The caller's RNG state is saved before the seed is set and fully restored
+on exit, so using this function does \strong{not} affect subsequent random
+operations in the session.  Pass \code{NULL} to skip seeding entirely
+(default \code{42L}).}
 }
 \value{
 A ggplot2 object, or \code{NULL} (invisibly) when fewer than 3 pathway

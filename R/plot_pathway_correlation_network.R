@@ -44,6 +44,12 @@
 #' @param label_bold logical(1) Whether gene labels are bold (default `TRUE`).
 #' @param show_size_legend logical(1) Whether to display the node-size legend
 #'   ("# connections") (default `TRUE`).
+#' @param seed integer(1) or `NULL`.  Random seed used for the
+#'   Fruchterman-Reingold layout so the graph is drawn the same way each time.
+#'   The caller's RNG state is saved before the seed is set and fully restored
+#'   on exit, so using this function does **not** affect subsequent random
+#'   operations in the session.  Pass `NULL` to skip seeding entirely
+#'   (default `42L`).
 #'
 #' @return A ggplot2 object, or `NULL` (invisibly) when fewer than 3 pathway
 #'   genes are present in `expr` or no gene pairs pass `cor_thresh`.
@@ -85,7 +91,8 @@ plot_pathway_correlation_network <- function(
     title = sprintf("Gene-Gene correlation network for pathway: %s", pathway),
     label_size = 3,
     label_bold = TRUE,
-    show_size_legend = TRUE
+    show_size_legend = TRUE,
+    seed = 42L
 ) {
     stopifnot(
         "expr must be a matrix with rownames" = is.matrix(expr) &&
@@ -159,7 +166,37 @@ plot_pathway_correlation_network <- function(
         directed = FALSE
     )
 
-    set.seed(42)
+    # Preserve the caller's RNG state so this function has no side-effects on
+    # subsequent random operations in the session.
+    if (!is.null(seed)) {
+        old_seed <- if (
+            exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+        ) {
+            .GlobalEnv$.Random.seed
+        } else {
+            NULL
+        }
+        on.exit(
+            {
+                if (is.null(old_seed)) {
+                    if (
+                        exists(
+                            ".Random.seed",
+                            envir = .GlobalEnv,
+                            inherits = FALSE
+                        )
+                    ) {
+                        rm(".Random.seed", envir = .GlobalEnv)
+                    }
+                } else {
+                    assign(".Random.seed", old_seed, envir = .GlobalEnv)
+                }
+            },
+            add = TRUE
+        )
+        set.seed(seed)
+    }
+
     ggraph::ggraph(g, layout = "fr") +
         ggraph::geom_edge_link(
             ggplot2::aes(
