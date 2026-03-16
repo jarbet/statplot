@@ -37,10 +37,14 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
+          extra-repositories: |
+            https://bioconductor.org/packages/release/bioc
+            https://bioconductor.org/packages/release/data/annotation
+            https://bioconductor.org/packages/release/data/experiment
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, bioc::BiocVersion
+          extra-packages: any::rcmdcheck
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
