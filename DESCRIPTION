@@ -17,16 +17,21 @@ Imports:
     BoutrosLab.plotting.general,
     broom,
     circlize,
+    clusterProfiler,
     ComplexHeatmap,
     dplyr,
     effectsize,
+    enrichplot,
     forcats,
     ggnewscale,
     ggplot2,
+    ggraph,
     ggsurvfit,
+    ggtangle,
     ggupset,
     grid,
     gtsummary,
+    igraph,
     labelled,
     multcompView,
     patchwork,
@@ -42,8 +47,6 @@ Imports:
     UpSetR
 URL: https://statgencore.github.io/statplot/
 BugReports: https://github.com/StatGenCore/statplot/issues
-Remotes: 
-    bioc::ComplexHeatmap
 Depends: 
     R (>= 4.1)
 LazyData: true
