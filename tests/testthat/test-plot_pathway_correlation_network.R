@@ -255,14 +255,14 @@ test_that("plot_pathway_correlation_network() returns NULL when fewer than 3 pat
 
 test_that("plot_pathway_correlation_network() returns NULL when no gene pairs pass cor_thresh", {
     skip_network_deps()
-    # cor_thresh > 1 is impossible to satisfy; guarantees zero edges
+    # cor_thresh = 1 is the upper bound; no random off-diagonal pair has |cor| == 1
     expect_message(
         result <- plot_pathway_correlation_network(
             expr = make_sim_expr(),
             pathway = "PATHWAY_A",
             gene_sets = make_sim_gs(),
             log2fc = make_sim_lfc(),
-            cor_thresh = 2
+            cor_thresh = 1
         ),
         "No gene pairs pass"
     )
@@ -324,4 +324,68 @@ test_that("plot_pathway_correlation_network() uses all genes when top_n_genes = 
     )
     expect_s3_class(p, "ggplot")
     expect_equal(nrow(as.data.frame(p$data)), n)
+})
+
+# ---------------------------------------------------------------------------
+# Input validation: top_n_genes and cor_thresh
+# ---------------------------------------------------------------------------
+
+test_that("plot_pathway_correlation_network() rejects non-positive top_n_genes", {
+    base_args <- list(
+        expr = make_sim_expr(),
+        pathway = "PATHWAY_A",
+        gene_sets = make_sim_gs(),
+        log2fc = make_sim_lfc()
+    )
+    expect_error(
+        do.call(
+            plot_pathway_correlation_network,
+            c(base_args, list(top_n_genes = 0))
+        ),
+        "top_n_genes"
+    )
+    expect_error(
+        do.call(
+            plot_pathway_correlation_network,
+            c(base_args, list(top_n_genes = -5))
+        ),
+        "top_n_genes"
+    )
+    expect_error(
+        do.call(
+            plot_pathway_correlation_network,
+            c(base_args, list(top_n_genes = c(10, 20)))
+        ),
+        "top_n_genes"
+    )
+})
+
+test_that("plot_pathway_correlation_network() rejects cor_thresh outside [0, 1]", {
+    base_args <- list(
+        expr = make_sim_expr(),
+        pathway = "PATHWAY_A",
+        gene_sets = make_sim_gs(),
+        log2fc = make_sim_lfc()
+    )
+    expect_error(
+        do.call(
+            plot_pathway_correlation_network,
+            c(base_args, list(cor_thresh = -0.1))
+        ),
+        "cor_thresh"
+    )
+    expect_error(
+        do.call(
+            plot_pathway_correlation_network,
+            c(base_args, list(cor_thresh = 1.1))
+        ),
+        "cor_thresh"
+    )
+    expect_error(
+        do.call(
+            plot_pathway_correlation_network,
+            c(base_args, list(cor_thresh = c(0.5, 0.8)))
+        ),
+        "cor_thresh"
+    )
 })

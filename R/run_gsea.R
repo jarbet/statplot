@@ -71,7 +71,30 @@ run_gsea <- function(
         "term2gene must be a data.frame with at least 2 columns" = is.data.frame(
             term2gene
         ) &&
-            ncol(term2gene) >= 2
+            ncol(term2gene) >= 2,
+        "p_cutoff must be a single numeric value in [0, 1]" = is.numeric(
+            p_cutoff
+        ) &&
+            length(p_cutoff) == 1 &&
+            is.finite(p_cutoff) &&
+            p_cutoff >= 0 &&
+            p_cutoff <= 1,
+        "min_gs_size must be a single positive integer" = is.numeric(
+            min_gs_size
+        ) &&
+            length(min_gs_size) == 1 &&
+            is.finite(min_gs_size) &&
+            min_gs_size >= 1,
+        "max_gs_size must be a single positive integer" = is.numeric(
+            max_gs_size
+        ) &&
+            length(max_gs_size) == 1 &&
+            is.finite(max_gs_size) &&
+            max_gs_size >= 1,
+        "min_gs_size must be <= max_gs_size" = min_gs_size <= max_gs_size,
+        "seed must be a single integer or numeric value" = is.numeric(seed) &&
+            length(seed) == 1 &&
+            is.finite(seed)
     )
 
     # Normalise term2gene column names
@@ -82,7 +105,29 @@ run_gsea <- function(
         gene_vec <- sort(gene_vec, decreasing = TRUE)
     }
 
+    old_seed <- if (
+        exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+    ) {
+        .GlobalEnv$.Random.seed
+    } else {
+        NULL
+    }
+    on.exit(
+        {
+            if (is.null(old_seed)) {
+                if (
+                    exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+                ) {
+                    rm(".Random.seed", envir = .GlobalEnv)
+                }
+            } else {
+                assign(".Random.seed", old_seed, envir = .GlobalEnv)
+            }
+        },
+        add = TRUE
+    )
     set.seed(seed)
+
     gsea_result <- clusterProfiler::GSEA(
         geneList = gene_vec,
         TERM2GENE = t2g,

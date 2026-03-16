@@ -68,10 +68,43 @@ plot_pathways <- function(
             fold_change
         ) &&
             !is.null(names(fold_change)),
-        "show_category must be a positive integer" = is.numeric(
+        "show_category must be a single positive whole number" = is.numeric(
             show_category
         ) &&
-            show_category >= 1
+            length(show_category) == 1 &&
+            is.finite(show_category) &&
+            show_category >= 1 &&
+            show_category == floor(show_category),
+        "fc_threshold must be a single non-negative numeric value" = is.numeric(
+            fc_threshold
+        ) &&
+            length(fc_threshold) == 1 &&
+            is.finite(fc_threshold) &&
+            fc_threshold >= 0,
+        "size_item must be a single positive numeric value" = is.numeric(
+            size_item
+        ) &&
+            length(size_item) == 1 &&
+            is.finite(size_item) &&
+            size_item > 0,
+        "size_edge must be a single positive numeric value" = is.numeric(
+            size_edge
+        ) &&
+            length(size_edge) == 1 &&
+            is.finite(size_edge) &&
+            size_edge > 0,
+        "category_size must be a single positive numeric value" = is.numeric(
+            category_size
+        ) &&
+            length(category_size) == 1 &&
+            is.finite(category_size) &&
+            category_size > 0,
+        "item_size must be a single positive numeric value" = is.numeric(
+            item_size
+        ) &&
+            length(item_size) == 1 &&
+            is.finite(item_size) &&
+            item_size > 0
     )
 
     p <- enrichplot::cnetplot(

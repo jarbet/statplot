@@ -63,6 +63,98 @@ test_that("run_gsea() errors when term2gene has fewer than 2 columns", {
 })
 
 # ---------------------------------------------------------------------------
+# Validation: p_cutoff, min_gs_size, max_gs_size, seed
+# ---------------------------------------------------------------------------
+
+test_that("run_gsea() errors when p_cutoff is out of [0, 1]", {
+    skip_if_not_installed("clusterProfiler")
+    data(hallmark_t2g, package = "statplot")
+    gene_vec <- make_gene_vec()
+
+    expect_error(
+        run_gsea(gene_vec, term2gene = hallmark_t2g, p_cutoff = -0.1),
+        "p_cutoff"
+    )
+    expect_error(
+        run_gsea(gene_vec, term2gene = hallmark_t2g, p_cutoff = 1.1),
+        "p_cutoff"
+    )
+    expect_error(
+        run_gsea(gene_vec, term2gene = hallmark_t2g, p_cutoff = c(0.05, 0.1)),
+        "p_cutoff"
+    )
+})
+
+test_that("run_gsea() errors when min_gs_size is invalid", {
+    skip_if_not_installed("clusterProfiler")
+    data(hallmark_t2g, package = "statplot")
+    gene_vec <- make_gene_vec()
+
+    expect_error(
+        run_gsea(gene_vec, term2gene = hallmark_t2g, min_gs_size = 0),
+        "min_gs_size"
+    )
+    expect_error(
+        run_gsea(gene_vec, term2gene = hallmark_t2g, min_gs_size = -5),
+        "min_gs_size"
+    )
+    expect_error(
+        run_gsea(gene_vec, term2gene = hallmark_t2g, min_gs_size = c(10, 20)),
+        "min_gs_size"
+    )
+})
+
+test_that("run_gsea() errors when max_gs_size is invalid", {
+    skip_if_not_installed("clusterProfiler")
+    data(hallmark_t2g, package = "statplot")
+    gene_vec <- make_gene_vec()
+
+    expect_error(
+        run_gsea(gene_vec, term2gene = hallmark_t2g, max_gs_size = 0),
+        "max_gs_size"
+    )
+    expect_error(
+        run_gsea(gene_vec, term2gene = hallmark_t2g, max_gs_size = c(100, 500)),
+        "max_gs_size"
+    )
+})
+
+test_that("run_gsea() errors when min_gs_size > max_gs_size", {
+    skip_if_not_installed("clusterProfiler")
+    data(hallmark_t2g, package = "statplot")
+    gene_vec <- make_gene_vec()
+
+    expect_error(
+        run_gsea(
+            gene_vec,
+            term2gene = hallmark_t2g,
+            min_gs_size = 500,
+            max_gs_size = 10
+        ),
+        "min_gs_size must be <= max_gs_size"
+    )
+})
+
+test_that("run_gsea() errors when seed is invalid", {
+    skip_if_not_installed("clusterProfiler")
+    data(hallmark_t2g, package = "statplot")
+    gene_vec <- make_gene_vec()
+
+    expect_error(
+        run_gsea(gene_vec, term2gene = hallmark_t2g, seed = "abc"),
+        "seed"
+    )
+    expect_error(
+        run_gsea(gene_vec, term2gene = hallmark_t2g, seed = c(1, 2)),
+        "seed"
+    )
+    expect_error(
+        run_gsea(gene_vec, term2gene = hallmark_t2g, seed = Inf),
+        "seed"
+    )
+})
+
+# ---------------------------------------------------------------------------
 # Sorting behaviour
 # ---------------------------------------------------------------------------
 

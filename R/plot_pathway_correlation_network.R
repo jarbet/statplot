@@ -104,7 +104,20 @@ plot_pathway_correlation_network <- function(
         "log2fc must be a named numeric vector" = is.numeric(log2fc) &&
             !is.null(names(log2fc)),
         "pathway must be a single character string" = is.character(pathway) &&
-            length(pathway) == 1
+            length(pathway) == 1,
+        "top_n_genes must be a single positive number or Inf" = is.numeric(
+            top_n_genes
+        ) &&
+            length(top_n_genes) == 1 &&
+            (is.infinite(top_n_genes) ||
+                (is.finite(top_n_genes) && top_n_genes >= 1)),
+        "cor_thresh must be a single numeric value in [0, 1]" = is.numeric(
+            cor_thresh
+        ) &&
+            length(cor_thresh) == 1 &&
+            is.finite(cor_thresh) &&
+            cor_thresh >= 0 &&
+            cor_thresh <= 1
     )
 
     genes_in_term <- intersect(
