@@ -28,26 +28,29 @@ symbols matching those in \code{gsea_result}.  Typically the \code{gene_vec}
 element returned by \code{\link[=run_gsea]{run_gsea()}}.}
 
 \item{show_category}{integer(1) Number of top pathways to display (default
-\code{5}).}
+\code{5}).  Must be a single positive whole number.}
 
 \item{fc_threshold}{numeric(1) Only show gene nodes whose
 \code{abs(fold_change) >= fc_threshold} (default \code{1.5}).  Set to \code{0} to show
-all genes.}
+all genes.  Must be a single finite non-negative value.}
 
 \item{size_item}{numeric(1) Relative size of gene circles/nodes (default
-\code{0.7}).}
+\code{0.7}).  Must be a single positive value.}
 
-\item{size_edge}{numeric(1) Relative thickness of edges (default \code{0.5}).}
+\item{size_edge}{numeric(1) Relative thickness of edges (default \code{0.5}).
+Must be a single positive value.}
 
 \item{category_color}{character(1) Color of pathway label text (default
 \code{"black"}).}
 
-\item{category_size}{numeric(1) Font size of pathway labels (default \code{4}).}
+\item{category_size}{numeric(1) Font size of pathway labels (default \code{4}).
+Must be a single positive value.}
 
 \item{item_color}{character(1) Color of gene label text (default
 \code{"grey30"}).}
 
-\item{item_size}{numeric(1) Font size of gene labels (default \code{2.5}).}
+\item{item_size}{numeric(1) Font size of gene labels (default \code{2.5}).
+Must be a single positive value.}
 
 \item{title}{character(1) Plot title (default \code{"Gene-Pathway network (GSEA)"}).}
 }

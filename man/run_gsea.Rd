@@ -35,14 +35,20 @@ decreasing order before being passed to \code{\link[clusterProfiler:GSEA]{cluste
 \code{"BH"}).}
 
 \item{p_cutoff}{numeric(1) \code{pvalueCutoff} passed to
-\code{\link[clusterProfiler:GSEA]{clusterProfiler::GSEA()}} (default \code{1}, i.e. return all gene sets).}
+\code{\link[clusterProfiler:GSEA]{clusterProfiler::GSEA()}} (default \code{1}, i.e. return all gene sets).
+Must be a single finite value in [0, 1].}
 
-\item{min_gs_size}{integer(1) Minimum gene-set size (default \code{10}).}
+\item{min_gs_size}{integer(1) Minimum gene-set size (default \code{10}).  Must
+be a single positive integer and no greater than \code{max_gs_size}.}
 
-\item{max_gs_size}{integer(1) Maximum gene-set size (default \code{500}).}
+\item{max_gs_size}{integer(1) Maximum gene-set size (default \code{500}).  Must
+be a single positive integer and no less than \code{min_gs_size}.}
 
 \item{seed}{integer(1) Random seed set before calling
-\code{\link[clusterProfiler:GSEA]{clusterProfiler::GSEA()}} for reproducibility (default \code{1}).}
+\code{\link[clusterProfiler:GSEA]{clusterProfiler::GSEA()}} for reproducibility (default \code{1}).  The
+caller's RNG state is saved before the seed is applied and fully restored
+on exit, so calling this function does \strong{not} affect subsequent random
+operations in the session.}
 
 \item{verbose}{logical(1) Passed to \code{\link[clusterProfiler:GSEA]{clusterProfiler::GSEA()}} (default
 \code{FALSE}).}

@@ -14,19 +14,22 @@
 #'   symbols matching those in `gsea_result`.  Typically the `gene_vec`
 #'   element returned by [run_gsea()].
 #' @param show_category integer(1) Number of top pathways to display (default
-#'   `5`).
+#'   `5`).  Must be a single positive whole number.
 #' @param fc_threshold numeric(1) Only show gene nodes whose
 #'   `abs(fold_change) >= fc_threshold` (default `1.5`).  Set to `0` to show
-#'   all genes.
+#'   all genes.  Must be a single finite non-negative value.
 #' @param size_item numeric(1) Relative size of gene circles/nodes (default
-#'   `0.7`).
+#'   `0.7`).  Must be a single positive value.
 #' @param size_edge numeric(1) Relative thickness of edges (default `0.5`).
+#'   Must be a single positive value.
 #' @param category_color character(1) Color of pathway label text (default
 #'   `"black"`).
 #' @param category_size numeric(1) Font size of pathway labels (default `4`).
+#'   Must be a single positive value.
 #' @param item_color character(1) Color of gene label text (default
 #'   `"grey30"`).
 #' @param item_size numeric(1) Font size of gene labels (default `2.5`).
+#'   Must be a single positive value.
 #' @param title character(1) Plot title (default `"Gene-Pathway network
 #'   (GSEA)"`).
 #'

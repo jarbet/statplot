@@ -19,10 +19,16 @@
 #'   `"BH"`).
 #' @param p_cutoff numeric(1) `pvalueCutoff` passed to
 #'   [clusterProfiler::GSEA()] (default `1`, i.e. return all gene sets).
-#' @param min_gs_size integer(1) Minimum gene-set size (default `10`).
-#' @param max_gs_size integer(1) Maximum gene-set size (default `500`).
+#'   Must be a single finite value in \[0, 1\].
+#' @param min_gs_size integer(1) Minimum gene-set size (default `10`).  Must
+#'   be a single positive integer and no greater than `max_gs_size`.
+#' @param max_gs_size integer(1) Maximum gene-set size (default `500`).  Must
+#'   be a single positive integer and no less than `min_gs_size`.
 #' @param seed integer(1) Random seed set before calling
-#'   [clusterProfiler::GSEA()] for reproducibility (default `1`).
+#'   [clusterProfiler::GSEA()] for reproducibility (default `1`).  The
+#'   caller's RNG state is saved before the seed is applied and fully restored
+#'   on exit, so calling this function does **not** affect subsequent random
+#'   operations in the session.
 #' @param verbose logical(1) Passed to [clusterProfiler::GSEA()] (default
 #'   `FALSE`).
 #' @param ... Additional arguments forwarded to [clusterProfiler::GSEA()].

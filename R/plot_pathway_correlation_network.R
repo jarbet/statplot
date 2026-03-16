@@ -24,8 +24,10 @@
 #' @param top_n_genes integer(1) Before computing correlations, retain only the
 #'   top `top_n_genes` genes ranked by `abs(log2fc)`.  Reduces visual clutter
 #'   on large pathways.  Set to `Inf` to use all pathway genes (default `30`).
+#'   Must be a single positive whole number (≥ 1) or `Inf`.
 #' @param cor_thresh numeric(1) Minimum absolute Pearson correlation required
-#'   to draw an edge between two genes (default `0.6`).
+#'   to draw an edge between two genes (default `0.6`).  Must be a single
+#'   finite value in \[0, 1\].
 #' @param cor_low character(1) Edge color for strongly negative correlations
 #'   (default `"steelblue"`).
 #' @param cor_mid character(1) Edge color at correlation = 0 (default

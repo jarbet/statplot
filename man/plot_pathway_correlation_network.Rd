@@ -41,10 +41,12 @@ are treated as 0.}
 
 \item{top_n_genes}{integer(1) Before computing correlations, retain only the
 top \code{top_n_genes} genes ranked by \code{abs(log2fc)}.  Reduces visual clutter
-on large pathways.  Set to \code{Inf} to use all pathway genes (default \code{30}).}
+on large pathways.  Set to \code{Inf} to use all pathway genes (default \code{30}).
+Must be a single positive whole number (≥ 1) or \code{Inf}.}
 
 \item{cor_thresh}{numeric(1) Minimum absolute Pearson correlation required
-to draw an edge between two genes (default \code{0.6}).}
+to draw an edge between two genes (default \code{0.6}).  Must be a single
+finite value in [0, 1].}
 
 \item{cor_low}{character(1) Edge color for strongly negative correlations
 (default \code{"steelblue"}).}
