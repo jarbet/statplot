@@ -4,6 +4,7 @@
 ## Run from the package root to regenerate data/.
 
 set.seed(42)
+data("hallmark_t2g")
 
 pathway <- "MYC_TARGETS_V1"
 pw_genes <- unique(hallmark_t2g$gene[hallmark_t2g$term == pathway])[1:20]
