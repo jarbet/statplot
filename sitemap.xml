@@ -7,7 +7,10 @@
 <url><loc>https://statgencore.github.io/statplot/reference/combine_pvalues.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/comma.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/ex_data_heatmap.html</loc></url>
+<url><loc>https://statgencore.github.io/statplot/reference/ex_expr_pathway.html</loc></url>
+<url><loc>https://statgencore.github.io/statplot/reference/ex_log2fc_pathway.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/format_pvalue.html</loc></url>
+<url><loc>https://statgencore.github.io/statplot/reference/hallmark_t2g.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/index.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/plot_2_categorical_vars.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/plot_bars.html</loc></url>
@@ -17,10 +20,13 @@
 <url><loc>https://statgencore.github.io/statplot/reference/plot_heatmap.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/plot_numeric_by_2groups.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/plot_numeric_by_3plusgroups.html</loc></url>
+<url><loc>https://statgencore.github.io/statplot/reference/plot_pathway_correlation_network.html</loc></url>
+<url><loc>https://statgencore.github.io/statplot/reference/plot_pathways.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/plot_pvalue_barplot.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/plot_survival_curves.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/plot_upset.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/quarto_html_tabset_list.html</loc></url>
+<url><loc>https://statgencore.github.io/statplot/reference/run_gsea.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/table_overall.html</loc></url>
 <url><loc>https://statgencore.github.io/statplot/reference/table_overall_and_group.html</loc></url>
 </urlset>

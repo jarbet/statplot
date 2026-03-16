@@ -8,8 +8,15 @@
   : Format numbers with comma as thousands separator
 - [`ex_data_heatmap`](https://statgencore.github.io/statplot/reference/ex_data_heatmap.md)
   : Example tidy expression dataset for heatmap plotting
+- [`ex_expr_pathway`](https://statgencore.github.io/statplot/reference/ex_expr_pathway.md)
+  : Example expression matrix for pathway correlation network plots
+- [`ex_log2fc_pathway`](https://statgencore.github.io/statplot/reference/ex_log2fc_pathway.md)
+  : Example log2 fold-change vector for pathway correlation network
+  plots
 - [`format_pvalue()`](https://statgencore.github.io/statplot/reference/format_pvalue.md)
   : Format p-values for display
+- [`hallmark_t2g`](https://statgencore.github.io/statplot/reference/hallmark_t2g.md)
+  : Hallmark gene sets (Human) from MSigDB
 - [`plot_2_categorical_vars()`](https://statgencore.github.io/statplot/reference/plot_2_categorical_vars.md)
   : Stacked percent bar chart for two categorical variables
 - [`plot_bars()`](https://statgencore.github.io/statplot/reference/plot_bars.md)
@@ -28,6 +35,10 @@
   : Violin + boxplot with Wilcoxon rank-sum test
 - [`plot_numeric_by_3plusgroups()`](https://statgencore.github.io/statplot/reference/plot_numeric_by_3plusgroups.md)
   : Violin + boxplot of a numeric variable by a grouping factor
+- [`plot_pathway_correlation_network()`](https://statgencore.github.io/statplot/reference/plot_pathway_correlation_network.md)
+  : Gene–Gene correlation network for a single pathway
+- [`plot_pathways()`](https://statgencore.github.io/statplot/reference/plot_pathways.md)
+  : Gene–Pathway network plot (cnetplot)
 - [`plot_pvalue_barplot()`](https://statgencore.github.io/statplot/reference/plot_pvalue_barplot.md)
   : Plot p-value barplot
 - [`plot_survival_curves()`](https://statgencore.github.io/statplot/reference/plot_survival_curves.md)
@@ -36,6 +47,8 @@
   : Build an upset plot from a named list of sets
 - [`quarto_html_tabset_list()`](https://statgencore.github.io/statplot/reference/quarto_html_tabset_list.md)
   : Render a named list as a Quarto tabset
+- [`run_gsea()`](https://statgencore.github.io/statplot/reference/run_gsea.md)
+  : Run Gene Set Enrichment Analysis (GSEA)
 - [`table_overall()`](https://statgencore.github.io/statplot/reference/table_overall.md)
   : Create a table that summarizes the entire cohort.
 - [`table_overall_and_group()`](https://statgencore.github.io/statplot/reference/table_overall_and_group.md)
