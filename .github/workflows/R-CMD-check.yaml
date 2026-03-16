@@ -1,4 +1,5 @@
-# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
+name: R Package CI
+
 on:
   push:
     branches: [main, master]
@@ -6,55 +7,43 @@ on:
   schedule:
     - cron: '0 0 * * 6'
 
-name: R-CMD-check
-
-permissions: read-all
-
 jobs:
-  R-CMD-check:
-    runs-on: ${{ matrix.config.os }}
-
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+  check:
+    runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        config:
-          - { os: macos-latest,   r: 'release' }
-          - { os: windows-latest, r: 'release' }
+        os:
+          - macos-latest
+          - windows-latest
 
     env:
       GITHUB_PAT: ${{ secrets.STATGENCORE_PAT }}
 
     steps:
+      # Step 1: Checkout repository
       - uses: actions/checkout@v4
 
+      # Step 2: Set up Pandoc (for vignettes / README)
       - uses: r-lib/actions/setup-pandoc@v2
 
+      # Step 3: Set up R
       - uses: r-lib/actions/setup-r@v2
         with:
-          r-version: ${{ matrix.config.r }}
-          use-public-rspm: true
+          r-version: release
 
-      - name: Cache Bioconductor packages
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.R_LIBS_USER }}
-          key: bioc-${{ runner.os }}-${{ matrix.config.r }}-${{ hashFiles('DESCRIPTION') }}
-          restore-keys: bioc-${{ runner.os }}-${{ matrix.config.r }}-
-
-      - name: Install Bioconductor dependencies
-        run: |
-          install.packages("BiocManager")
-          BiocManager::install(c("ComplexHeatmap", "clusterProfiler", "enrichplot"), ask = FALSE)
-        shell: Rscript {0}
-
+      # Step 4: Install R dependencies (CRAN + Bioconductor)
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
           needs: check
 
+      # Step 5: Run R CMD check
       - uses: r-lib/actions/check-r-package@v2
         with:
-          upload-snapshots: true
-          build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+          args: 'c("--no-manual", "--as-cran")'
+          error-on: '"error"'
+          check-dir: '"check"'
+          upload-results: false
+          upload-snapshots: false
