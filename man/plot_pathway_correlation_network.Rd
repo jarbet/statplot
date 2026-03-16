@@ -19,7 +19,8 @@ plot_pathway_correlation_network(
   fc_high = RColorBrewer::brewer.pal(11, "PiYG")[2],
   title = sprintf("Gene-Gene correlation network for pathway: \%s", pathway),
   label_size = 3,
-  label_bold = TRUE
+  label_bold = TRUE,
+  show_size_legend = TRUE
 )
 }
 \arguments{
@@ -68,6 +69,9 @@ values.  Defaults to the 2nd color of the \code{PiYG} palette.}
 \item{label_size}{numeric(1) Gene label font size (default \code{3}).}
 
 \item{label_bold}{logical(1) Whether gene labels are bold (default \code{TRUE}).}
+
+\item{show_size_legend}{logical(1) Whether to display the node-size legend
+("# connections") (default \code{TRUE}).}
 }
 \value{
 A ggplot2 object, or \code{NULL} (invisibly) when fewer than 3 pathway

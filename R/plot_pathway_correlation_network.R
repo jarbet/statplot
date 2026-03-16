@@ -42,6 +42,8 @@
 #'   `"Gene-Gene correlation network for pathway: <pathway>"`.
 #' @param label_size numeric(1) Gene label font size (default `3`).
 #' @param label_bold logical(1) Whether gene labels are bold (default `TRUE`).
+#' @param show_size_legend logical(1) Whether to display the node-size legend
+#'   ("# connections") (default `TRUE`).
 #'
 #' @return A ggplot2 object, or `NULL` (invisibly) when fewer than 3 pathway
 #'   genes are present in `expr` or no gene pairs pass `cor_thresh`.
@@ -82,7 +84,8 @@ plot_pathway_correlation_network <- function(
     fc_high = RColorBrewer::brewer.pal(11, "PiYG")[2],
     title = sprintf("Gene-Gene correlation network for pathway: %s", pathway),
     label_size = 3,
-    label_bold = TRUE
+    label_bold = TRUE,
+    show_size_legend = TRUE
 ) {
     stopifnot(
         "expr must be a matrix with rownames" = is.matrix(expr) &&
@@ -188,7 +191,13 @@ plot_pathway_correlation_network <- function(
             guide = ggraph::guide_edge_colourbar()
         ) +
         ggraph::scale_edge_width(range = c(0.5, 2), guide = "none") +
-        ggplot2::scale_size_continuous(name = "# connections", guide = "none") +
+        ggplot2::scale_size_continuous(
+            name = "# connections",
+            breaks = function(limits) {
+                unique(round(scales::breaks_pretty()(limits)))
+            },
+            guide = if (show_size_legend) "legend" else "none"
+        ) +
         ggplot2::scale_color_gradient2(
             low = fc_low,
             mid = fc_mid,
