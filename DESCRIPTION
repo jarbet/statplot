@@ -47,10 +47,6 @@ Imports:
     UpSetR
 URL: https://statgencore.github.io/statplot/
 BugReports: https://github.com/StatGenCore/statplot/issues
-Remotes: 
-    bioc::ComplexHeatmap,
-    bioc::enrichplot,
-    bioc::clusterProfiler
 Depends: 
     R (>= 4.1)
 LazyData: true
