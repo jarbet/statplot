@@ -14,6 +14,7 @@ plot_dotmap(
   y,
   effect,
   p,
+  q = NULL,
   dot_size_vals = c(-2, -1, -0.5, -0.25, 0.25, 0.5, 1, 2),
   dot_size_labels = as.character(dot_size_vals),
   dot_range = c(5, 30),
@@ -54,7 +55,22 @@ plot_dotmap(
 - p:
 
   Character; column name of numeric variable in `data` to use for tile
-  fill (p-value)
+  fill (p-value) and for computing the combined p-value barplot
+  (always). `NA` values are allowed; the corresponding tile is drawn
+  with `na.value` fill and, when `add_combined_pvalue_barplot = TRUE`,
+  rows where all p-values are `NA` receive no bar in the combined
+  p-value panel.
+
+- q:
+
+  Character or NULL; optional column name of a numeric variable in
+  `data` to use for tile fill instead of `p`. Useful when you want cell
+  shading to reflect q-values (e.g. FDR-adjusted per-cell p-values)
+  while the combined p-value barplot on the right is still computed from
+  the raw `p` column. When `NULL` (default) the tile fill is determined
+  by `p`. `NA` values are allowed; the corresponding tile is drawn with
+  the fill scale's `na.value` (grey95 by default), exactly as for `NA`
+  values in `p`.
 
 - dot_size_vals:
 
@@ -125,10 +141,10 @@ plot_dotmap(
   [`plot_pvalue_barplot()`](https://statgencore.github.io/statplot/reference/plot_pvalue_barplot.md)
   when `add_combined_pvalue_barplot = TRUE`. The following arguments are
   set internally and will be ignored if supplied here: `data`, `x`, `y`,
-  `fill`, `show_y_labels`, `custom_qvalues` (q-values are computed
-  internally via
-  [`combine_pvalues()`](https://statgencore.github.io/statplot/reference/combine_pvalues.md)
-  and the FDR column `q_combined` is always used).
+  `fill`, `show_y_labels`, `custom_qvalues` (the combined p-value
+  barplot always uses `p` to compute Fisher/CMC combined p-values via
+  [`combine_pvalues()`](https://statgencore.github.io/statplot/reference/combine_pvalues.md);
+  the `q` argument only affects cell fill, not the barplot).
 
 - patchwork_widths:
 

@@ -36,7 +36,9 @@ plot_pvalue_barplot(
 
 - x:
 
-  Character, name of the column with raw p-values
+  Character, name of the column with raw p-values. `NA` values are
+  allowed; rows with `NA` are retained on the y-axis but drawn without a
+  bar.
 
 - y:
 
@@ -108,7 +110,8 @@ plot_pvalue_barplot(
 
   Character or NULL; column name in `data` containing user-supplied
   q-values. When supplied and `also_show_qvalue = TRUE`, these values
-  are used instead of computing FDR-adjusted q-values.
+  are used instead of computing FDR-adjusted q-values. `NA` values are
+  allowed and result in no q-value bar for that row.
 
 - color_qvalue:
 

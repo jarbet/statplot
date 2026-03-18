@@ -73,7 +73,8 @@ optional significance vertical line and optional fill mapping.</p>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>Character, name of the column with raw p-values</p></dd>
+<dd><p>Character, name of the column with raw p-values. <code>NA</code> values are
+allowed; rows with <code>NA</code> are retained on the y-axis but drawn without a bar.</p></dd>
 
 
 <dt id="arg-y">y<a class="anchor" aria-label="anchor" href="#arg-y"></a></dt>
@@ -141,7 +142,8 @@ When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars
 <dt id="arg-custom-qvalues">custom_qvalues<a class="anchor" aria-label="anchor" href="#arg-custom-qvalues"></a></dt>
 <dd><p>Character or NULL; column name in <code>data</code> containing user-supplied
 q-values. When supplied and <code>also_show_qvalue = TRUE</code>, these values are used instead of
-computing FDR-adjusted q-values.</p></dd>
+computing FDR-adjusted q-values. <code>NA</code> values are allowed and result in no
+q-value bar for that row.</p></dd>
 
 
 <dt id="arg-color-qvalue">color_qvalue<a class="anchor" aria-label="anchor" href="#arg-color-qvalue"></a></dt>

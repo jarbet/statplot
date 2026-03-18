@@ -50,7 +50,11 @@
 </ul></div>
 <div class="section level3">
 <h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
-<ul><li>Use <code><a href="https://rdrr.io/r/stats/delete.response.html" class="external-link">stats::reformulate()</a></code> with backticks when building formulas in numeric-by-group plotting functions to support non-syntactic column names (fixes issue with spaces/hyphens).</li>
+<ul><li>
+<code>plot_dotmap</code>: new <code>q</code> argument accepts an optional column name of per-cell q-values (e.g. FDR-adjusted p-values) to use for cell shading instead of raw p-values. When both <code>p</code> and <code>q</code> are supplied the combined p-value barplot (right panel) is still computed from <code>p</code>, so Fisher/CMC combination uses raw p-values while cells reflect adjusted values.</li>
+<li>
+<code>plot_pvalue_barplot</code>: <code>NA</code> p-values are now handled gracefully — rows with missing p-values are silently dropped rather than causing an error, and BH correction for q-values is applied only to the non-missing subset so adjusted values are not distorted.</li>
+<li>Use <code><a href="https://rdrr.io/r/stats/delete.response.html" class="external-link">stats::reformulate()</a></code> with backticks when building formulas in numeric-by-group plotting functions to support non-syntactic column names (fixes issue with spaces/hyphens).</li>
 </ul></div>
 <div class="section level3">
 <h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
