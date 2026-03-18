@@ -64,7 +64,11 @@ plot_dotmap(
 
 \item{only_show_top_sig}{Numeric(1) or NULL; when adding the combined p-value barplot, if this is a positive integer then only the top X most significant rows by combined p-value are shown (default NULL, show all)}
 
-\item{...}{Additional arguments passed on to \code{plot_pvalue_barplot()} when \code{add_combined_pvalue_barplot = TRUE}}
+\item{...}{Additional arguments passed on to \code{plot_pvalue_barplot()} when
+\code{add_combined_pvalue_barplot = TRUE}. The following arguments are set internally
+and will be ignored if supplied here: \code{data}, \code{x}, \code{y}, \code{fill},
+\code{show_y_labels}, \code{custom_qvalues} (q-values are computed internally via
+\code{combine_pvalues()} and the FDR column \code{q_combined} is always used).}
 
 \item{patchwork_widths}{Numeric(2); widths passed to \pkg{patchwork}::\code{wrap_plots()} when adding the combined p-value barplot (default c(3, 1))}
 }
