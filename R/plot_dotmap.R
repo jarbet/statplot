@@ -9,6 +9,17 @@
 #' @param y Character; name of variable in \code{data} to use for y-axis/rows
 #' @param effect Character; column name of numeric variable in \code{data} to use for dot size and color (direction)
 #' @param p Character; column name of numeric variable in \code{data} to use for tile fill (p-value)
+#'   and for computing the combined p-value barplot (always). \code{NA} values are allowed;
+#'   the corresponding tile is drawn with \code{na.value} fill and, when
+#'   \code{add_combined_pvalue_barplot = TRUE}, rows where all p-values are \code{NA} receive
+#'   no bar in the combined p-value panel.
+#' @param q Character or NULL; optional column name of a numeric variable in \code{data} to use
+#'   for tile fill instead of \code{p}. Useful when you want cell shading to reflect
+#'   q-values (e.g. FDR-adjusted per-cell p-values) while the combined p-value barplot on
+#'   the right is still computed from the raw \code{p} column. When \code{NULL} (default)
+#'   the tile fill is determined by \code{p}. \code{NA} values are allowed; the corresponding
+#'   tile is drawn with the fill scale's \code{na.value} (grey95 by default), exactly as for
+#'   \code{NA} values in \code{p}.
 #' @param dot_size_vals Numeric vector of reference effect values used for the size legend (signed to indicate direction)
 #' @param dot_size_labels Character vector of labels for the size legend; must have same length as \code{dot_size_vals}
 #' @param dot_range Numeric(2) range of point sizes (min, max)
@@ -24,8 +35,9 @@
 #' @param ... Additional arguments passed on to \code{plot_pvalue_barplot()} when
 #'   \code{add_combined_pvalue_barplot = TRUE}. The following arguments are set internally
 #'   and will be ignored if supplied here: \code{data}, \code{x}, \code{y}, \code{fill},
-#'   \code{show_y_labels}, \code{custom_qvalues} (q-values are computed internally via
-#'   \code{combine_pvalues()} and the FDR column \code{q_combined} is always used).
+#'   \code{show_y_labels}, \code{custom_qvalues} (the combined p-value barplot always uses
+#'   \code{p} to compute Fisher/CMC combined p-values via \code{combine_pvalues()};
+#'   the \code{q} argument only affects cell fill, not the barplot).
 #' @param patchwork_widths Numeric(2); widths passed to \pkg{patchwork}::\code{wrap_plots()} when adding the combined p-value barplot (default c(3, 1))
 #' @param only_show_top_sig Numeric(1) or NULL; when adding the combined p-value barplot, if this is a positive integer then only the top X most significant rows by combined p-value are shown (default NULL, show all)
 #'
@@ -75,6 +87,7 @@ plot_dotmap <- function(
     y,
     effect,
     p,
+    q = NULL,
     dot_size_vals = c(-2, -1, -0.5, -0.25, 0.25, 0.5, 1, 2),
     dot_size_labels = as.character(dot_size_vals),
     dot_range = c(5, 30),
@@ -108,6 +121,19 @@ plot_dotmap <- function(
         effect %in% names(data)
     )
     stopifnot(is.character(p), length(p) == 1, p %in% names(data))
+    stopifnot(
+        is.null(q) ||
+            (is.character(q) && length(q) == 1 && q %in% names(data))
+    )
+    if (!is.null(q)) {
+        stopifnot(is.numeric(data[[q]]))
+        .q_non_na <- data[[q]][!is.na(data[[q]])]
+        stopifnot(all(is.finite(.q_non_na)))
+        stopifnot(all(.q_non_na >= 0 & .q_non_na <= 1))
+        if (isTRUE(mlog10_transform_pvalue)) {
+            stopifnot(all(.q_non_na > 0))
+        }
+    }
     stopifnot(is.numeric(dot_size_vals))
     stopifnot(
         is.character(dot_size_labels),
@@ -155,6 +181,7 @@ plot_dotmap <- function(
     )
     stopifnot(is.numeric(patchwork_widths), length(patchwork_widths) == 2)
 
+    fill_col <- if (!is.null(q)) q else p
     data <- tibble::as_tibble(data) |>
         dplyr::mutate(
             size_val = abs(.data[[effect]]),
@@ -164,9 +191,9 @@ plot_dotmap <- function(
                 TRUE ~ NA_character_
             ),
             fill_val = if (mlog10_transform_pvalue) {
-                -log10(.data[[p]])
+                -log10(.data[[fill_col]])
             } else {
-                .data[[p]]
+                .data[[fill_col]]
             }
         )
 
@@ -222,7 +249,13 @@ plot_dotmap <- function(
     )
 
     # determine fill legend title: either user-provided or automatic
-    fill_label_auto <- if (mlog10_transform_pvalue) {
+    fill_label_auto <- if (!is.null(q)) {
+        if (mlog10_transform_pvalue) {
+            expression(bold(-log['10'] ~ 'qvalue'))
+        } else {
+            q
+        }
+    } else if (mlog10_transform_pvalue) {
         expression(bold(-log['10'] ~ 'pvalue'))
     } else {
         p
@@ -421,10 +454,14 @@ plot_dotmap <- function(
         }
 
         # compute FDR q-values for the combined p-values and pass them to the barplot
-        combined_df$q_combined <- stats::p.adjust(
-            combined_df$p_combined,
+        # exclude NAs from BH correction so they do not distort adjusted p-values
+        q_combined_vec <- rep(NA_real_, nrow(combined_df))
+        non_na_idx <- !is.na(combined_df$p_combined)
+        q_combined_vec[non_na_idx] <- stats::p.adjust(
+            combined_df$p_combined[non_na_idx],
             method = "fdr"
         )
+        combined_df$q_combined <- q_combined_vec
 
         # If requested, restrict to top X most significant rows by combined p-value
         if (!is.null(only_show_top_sig)) {
