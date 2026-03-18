@@ -123,7 +123,12 @@ plot_dotmap(
 
   Additional arguments passed on to
   [`plot_pvalue_barplot()`](https://statgencore.github.io/statplot/reference/plot_pvalue_barplot.md)
-  when `add_combined_pvalue_barplot = TRUE`
+  when `add_combined_pvalue_barplot = TRUE`. The following arguments are
+  set internally and will be ignored if supplied here: `data`, `x`, `y`,
+  `fill`, `show_y_labels`, `custom_qvalues` (q-values are computed
+  internally via
+  [`combine_pvalues()`](https://statgencore.github.io/statplot/reference/combine_pvalues.md)
+  and the FDR column `q_combined` is always used).
 
 - patchwork_widths:
 
