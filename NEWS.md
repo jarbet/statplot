@@ -17,6 +17,8 @@
 
 ## Changed
 
+* `plot_dotmap`: new `q` argument accepts an optional column name of per-cell q-values (e.g. FDR-adjusted p-values) to use for cell shading instead of raw p-values. When both `p` and `q` are supplied the combined p-value barplot (right panel) is still computed from `p`, so Fisher/CMC combination uses raw p-values while cells reflect adjusted values.
+* `plot_pvalue_barplot`: `NA` p-values are now handled gracefully — rows with missing p-values are silently dropped rather than causing an error, and BH correction for q-values is applied only to the non-missing subset so adjusted values are not distorted.
 * Use `stats::reformulate()` with backticks when building formulas in numeric-by-group plotting functions to support non-syntactic column names (fixes issue with spaces/hyphens).
 
 
