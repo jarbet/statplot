@@ -36,7 +36,10 @@ plot_dotmap(
 
 \item{effect}{Character; column name of numeric variable in \code{data} to use for dot size and color (direction)}
 
-\item{p}{Character; column name of numeric variable in \code{data} to use for tile fill (p-value)}
+\item{p}{Character; column name of numeric variable in \code{data} to use for tile fill (p-value).
+\code{NA} values are allowed; the corresponding tile is drawn with \code{na.value} fill and,
+when \code{add_combined_pvalue_barplot = TRUE}, rows where all p-values are \code{NA} receive
+no bar in the combined p-value panel.}
 
 \item{dot_size_vals}{Numeric vector of reference effect values used for the size legend (signed to indicate direction)}
 

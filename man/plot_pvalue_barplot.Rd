@@ -28,7 +28,8 @@ plot_pvalue_barplot(
 \arguments{
 \item{data}{A data.frame or tibble containing the variables.}
 
-\item{x}{Character, name of the column with raw p-values}
+\item{x}{Character, name of the column with raw p-values. \code{NA} values are
+allowed; rows with \code{NA} are retained on the y-axis but drawn without a bar.}
 
 \item{y}{Character, name of the column for y-axis categories (factor or character).}
 
@@ -70,7 +71,8 @@ When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars
 
 \item{custom_qvalues}{Character or NULL; column name in \code{data} containing user-supplied
 q-values. When supplied and \code{also_show_qvalue = TRUE}, these values are used instead of
-computing FDR-adjusted q-values.}
+computing FDR-adjusted q-values. \code{NA} values are allowed and result in no
+q-value bar for that row.}
 
 \item{color_qvalue}{Character, color for q-value bars when also_show_qvalue = TRUE.}
 

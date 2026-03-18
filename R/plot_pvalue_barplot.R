@@ -4,7 +4,8 @@
 #' optional significance vertical line and optional fill mapping.
 #'
 #' @param data A data.frame or tibble containing the variables.
-#' @param x Character, name of the column with raw p-values
+#' @param x Character, name of the column with raw p-values. \code{NA} values are
+#'   allowed; rows with \code{NA} are retained on the y-axis but drawn without a bar.
 #' @param y Character, name of the column for y-axis categories (factor or character).
 #' @param fill Character or NULL, column name to use for fill; if NULL draw solid black bars.
 #'   Ignored when also_show_qvalue = TRUE.
@@ -30,7 +31,8 @@
 #'   When TRUE, the 'fill' argument is ignored and fixed colors are used for p/q bars.
 #' @param custom_qvalues Character or NULL; column name in `data` containing user-supplied
 #'   q-values. When supplied and `also_show_qvalue = TRUE`, these values are used instead of
-#'   computing FDR-adjusted q-values.
+#'   computing FDR-adjusted q-values. \code{NA} values are allowed and result in no
+#'   q-value bar for that row.
 #' @param color_qvalue Character, color for q-value bars when also_show_qvalue = TRUE.
 #' @param color_pvalue Character, color for p-value bars when also_show_qvalue = TRUE.
 #' @return A ggplot2 object (invisible plot object returned).
@@ -113,23 +115,24 @@ plot_pvalue_barplot <- function(
         stopifnot(custom_qvalues %in% names(data))
     }
     stopifnot(is.numeric(data[[x]]))
-    stopifnot(all(!is.na(data[[x]])))
-    stopifnot(all(data[[x]] >= 0 & data[[x]] <= 1))
+    stopifnot(all(data[[x]] >= 0 & data[[x]] <= 1, na.rm = TRUE))
     if (mlog10_transform_pvalue) {
-        stopifnot(all(is.finite(data[[x]])))
-        stopifnot(all(data[[x]] > 0))
+        stopifnot(all(is.finite(data[[x]][!is.na(data[[x]])])))
+        stopifnot(all(data[[x]][!is.na(data[[x]])] > 0))
     }
     stopifnot(is.character(color_qvalue), length(color_qvalue) == 1)
     stopifnot(is.character(color_pvalue), length(color_pvalue) == 1)
     stopifnot(is.logical(also_show_qvalue), length(also_show_qvalue) == 1)
     if (!is.null(custom_qvalues)) {
         stopifnot(is.numeric(data[[custom_qvalues]]))
-        stopifnot(all(!is.na(data[[custom_qvalues]])))
         stopifnot(all(
-            data[[custom_qvalues]] >= 0 & data[[custom_qvalues]] <= 1
+            data[[custom_qvalues]] >= 0 & data[[custom_qvalues]] <= 1,
+            na.rm = TRUE
         ))
         if (mlog10_transform_pvalue) {
-            stopifnot(all(data[[custom_qvalues]] > 0))
+            stopifnot(all(
+                data[[custom_qvalues]][!is.na(data[[custom_qvalues]])] > 0
+            ))
         }
     }
     # ---- end checks ----
@@ -147,18 +150,26 @@ plot_pvalue_barplot <- function(
         if (!is.null(custom_qvalues)) {
             data[[".qvalue_raw"]] <- data[[custom_qvalues]]
         } else {
-            data[[".qvalue_raw"]] <- stats::p.adjust(data[[x]], method = "fdr")
+            # exclude NAs from BH correction so non-NA rows are not affected
+            qv <- rep(NA_real_, nrow(data))
+            non_na <- !is.na(data[[x]])
+            qv[non_na] <- stats::p.adjust(data[[x]][non_na], method = "fdr")
+            data[[".qvalue_raw"]] <- qv
         }
         stopifnot(is.numeric(data[[".qvalue_raw"]]))
-        stopifnot(all(!is.na(data[[".qvalue_raw"]])))
-        stopifnot(all(data[[".qvalue_raw"]] >= 0 & data[[".qvalue_raw"]] <= 1))
+        stopifnot(all(
+            data[[".qvalue_raw"]] >= 0 & data[[".qvalue_raw"]] <= 1,
+            na.rm = TRUE
+        ))
 
         # create plotting columns for p and q (transformed if requested)
         if (mlog10_transform_pvalue) {
             data[[".plot_p"]] <- -log10(data[[x]])
             data[[".plot_q"]] <- -log10(data[[".qvalue_raw"]])
-            # ensure transformed q is finite (should be since original p > 0)
-            stopifnot(all(is.finite(data[[".plot_q"]])))
+            # ensure transformed q is finite where not NA
+            stopifnot(all(is.finite(data[[".plot_q"]][
+                !is.na(data[[".plot_q"]])
+            ])))
         } else {
             data[[".plot_p"]] <- data[[x]]
             data[[".plot_q"]] <- data[[".qvalue_raw"]]

@@ -8,7 +8,10 @@
 #' @param x Character; name of variable in \code{data} to use for x-axis/columns
 #' @param y Character; name of variable in \code{data} to use for y-axis/rows
 #' @param effect Character; column name of numeric variable in \code{data} to use for dot size and color (direction)
-#' @param p Character; column name of numeric variable in \code{data} to use for tile fill (p-value)
+#' @param p Character; column name of numeric variable in \code{data} to use for tile fill (p-value).
+#'   \code{NA} values are allowed; the corresponding tile is drawn with \code{na.value} fill and,
+#'   when \code{add_combined_pvalue_barplot = TRUE}, rows where all p-values are \code{NA} receive
+#'   no bar in the combined p-value panel.
 #' @param dot_size_vals Numeric vector of reference effect values used for the size legend (signed to indicate direction)
 #' @param dot_size_labels Character vector of labels for the size legend; must have same length as \code{dot_size_vals}
 #' @param dot_range Numeric(2) range of point sizes (min, max)
@@ -421,10 +424,14 @@ plot_dotmap <- function(
         }
 
         # compute FDR q-values for the combined p-values and pass them to the barplot
-        combined_df$q_combined <- stats::p.adjust(
-            combined_df$p_combined,
+        # exclude NAs from BH correction so they do not distort adjusted p-values
+        q_combined_vec <- rep(NA_real_, nrow(combined_df))
+        non_na_idx <- !is.na(combined_df$p_combined)
+        q_combined_vec[non_na_idx] <- stats::p.adjust(
+            combined_df$p_combined[non_na_idx],
             method = "fdr"
         )
+        combined_df$q_combined <- q_combined_vec
 
         # If requested, restrict to top X most significant rows by combined p-value
         if (!is.null(only_show_top_sig)) {
