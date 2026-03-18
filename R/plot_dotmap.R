@@ -21,7 +21,11 @@
 #' @param add_combined_pvalue_barplot Logical; when TRUE adds a combined p-value barplot to the right of the dotmap (requires \pkg{patchwork})
 #' @param combine_pvalue_method Character; method for combining p-values in the barplot. One of: "CMC", "fisher", "MCM", "cauchy", "minp_bonferroni". Defaults to "CMC".
 #' @param sort_by_pvalue Logical; when TRUE (default) rows (levels of `y`) are sorted by the combined p-value (ascending). Requires p-values present per group.
-#' @param ... Additional arguments passed on to \code{plot_pvalue_barplot()} when \code{add_combined_pvalue_barplot = TRUE}
+#' @param ... Additional arguments passed on to \code{plot_pvalue_barplot()} when
+#'   \code{add_combined_pvalue_barplot = TRUE}. The following arguments are set internally
+#'   and will be ignored if supplied here: \code{data}, \code{x}, \code{y}, \code{fill},
+#'   \code{show_y_labels}, \code{custom_qvalues} (q-values are computed internally via
+#'   \code{combine_pvalues()} and the FDR column \code{q_combined} is always used).
 #' @param patchwork_widths Numeric(2); widths passed to \pkg{patchwork}::\code{wrap_plots()} when adding the combined p-value barplot (default c(3, 1))
 #' @param only_show_top_sig Numeric(1) or NULL; when adding the combined p-value barplot, if this is a positive integer then only the top X most significant rows by combined p-value are shown (default NULL, show all)
 #'
@@ -437,15 +441,32 @@ plot_dotmap <- function(
 
         # ensure main plot uses the exact same discrete y limits / no expansion
         # build right-side combined p-value barplot but hide its y labels so only the left plot shows labels
-        p_comb <- plot_pvalue_barplot(
-            data = combined_df,
-            x = "p_combined",
-            y = y,
-            fill = NULL,
-            mlog10_transform_pvalue = mlog10_transform_pvalue,
-            show_y_labels = FALSE, # <- hide labels on the right plot
-            custom_qvalues = 'q_combined',
-            ...
+        # Capture ... and strip args already hardcoded below so that a user passing
+        # e.g. custom_qvalues via ... does not trigger
+        # "formal argument matched by multiple actual arguments".
+        barplot_dots <- list(...)
+        barplot_dots[c(
+            "data",
+            "x",
+            "y",
+            "fill",
+            "show_y_labels",
+            "custom_qvalues"
+        )] <- NULL
+        p_comb <- do.call(
+            plot_pvalue_barplot,
+            c(
+                list(
+                    data = combined_df,
+                    x = "p_combined",
+                    y = y,
+                    fill = NULL,
+                    mlog10_transform_pvalue = mlog10_transform_pvalue,
+                    show_y_labels = FALSE, # <- hide labels on the right plot
+                    custom_qvalues = 'q_combined'
+                ),
+                barplot_dots
+            )
         )
 
         n_levels <- length(y_levels)
