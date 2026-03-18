@@ -10,6 +10,7 @@ plot_dotmap(
   y,
   effect,
   p,
+  q = NULL,
   dot_size_vals = c(-2, -1, -0.5, -0.25, 0.25, 0.5, 1, 2),
   dot_size_labels = as.character(dot_size_vals),
   dot_range = c(5, 30),
@@ -36,10 +37,17 @@ plot_dotmap(
 
 \item{effect}{Character; column name of numeric variable in \code{data} to use for dot size and color (direction)}
 
-\item{p}{Character; column name of numeric variable in \code{data} to use for tile fill (p-value).
-\code{NA} values are allowed; the corresponding tile is drawn with \code{na.value} fill and,
-when \code{add_combined_pvalue_barplot = TRUE}, rows where all p-values are \code{NA} receive
+\item{p}{Character; column name of numeric variable in \code{data} to use for tile fill (p-value)
+and for computing the combined p-value barplot (always). \code{NA} values are allowed;
+the corresponding tile is drawn with \code{na.value} fill and, when
+\code{add_combined_pvalue_barplot = TRUE}, rows where all p-values are \code{NA} receive
 no bar in the combined p-value panel.}
+
+\item{q}{Character or NULL; optional column name of a numeric variable in \code{data} to use
+for tile fill instead of \code{p}. Useful when you want cell shading to reflect
+q-values (e.g. FDR-adjusted per-cell p-values) while the combined p-value barplot on
+the right is still computed from the raw \code{p} column. When \code{NULL} (default)
+the tile fill is determined by \code{p}.}
 
 \item{dot_size_vals}{Numeric vector of reference effect values used for the size legend (signed to indicate direction)}
 
@@ -70,8 +78,9 @@ no bar in the combined p-value panel.}
 \item{...}{Additional arguments passed on to \code{plot_pvalue_barplot()} when
 \code{add_combined_pvalue_barplot = TRUE}. The following arguments are set internally
 and will be ignored if supplied here: \code{data}, \code{x}, \code{y}, \code{fill},
-\code{show_y_labels}, \code{custom_qvalues} (q-values are computed internally via
-\code{combine_pvalues()} and the FDR column \code{q_combined} is always used).}
+\code{show_y_labels}, \code{custom_qvalues} (the combined p-value barplot always uses
+\code{p} to compute Fisher/CMC combined p-values via \code{combine_pvalues()};
+the \code{q} argument only affects cell fill, not the barplot).}
 
 \item{patchwork_widths}{Numeric(2); widths passed to \pkg{patchwork}::\code{wrap_plots()} when adding the combined p-value barplot (default c(3, 1))}
 }
