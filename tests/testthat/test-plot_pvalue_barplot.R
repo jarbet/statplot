@@ -98,3 +98,87 @@ test_that("custom_qvalues column must be numeric", {
         )
     )
 })
+
+# ---------------------------------------------------------------------------
+# NA p-value handling
+# ---------------------------------------------------------------------------
+
+test_that("NA p-values: plot builds without error and BH uses only non-NA rows", {
+    df <- make_pval_df()
+    df$pvalue[3] <- NA # inject one NA
+
+    # (1) builds without error
+    expect_no_error(
+        p <- plot_pvalue_barplot(
+            data = df,
+            x = "pvalue",
+            y = "term",
+            also_show_qvalue = TRUE,
+            mlog10_transform_pvalue = FALSE
+        )
+    )
+
+    # (2) returns a ggplot
+    expect_s3_class(p, "ggplot")
+
+    # (3) q-values for non-NA rows match p.adjust() on the non-NA subset only
+    expected_q <- rep(NA_real_, nrow(df))
+    non_na <- !is.na(df$pvalue)
+    expected_q[non_na] <- stats::p.adjust(df$pvalue[non_na], method = "fdr")
+
+    plot_data <- p$data
+    actual_q <- plot_data[[".qvalue_raw"]][match(
+        levels(df$term),
+        plot_data$term
+    )]
+    expect_equal(
+        actual_q,
+        expected_q[match(levels(df$term), df$term)],
+        tolerance = 1e-10
+    )
+})
+
+test_that("NA p-values: mlog10 transform also builds without error", {
+    df <- make_pval_df()
+    df$pvalue[1] <- NA
+    expect_no_error(
+        plot_pvalue_barplot(
+            data = df,
+            x = "pvalue",
+            y = "term",
+            also_show_qvalue = TRUE,
+            mlog10_transform_pvalue = TRUE
+        )
+    )
+})
+
+test_that("NA custom_qvalues: plot builds without error and NA row has no q bar", {
+    df <- make_pval_df(with_qvalue = TRUE)
+    df$qvalue[2] <- NA # inject NA into custom q-values
+
+    expect_no_error(
+        p <- plot_pvalue_barplot(
+            data = df,
+            x = "pvalue",
+            y = "term",
+            also_show_qvalue = TRUE,
+            custom_qvalues = "qvalue"
+        )
+    )
+    expect_s3_class(p, "ggplot")
+    # The injected NA should be preserved in .qvalue_raw
+    expect_true(is.na(p$data[[".qvalue_raw"]][p$data$term == df$term[2]]))
+})
+
+test_that("all-NA p-values: plot builds (degenerate but valid input)", {
+    df <- make_pval_df()
+    df$pvalue <- NA_real_
+    expect_no_error(
+        plot_pvalue_barplot(
+            data = df,
+            x = "pvalue",
+            y = "term",
+            also_show_qvalue = TRUE
+        )
+    )
+})

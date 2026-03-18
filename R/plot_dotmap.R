@@ -17,7 +17,9 @@
 #'   for tile fill instead of \code{p}. Useful when you want cell shading to reflect
 #'   q-values (e.g. FDR-adjusted per-cell p-values) while the combined p-value barplot on
 #'   the right is still computed from the raw \code{p} column. When \code{NULL} (default)
-#'   the tile fill is determined by \code{p}.
+#'   the tile fill is determined by \code{p}. \code{NA} values are allowed; the corresponding
+#'   tile is drawn with the fill scale's \code{na.value} (grey95 by default), exactly as for
+#'   \code{NA} values in \code{p}.
 #' @param dot_size_vals Numeric vector of reference effect values used for the size legend (signed to indicate direction)
 #' @param dot_size_labels Character vector of labels for the size legend; must have same length as \code{dot_size_vals}
 #' @param dot_range Numeric(2) range of point sizes (min, max)
@@ -123,6 +125,15 @@ plot_dotmap <- function(
         is.null(q) ||
             (is.character(q) && length(q) == 1 && q %in% names(data))
     )
+    if (!is.null(q)) {
+        stopifnot(is.numeric(data[[q]]))
+        .q_non_na <- data[[q]][!is.na(data[[q]])]
+        stopifnot(all(is.finite(.q_non_na)))
+        stopifnot(all(.q_non_na >= 0 & .q_non_na <= 1))
+        if (isTRUE(mlog10_transform_pvalue)) {
+            stopifnot(all(.q_non_na > 0))
+        }
+    }
     stopifnot(is.numeric(dot_size_vals))
     stopifnot(
         is.character(dot_size_labels),

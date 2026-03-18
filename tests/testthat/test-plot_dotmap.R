@@ -73,6 +73,91 @@ test_that("q must be length-1 character, not a vector", {
     )
 })
 
+test_that("q column must be numeric", {
+    df <- make_dotmap_df(add_q = TRUE)
+    df$q_char <- as.character(df$q)
+    expect_error(
+        plot_dotmap(
+            df,
+            x = "col",
+            y = "row",
+            effect = "effect",
+            p = "p",
+            q = "q_char"
+        ),
+        regexp = NULL
+    )
+})
+
+test_that("q column values must be in [0, 1]", {
+    df <- make_dotmap_df(add_q = TRUE)
+    df$q_bad <- df$q + 2 # out of range
+    expect_error(
+        plot_dotmap(
+            df,
+            x = "col",
+            y = "row",
+            effect = "effect",
+            p = "p",
+            q = "q_bad"
+        ),
+        regexp = NULL
+    )
+})
+
+test_that("q column must not contain Inf or -Inf", {
+    df <- make_dotmap_df(add_q = TRUE)
+    df$q_inf <- df$q
+    df$q_inf[1] <- Inf
+    expect_error(
+        plot_dotmap(
+            df,
+            x = "col",
+            y = "row",
+            effect = "effect",
+            p = "p",
+            q = "q_inf"
+        ),
+        regexp = NULL
+    )
+})
+
+test_that("q column must be strictly positive when mlog10_transform_pvalue = TRUE", {
+    df <- make_dotmap_df(add_q = TRUE)
+    df$q_zero <- df$q
+    df$q_zero[1] <- 0
+    expect_error(
+        plot_dotmap(
+            df,
+            x = "col",
+            y = "row",
+            effect = "effect",
+            p = "p",
+            q = "q_zero",
+            mlog10_transform_pvalue = TRUE
+        ),
+        regexp = NULL
+    )
+})
+
+test_that("q column with zero values is allowed when mlog10_transform_pvalue = FALSE", {
+    df <- make_dotmap_df(add_q = TRUE)
+    df$q_zero <- df$q
+    df$q_zero[1] <- 0
+    expect_no_error(
+        plot_dotmap(
+            df,
+            x = "col",
+            y = "row",
+            effect = "effect",
+            p = "p",
+            q = "q_zero",
+            mlog10_transform_pvalue = FALSE
+        )
+    )
+})
+
+
 test_that("q = NULL (default) produces same result as omitting q", {
     df <- make_dotmap_df()
     p1 <- plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p")

@@ -47,7 +47,9 @@ no bar in the combined p-value panel.}
 for tile fill instead of \code{p}. Useful when you want cell shading to reflect
 q-values (e.g. FDR-adjusted per-cell p-values) while the combined p-value barplot on
 the right is still computed from the raw \code{p} column. When \code{NULL} (default)
-the tile fill is determined by \code{p}.}
+the tile fill is determined by \code{p}. \code{NA} values are allowed; the corresponding
+tile is drawn with the fill scale's \code{na.value} (grey95 by default), exactly as for
+\code{NA} values in \code{p}.}
 
 \item{dot_size_vals}{Numeric vector of reference effect values used for the size legend (signed to indicate direction)}
 

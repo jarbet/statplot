@@ -115,24 +115,22 @@ plot_pvalue_barplot <- function(
         stopifnot(custom_qvalues %in% names(data))
     }
     stopifnot(is.numeric(data[[x]]))
-    stopifnot(all(data[[x]] >= 0 & data[[x]] <= 1, na.rm = TRUE))
+    .x_non_na <- data[[x]][!is.na(data[[x]])]
+    stopifnot(all(is.finite(.x_non_na)))
+    stopifnot(all(.x_non_na >= 0 & .x_non_na <= 1))
     if (mlog10_transform_pvalue) {
-        stopifnot(all(is.finite(data[[x]][!is.na(data[[x]])])))
-        stopifnot(all(data[[x]][!is.na(data[[x]])] > 0))
+        stopifnot(all(.x_non_na > 0))
     }
     stopifnot(is.character(color_qvalue), length(color_qvalue) == 1)
     stopifnot(is.character(color_pvalue), length(color_pvalue) == 1)
     stopifnot(is.logical(also_show_qvalue), length(also_show_qvalue) == 1)
     if (!is.null(custom_qvalues)) {
         stopifnot(is.numeric(data[[custom_qvalues]]))
-        stopifnot(all(
-            data[[custom_qvalues]] >= 0 & data[[custom_qvalues]] <= 1,
-            na.rm = TRUE
-        ))
+        .cq_non_na <- data[[custom_qvalues]][!is.na(data[[custom_qvalues]])]
+        stopifnot(all(is.finite(.cq_non_na)))
+        stopifnot(all(.cq_non_na >= 0 & .cq_non_na <= 1))
         if (mlog10_transform_pvalue) {
-            stopifnot(all(
-                data[[custom_qvalues]][!is.na(data[[custom_qvalues]])] > 0
-            ))
+            stopifnot(all(.cq_non_na > 0))
         }
     }
     # ---- end checks ----
@@ -157,10 +155,9 @@ plot_pvalue_barplot <- function(
             data[[".qvalue_raw"]] <- qv
         }
         stopifnot(is.numeric(data[[".qvalue_raw"]]))
-        stopifnot(all(
-            data[[".qvalue_raw"]] >= 0 & data[[".qvalue_raw"]] <= 1,
-            na.rm = TRUE
-        ))
+        .qr_non_na <- data[[".qvalue_raw"]][!is.na(data[[".qvalue_raw"]])]
+        stopifnot(all(is.finite(.qr_non_na)))
+        stopifnot(all(.qr_non_na >= 0 & .qr_non_na <= 1))
 
         # create plotting columns for p and q (transformed if requested)
         if (mlog10_transform_pvalue) {
