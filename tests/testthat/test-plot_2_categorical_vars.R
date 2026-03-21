@@ -235,3 +235,116 @@ test_that("yvar_colors are applied when supplied", {
     expect_length(fill_scales, 1L)
     expect_equal(fill_scales[[1]]$palette(3), colors)
 })
+
+# ---------------------------------------------------------------------------
+# include_overall_bar
+# ---------------------------------------------------------------------------
+
+test_that("include_overall_bar = TRUE runs without error", {
+    d <- make_cat_df()
+    expect_no_error(
+        plot_2_categorical_vars(d, "cyl", "gear", include_overall_bar = TRUE)
+    )
+})
+
+test_that("include_overall_bar = TRUE prepends 'Overall' as first x level", {
+    d <- make_cat_df()
+    res <- plot_2_categorical_vars(d, "cyl", "gear", include_overall_bar = TRUE)
+    x_levels <- levels(res$ggplot$data$cyl)
+    expect_equal(x_levels[1], "Overall")
+})
+
+test_that("include_overall_bar = TRUE adds one extra bar vs FALSE", {
+    d <- make_cat_df()
+    res_no <- plot_2_categorical_vars(
+        d,
+        "cyl",
+        "gear",
+        include_overall_bar = FALSE
+    )
+    res_yes <- plot_2_categorical_vars(
+        d,
+        "cyl",
+        "gear",
+        include_overall_bar = TRUE
+    )
+    n_levels_no <- nlevels(res_no$ggplot$data$cyl)
+    n_levels_yes <- nlevels(res_yes$ggplot$data$cyl)
+    expect_equal(n_levels_yes, n_levels_no + 1L)
+})
+
+test_that("include_overall_bar = TRUE overall pct sums to 100", {
+    d <- make_cat_df()
+    res <- plot_2_categorical_vars(d, "cyl", "gear", include_overall_bar = TRUE)
+    overall_pct <- res$ggplot$data |>
+        dplyr::filter(as.character(cyl) == "Overall") |>
+        dplyr::pull(pct) |>
+        sum()
+    expect_equal(overall_pct, 100, tolerance = 1e-6)
+})
+
+test_that("include_overall_bar = TRUE adds a vline layer", {
+    d <- make_cat_df()
+    res <- plot_2_categorical_vars(d, "cyl", "gear", include_overall_bar = TRUE)
+    geom_classes <- sapply(res$ggplot$layers, function(l) class(l$geom)[1])
+    expect_true(any(geom_classes == "GeomVline"))
+})
+
+test_that("include_overall_bar = FALSE does not add a vline layer", {
+    d <- make_cat_df()
+    res <- plot_2_categorical_vars(
+        d,
+        "cyl",
+        "gear",
+        include_overall_bar = FALSE
+    )
+    geom_classes <- sapply(res$ggplot$layers, function(l) class(l$geom)[1])
+    expect_false(any(geom_classes == "GeomVline"))
+})
+
+test_that("include_overall_bar must be logical", {
+    d <- make_cat_df()
+    expect_error(
+        plot_2_categorical_vars(d, "cyl", "gear", include_overall_bar = 1)
+    )
+})
+
+# ---------------------------------------------------------------------------
+# overall_label
+# ---------------------------------------------------------------------------
+
+test_that("overall_label changes the x-axis label for the overall bar", {
+    d <- make_cat_df()
+    res <- plot_2_categorical_vars(
+        d,
+        "cyl",
+        "gear",
+        include_overall_bar = TRUE,
+        overall_label = "All patients"
+    )
+    x_levels <- levels(res$ggplot$data$cyl)
+    expect_equal(x_levels[1], "All patients")
+    expect_false("Overall" %in% x_levels)
+})
+
+test_that("overall_label must be a character scalar", {
+    d <- make_cat_df()
+    expect_error(
+        plot_2_categorical_vars(
+            d,
+            "cyl",
+            "gear",
+            include_overall_bar = TRUE,
+            overall_label = 123
+        )
+    )
+    expect_error(
+        plot_2_categorical_vars(
+            d,
+            "cyl",
+            "gear",
+            include_overall_bar = TRUE,
+            overall_label = c("a", "b")
+        )
+    )
+})

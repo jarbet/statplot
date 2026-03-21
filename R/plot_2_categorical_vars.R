@@ -34,6 +34,12 @@
 #'   per line for x-axis group labels. Longer labels will be wrapped to multiple lines.
 #' @param y_max Numeric scalar. Maximum y-axis limit for the plot.
 #' @param n_ypos Numeric scalar. y-axis position for the group N labels.
+#' @param include_overall_bar Logical scalar (default FALSE). If TRUE, a pooled
+#'   "Overall" bar showing the marginal distribution of `yvar` across all
+#'   observations is prepended to the left of the per-group bars, separated by a
+#'   solid vertical line.
+#' @param overall_label Character scalar (default `"Overall"`). Label used for
+#'   the pooled bar when `include_overall_bar = TRUE`.
 #' @return A list of the ggplot2 object, Cramer's V effect size, p-value.
 #'
 #' @examples
@@ -67,7 +73,9 @@ plot_2_categorical_vars <- function(
     flip = FALSE,
     xaxis_labels_nchar_wrap = 20,
     y_max = 110,
-    n_ypos = y_max - 5
+    n_ypos = y_max - 5,
+    include_overall_bar = FALSE,
+    overall_label = "Overall"
 ) {
     ### Input checks
     inside_bar_stats <- match.arg(inside_bar_stats)
@@ -109,6 +117,12 @@ plot_2_categorical_vars <- function(
     )
     stopifnot(
         length(n_ypos) == 1 & is.numeric(n_ypos)
+    )
+    stopifnot(
+        length(include_overall_bar) == 1 & is.logical(include_overall_bar)
+    )
+    stopifnot(
+        length(overall_label) == 1 & is.character(overall_label)
     )
     stopifnot(
         length(title_nchar_wrap) == 1 &
@@ -188,6 +202,49 @@ plot_2_categorical_vars <- function(
             )
         )
 
+    # --- new: prepend Overall bar if requested ---
+    if (include_overall_bar) {
+        existing_levels <- levels(plot_data[[xvar]])
+        new_levels <- c(overall_label, existing_levels)
+
+        overall_data <- d |>
+            dplyr::filter(!is.na(.data[[xvar]]), !is.na(.data[[yvar]])) |>
+            dplyr::count(.data[[yvar]], name = "n") |>
+            dplyr::mutate(
+                pct = n / sum(n) * 100,
+                bar_label = dplyr::case_when(
+                    inside_bar_stats == 'pct' ~ paste0(
+                        sprintf(sprint_pct_digits, pct),
+                        "%"
+                    ),
+                    inside_bar_stats == 'n' ~ format(
+                        n,
+                        big.mark = ",",
+                        scientific = FALSE,
+                        trim = TRUE
+                    ),
+                    inside_bar_stats == 'n_and_pct' ~ paste0(
+                        format(
+                            n,
+                            big.mark = ",",
+                            scientific = FALSE,
+                            trim = TRUE
+                        ),
+                        " (",
+                        sprintf(sprint_pct_digits, pct),
+                        "%)"
+                    ),
+                    .default = NA_character_
+                )
+            )
+        overall_data[[xvar]] <- factor(overall_label, levels = new_levels)
+        plot_data[[xvar]] <- factor(
+            as.character(plot_data[[xvar]]),
+            levels = new_levels
+        )
+        plot_data <- dplyr::bind_rows(overall_data, plot_data)
+    }
+
     # --- added: totals per x-group for labels ---
     total_n_labels <- plot_data |>
         dplyr::group_by(x = .data[[xvar]]) |>
@@ -239,6 +296,17 @@ plot_2_categorical_vars <- function(
     # --- added: apply supplied colors if provided (otherwise use ggplot defaults) ---
     if (!is.null(yvar_colors)) {
         p <- p + ggplot2::scale_fill_manual(values = yvar_colors)
+    }
+
+    # --- new: vertical separator between Overall bar and per-group bars ---
+    if (include_overall_bar) {
+        p <- p +
+            ggplot2::geom_vline(
+                xintercept = 1.5,
+                linetype = "solid",
+                color = "gray40",
+                linewidth = 0.8
+            )
     }
     # } else {
     #     p <- p +
