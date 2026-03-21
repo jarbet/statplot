@@ -22,7 +22,8 @@ plot_2_categorical_vars(
   xaxis_labels_nchar_wrap = 20,
   y_max = 110,
   n_ypos = y_max - 5,
-  include_overall_bar = FALSE
+  include_overall_bar = FALSE,
+  overall_label = "Overall"
 )
 }
 \arguments{
@@ -75,7 +76,10 @@ per line for x-axis group labels. Longer labels will be wrapped to multiple line
 \item{include_overall_bar}{Logical scalar (default FALSE). If TRUE, a pooled
 "Overall" bar showing the marginal distribution of \code{yvar} across all
 observations is prepended to the left of the per-group bars, separated by a
-dashed vertical line.}
+solid vertical line.}
+
+\item{overall_label}{Character scalar (default \code{"Overall"}). Label used for
+the pooled bar when \code{include_overall_bar = TRUE}.}
 }
 \value{
 A list of the ggplot2 object, Cramer's V effect size, p-value.
