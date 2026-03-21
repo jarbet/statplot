@@ -18,9 +18,6 @@ jobs:
           - macos-latest
           - windows-latest
 
-    env:
-      GITHUB_PAT: ${{ secrets.STATGENCORE_PAT }}
-
     steps:
       # Step 1: Checkout repository
       - uses: actions/checkout@v4

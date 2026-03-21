@@ -45,8 +45,8 @@ Imports:
     tibble,
     tidyr,
     UpSetR
-URL: https://statgencore.github.io/statplot/
-BugReports: https://github.com/StatGenCore/statplot/issues
+URL: https://github.com/jarbet/statplot
+BugReports: https://github.com/jarbet/statplot/issues
 Depends: 
     R (>= 4.1)
 LazyData: true
