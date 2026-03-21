@@ -45,6 +45,13 @@
   what is printed inside the stacked bars — `"pct"` (default,
   within-group percentage), `"n"` (count only), `"n_and_pct"` (count and
   percentage formatted as `n (pct%)`), or `"none"` (no labels).
+- `plot_2_categorical_vars`: new `include_overall_bar` argument (default
+  `FALSE`); when `TRUE`, a pooled bar showing the marginal distribution
+  of `yvar` across all observations is prepended to the left of the
+  per-group bars and separated by a vertical line. The bar respects
+  `inside_bar_stats` and displays the total N label above it like all
+  other bars. The bar label defaults to `"Overall"` and can be
+  customised via the new `overall_label` argument.
 - `plot_dotmap`: new `q` argument accepts an optional column name of
   per-cell q-values (e.g. FDR-adjusted p-values) to use for cell shading
   instead of raw p-values. When both `p` and `q` are supplied the

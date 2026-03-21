@@ -68,6 +68,8 @@
 <ul><li>
 <code>plot_2_categorical_vars</code>: new <code>inside_bar_stats</code> argument controls what is printed inside the stacked bars — <code>"pct"</code> (default, within-group percentage), <code>"n"</code> (count only), <code>"n_and_pct"</code> (count and percentage formatted as <code>n (pct%)</code>), or <code>"none"</code> (no labels).</li>
 <li>
+<code>plot_2_categorical_vars</code>: new <code>include_overall_bar</code> argument (default <code>FALSE</code>); when <code>TRUE</code>, a pooled bar showing the marginal distribution of <code>yvar</code> across all observations is prepended to the left of the per-group bars and separated by a vertical line. The bar respects <code>inside_bar_stats</code> and displays the total N label above it like all other bars. The bar label defaults to <code>"Overall"</code> and can be customised via the new <code>overall_label</code> argument.</li>
+<li>
 <code>plot_dotmap</code>: new <code>q</code> argument accepts an optional column name of per-cell q-values (e.g. FDR-adjusted p-values) to use for cell shading instead of raw p-values. When both <code>p</code> and <code>q</code> are supplied the combined p-value barplot (right panel) is still computed from <code>p</code>, so Fisher/CMC combination uses raw p-values while cells reflect adjusted values.</li>
 <li>
 <code>plot_pvalue_barplot</code>: <code>NA</code> p-values are now handled gracefully — rows with missing p-values are silently dropped rather than causing an error, and BH correction for q-values is applied only to the non-missing subset so adjusted values are not distorted.</li>

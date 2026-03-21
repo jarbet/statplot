@@ -25,7 +25,9 @@ plot_2_categorical_vars(
   flip = FALSE,
   xaxis_labels_nchar_wrap = 20,
   y_max = 110,
-  n_ypos = y_max - 5
+  n_ypos = y_max - 5,
+  include_overall_bar = FALSE,
+  overall_label = "Overall"
 )
 ```
 
@@ -111,6 +113,18 @@ plot_2_categorical_vars(
 - n_ypos:
 
   Numeric scalar. y-axis position for the group N labels.
+
+- include_overall_bar:
+
+  Logical scalar (default FALSE). If TRUE, a pooled "Overall" bar
+  showing the marginal distribution of `yvar` across all observations is
+  prepended to the left of the per-group bars, separated by a solid
+  vertical line.
+
+- overall_label:
+
+  Character scalar (default `"Overall"`). Label used for the pooled bar
+  when `include_overall_bar = TRUE`.
 
 ## Value
 
