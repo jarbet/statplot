@@ -2,6 +2,20 @@
 
 ## Added
 
+* ...
+
+## Changed
+
+* ...
+
+## Fixed
+
+* ...
+
+# statplot 0.3.0 - 2026-03-20
+
+## Added
+
 * `run_gsea`: wrapper around `clusterProfiler::GSEA()` for gene set enrichment
   analysis on a pre-ranked gene vector; returns results alongside the inputs
   needed by the pathway plotting functions below.
@@ -17,10 +31,10 @@
 
 ## Changed
 
+* `plot_2_categorical_vars`: new `inside_bar_stats` argument controls what is printed inside the stacked bars — `"pct"` (default, within-group percentage), `"n"` (count only), `"n_and_pct"` (count and percentage formatted as `n (pct%)`), or `"none"` (no labels).
 * `plot_dotmap`: new `q` argument accepts an optional column name of per-cell q-values (e.g. FDR-adjusted p-values) to use for cell shading instead of raw p-values. When both `p` and `q` are supplied the combined p-value barplot (right panel) is still computed from `p`, so Fisher/CMC combination uses raw p-values while cells reflect adjusted values.
 * `plot_pvalue_barplot`: `NA` p-values are now handled gracefully — rows with missing p-values are silently dropped rather than causing an error, and BH correction for q-values is applied only to the non-missing subset so adjusted values are not distorted.
 * Use `stats::reformulate()` with backticks when building formulas in numeric-by-group plotting functions to support non-syntactic column names (fixes issue with spaces/hyphens).
-
 
 ## Fixed
 

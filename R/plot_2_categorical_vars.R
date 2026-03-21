@@ -19,6 +19,10 @@
 #' @param n_pct_size Numeric scalar. Point size used for the percent labels inside
 #'   the stacked bars and for the group N labels above bars. Must be a single
 #'   positive numeric value.
+#' @param inside_bar_stats Character scalar controlling what statistics are
+#'   printed inside the stacked bars. One of `"pct"` (default; shows within-group
+#'   percentage), `"n"` (shows count only), `"n_and_pct"` (shows count with
+#'   percentage below it), or `"none"` (no labels inside bars).
 #' @param pct_digits Integer scalar (default 0). Number of decimal places to show
 #'   for the within-group percent labels (e.g. 0 => "12%", 1 => "12.3%"). Must be
 #'   a single non-negative numeric value.
@@ -57,6 +61,7 @@ plot_2_categorical_vars <- function(
     title_nchar_wrap = 30,
     show_effect_size = TRUE,
     n_pct_size = 3.5,
+    inside_bar_stats = c('pct', 'n', 'n_and_pct', 'none'),
     pct_digits = 0,
     plot_horizontal = FALSE,
     flip = FALSE,
@@ -65,6 +70,7 @@ plot_2_categorical_vars <- function(
     n_ypos = y_max - 5
 ) {
     ### Input checks
+    inside_bar_stats <- match.arg(inside_bar_stats)
     stopifnot(
         length(pct_digits) == 1 & is.numeric(pct_digits) & pct_digits >= 0
     )
@@ -152,12 +158,35 @@ plot_2_categorical_vars <- function(
     )
     ### Make plot
 
+    sprint_pct_digits <- paste0('%1.', pct_digits, 'f')
+
     plot_data <- d |>
         dplyr::filter(!is.na(.data[[xvar]]), !is.na(.data[[yvar]])) |>
         dplyr::count(.data[[xvar]], .data[[yvar]], name = "n") |>
         dplyr::group_by(.data[[xvar]]) |>
         dplyr::mutate(pct = n / sum(n) * 100) |>
-        dplyr::ungroup()
+        dplyr::ungroup() |>
+        dplyr::mutate(
+            bar_label = dplyr::case_when(
+                inside_bar_stats == 'pct' ~ paste0(
+                    sprintf(sprint_pct_digits, pct),
+                    "%"
+                ),
+                inside_bar_stats == 'n' ~ format(
+                    n,
+                    big.mark = ",",
+                    scientific = FALSE,
+                    trim = TRUE
+                ),
+                inside_bar_stats == 'n_and_pct' ~ paste0(
+                    format(n, big.mark = ",", scientific = FALSE, trim = TRUE),
+                    " (",
+                    sprintf(sprint_pct_digits, pct),
+                    "%)"
+                ),
+                .default = NA_character_
+            )
+        )
 
     # --- added: totals per x-group for labels ---
     total_n_labels <- plot_data |>
@@ -170,17 +199,11 @@ plot_2_categorical_vars <- function(
             )
         )
 
-    sprint_pct_digits <- paste0('%1.', pct_digits, 'f')
     p <- ggplot2::ggplot(
         plot_data,
         ggplot2::aes(x = .data[[xvar]], y = pct, fill = .data[[yvar]])
     ) +
         ggplot2::geom_col() +
-        ggplot2::geom_text(
-            ggplot2::aes(label = paste0(sprintf(sprint_pct_digits, pct), "%")),
-            position = ggplot2::position_stack(vjust = 0.5),
-            size = n_pct_size
-        ) +
         # --- modified: add room above 100% so N labels aren't clipped ---
         ggplot2::scale_y_continuous(
             limits = c(0, y_max),
@@ -202,6 +225,16 @@ plot_2_categorical_vars <- function(
             fill = yvar_label
         ) +
         ggplot2::theme_bw()
+
+    # inside-bar stats labels
+    if (inside_bar_stats != 'none') {
+        p <- p +
+            ggplot2::geom_text(
+                ggplot2::aes(label = bar_label),
+                position = ggplot2::position_stack(vjust = 0.5),
+                size = n_pct_size
+            )
+    }
 
     # --- added: apply supplied colors if provided (otherwise use ggplot defaults) ---
     if (!is.null(yvar_colors)) {
