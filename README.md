@@ -23,6 +23,6 @@ You can install the development version of statplot from
 ``` r
 pak::pak("jarbet/statplot")
 
-# Or you can try remotes:
-# remotes::install_github("jarbet/statplot")
+# Alternatively try:
+# BiocManager::install("jarbet/statplot")
 ```
