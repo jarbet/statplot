@@ -5,7 +5,7 @@ nodes are connected to their constituent gene nodes. Gene nodes are
 colored by the gene-level statistic used for GSEA (e.g. log2 fold
 change). Node proximity reflects **shared pathway membership** (network
 layout), *not* gene–gene correlation — see
-[`plot_pathway_correlation_network()`](https://statgencore.github.io/statplot/reference/plot_pathway_correlation_network.md)
+[`plot_pathway_correlation_network()`](https://github.com/jarbet/statplot/reference/plot_pathway_correlation_network.md)
 for co-expression structure.
 
 ## Usage
@@ -31,7 +31,7 @@ plot_pathways(
 - gsea_result:
 
   A `gseaResult` object returned by
-  [`run_gsea()`](https://statgencore.github.io/statplot/reference/run_gsea.md)
+  [`run_gsea()`](https://github.com/jarbet/statplot/reference/run_gsea.md)
   or
   [`clusterProfiler::GSEA()`](https://rdrr.io/pkg/clusterProfiler/man/GSEA.html).
 
@@ -41,7 +41,7 @@ plot_pathways(
   (e.g. log2 fold change, t-statistic). Names must be gene symbols
   matching those in `gsea_result`. Typically the `gene_vec` element
   returned by
-  [`run_gsea()`](https://statgencore.github.io/statplot/reference/run_gsea.md).
+  [`run_gsea()`](https://github.com/jarbet/statplot/reference/run_gsea.md).
 
 - show_category:
 

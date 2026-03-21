@@ -138,12 +138,12 @@ plot_dotmap(
 - ...:
 
   Additional arguments passed on to
-  [`plot_pvalue_barplot()`](https://statgencore.github.io/statplot/reference/plot_pvalue_barplot.md)
+  [`plot_pvalue_barplot()`](https://github.com/jarbet/statplot/reference/plot_pvalue_barplot.md)
   when `add_combined_pvalue_barplot = TRUE`. The following arguments are
   set internally and will be ignored if supplied here: `data`, `x`, `y`,
   `fill`, `show_y_labels`, `custom_qvalues` (the combined p-value
   barplot always uses `p` to compute Fisher/CMC combined p-values via
-  [`combine_pvalues()`](https://statgencore.github.io/statplot/reference/combine_pvalues.md);
+  [`combine_pvalues()`](https://github.com/jarbet/statplot/reference/combine_pvalues.md);
   the `q` argument only affects cell fill, not the barplot).
 
 - patchwork_widths:
@@ -164,7 +164,7 @@ while the overplotted points encode effect size (size) and direction
 (fill color). NA values for `effect` are marked with an "×" symbol. When
 a combined p-value barplot is requested the function groups by `y` and
 computes the combined p-value using
-[`combine_pvalues()`](https://statgencore.github.io/statplot/reference/combine_pvalues.md);
+[`combine_pvalues()`](https://github.com/jarbet/statplot/reference/combine_pvalues.md);
 the combined panel is aligned vertically with the main dotmap.
 
 ## See also

@@ -48,7 +48,7 @@ plot_pathway_correlation_network(
   data.frame Two-column data frame with columns `"term"` and `"gene"`
   mapping pathway names to gene symbols. Typically the `term2gene`
   element returned by
-  [`run_gsea()`](https://statgencore.github.io/statplot/reference/run_gsea.md).
+  [`run_gsea()`](https://github.com/jarbet/statplot/reference/run_gsea.md).
 
 - log2fc:
 
@@ -132,7 +132,7 @@ are present in `expr` or no gene pairs pass `cor_thresh`.
 ## Details
 
 Unlike
-[`plot_pathways()`](https://statgencore.github.io/statplot/reference/plot_pathways.md),
+[`plot_pathways()`](https://github.com/jarbet/statplot/reference/plot_pathways.md),
 which uses network layout to reflect shared pathway membership, this
 plot shows actual co-expression structure among genes within a single
 pathway.

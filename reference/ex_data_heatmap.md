@@ -2,7 +2,7 @@
 
 A small long-format data frame with simulated gene expression values
 across three samples, intended for use in
-[`plot_heatmap`](https://statgencore.github.io/statplot/reference/plot_heatmap.md)
+[`plot_heatmap`](https://github.com/jarbet/statplot/reference/plot_heatmap.md)
 examples and tests.
 
 ## Usage

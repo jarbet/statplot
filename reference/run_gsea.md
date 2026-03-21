@@ -5,9 +5,9 @@ A wrapper around
 that accepts a pre-ranked gene vector and a gene-set data frame, runs
 GSEA, and returns the result together with the inputs needed by
 downstream plotting functions
-([`plot_pathways()`](https://statgencore.github.io/statplot/reference/plot_pathways.md)
+([`plot_pathways()`](https://github.com/jarbet/statplot/reference/plot_pathways.md)
 and
-[`plot_pathway_correlation_network()`](https://statgencore.github.io/statplot/reference/plot_pathway_correlation_network.md)).
+[`plot_pathway_correlation_network()`](https://github.com/jarbet/statplot/reference/plot_pathway_correlation_network.md)).
 
 ## Usage
 
@@ -103,13 +103,13 @@ A list with three elements:
 
   The (possibly sorted) named numeric vector that was passed to GSEA —
   use this as the `foldChange` argument of
-  [`plot_pathways()`](https://statgencore.github.io/statplot/reference/plot_pathways.md).
+  [`plot_pathways()`](https://github.com/jarbet/statplot/reference/plot_pathways.md).
 
 - `term2gene`:
 
   The gene-set data frame (columns `term` and `gene`) that was passed to
   GSEA — use this as the `gene_sets` argument of
-  [`plot_pathway_correlation_network()`](https://statgencore.github.io/statplot/reference/plot_pathway_correlation_network.md).
+  [`plot_pathway_correlation_network()`](https://github.com/jarbet/statplot/reference/plot_pathway_correlation_network.md).
 
 ## Examples
 

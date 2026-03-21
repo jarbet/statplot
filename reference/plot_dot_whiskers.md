@@ -112,7 +112,7 @@ plot_dot_whiskers(
 
   Optional string name of a column in `data` containing one p-value per
   `label_col` row. When supplied, a
-  [`plot_pvalue_barplot()`](https://statgencore.github.io/statplot/reference/plot_pvalue_barplot.md)
+  [`plot_pvalue_barplot()`](https://github.com/jarbet/statplot/reference/plot_pvalue_barplot.md)
   is appended to the right using patchwork. The p-value used for each
   row is taken from the first occurrence within that `label_col` group,
   so the column must be constant within each row. Requires the patchwork
@@ -127,7 +127,7 @@ plot_dot_whiskers(
 - ...:
 
   Additional arguments passed to
-  [`plot_pvalue_barplot()`](https://statgencore.github.io/statplot/reference/plot_pvalue_barplot.md)
+  [`plot_pvalue_barplot()`](https://github.com/jarbet/statplot/reference/plot_pvalue_barplot.md)
   when `pvalue_col` is supplied.
 
 ## Value
