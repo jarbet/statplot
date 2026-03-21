@@ -19,6 +19,7 @@ plot_2_categorical_vars(
   title_nchar_wrap = 30,
   show_effect_size = TRUE,
   n_pct_size = 3.5,
+  inside_bar_stats = c("pct", "n", "n_and_pct", "none"),
   pct_digits = 0,
   plot_horizontal = FALSE,
   flip = FALSE,
@@ -74,6 +75,13 @@ plot_2_categorical_vars(
   Numeric scalar. Point size used for the percent labels inside the
   stacked bars and for the group N labels above bars. Must be a single
   positive numeric value.
+
+- inside_bar_stats:
+
+  Character scalar controlling what statistics are printed inside the
+  stacked bars. One of `"pct"` (default; shows within-group percentage),
+  `"n"` (shows count only), `"n_and_pct"` (shows count with percentage
+  below it), or `"none"` (no labels inside bars).
 
 - pct_digits:
 

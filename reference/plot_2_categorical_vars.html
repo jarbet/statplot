@@ -13,7 +13,7 @@ the test p-value."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">statplot</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,6 +59,7 @@ the test p-value.</p>
 <span>  title_nchar_wrap <span class="op">=</span> <span class="fl">30</span>,</span>
 <span>  show_effect_size <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  n_pct_size <span class="op">=</span> <span class="fl">3.5</span>,</span>
+<span>  inside_bar_stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pct"</span>, <span class="st">"n"</span>, <span class="st">"n_and_pct"</span>, <span class="st">"none"</span><span class="op">)</span>,</span>
 <span>  pct_digits <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  plot_horizontal <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  flip <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -114,6 +115,13 @@ codes (e.g. "#FF0000"). If NULL (default) ggplot2's default palette is used.</p>
 <dd><p>Numeric scalar. Point size used for the percent labels inside
 the stacked bars and for the group N labels above bars. Must be a single
 positive numeric value.</p></dd>
+
+
+<dt id="arg-inside-bar-stats">inside_bar_stats<a class="anchor" aria-label="anchor" href="#arg-inside-bar-stats"></a></dt>
+<dd><p>Character scalar controlling what statistics are
+printed inside the stacked bars. One of <code>"pct"</code> (default; shows within-group
+percentage), <code>"n"</code> (shows count only), <code>"n_and_pct"</code> (shows count with
+percentage below it), or <code>"none"</code> (no labels inside bars).</p></dd>
 
 
 <dt id="arg-pct-digits">pct_digits<a class="anchor" aria-label="anchor" href="#arg-pct-digits"></a></dt>

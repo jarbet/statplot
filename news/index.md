@@ -4,6 +4,20 @@
 
 ### Added
 
+- …
+
+### Changed
+
+- …
+
+### Fixed
+
+- …
+
+## statplot 0.3.0 - 2026-03-20
+
+### Added
+
 - `run_gsea`: wrapper around
   [`clusterProfiler::GSEA()`](https://rdrr.io/pkg/clusterProfiler/man/GSEA.html)
   for gene set enrichment analysis on a pre-ranked gene vector; returns
@@ -27,6 +41,10 @@
 
 ### Changed
 
+- `plot_2_categorical_vars`: new `inside_bar_stats` argument controls
+  what is printed inside the stacked bars — `"pct"` (default,
+  within-group percentage), `"n"` (count only), `"n_and_pct"` (count and
+  percentage formatted as `n (pct%)`), or `"none"` (no labels).
 - `plot_dotmap`: new `q` argument accepts an optional column name of
   per-cell q-values (e.g. FDR-adjusted p-values) to use for cell shading
   instead of raw p-values. When both `p` and `q` are supplied the

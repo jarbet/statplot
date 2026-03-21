@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">statplot</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,21 @@
 <h2 class="pkg-version" data-toc-text="development version" id="statplot-development-version">statplot (development version)<a class="anchor" aria-label="anchor" href="#statplot-development-version"></a></h2>
 <div class="section level3">
 <h3 id="added-development-version">Added<a class="anchor" aria-label="anchor" href="#added-development-version"></a></h3>
+<ul><li>…</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
+<ul><li>…</li>
+</ul></div>
+<div class="section level3">
+<h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
+<ul><li>…</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.0" id="statplot-030---2026-03-20">statplot 0.3.0 - 2026-03-20<a class="anchor" aria-label="anchor" href="#statplot-030---2026-03-20"></a></h2>
+<div class="section level3">
+<h3 id="added-0-3-0">Added<a class="anchor" aria-label="anchor" href="#added-0-3-0"></a></h3>
 <ul><li>
 <code>run_gsea</code>: wrapper around <code><a href="https://rdrr.io/pkg/clusterProfiler/man/GSEA.html" class="external-link">clusterProfiler::GSEA()</a></code> for gene set enrichment analysis on a pre-ranked gene vector; returns results alongside the inputs needed by the pathway plotting functions below.</li>
 <li>
@@ -49,15 +64,17 @@
 <code>plot_numeric_by_2groups</code> for creating violin + boxplots of a numeric variable by a grouping factor with exactly 2 levels</li>
 </ul></div>
 <div class="section level3">
-<h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
+<h3 id="changed-0-3-0">Changed<a class="anchor" aria-label="anchor" href="#changed-0-3-0"></a></h3>
 <ul><li>
+<code>plot_2_categorical_vars</code>: new <code>inside_bar_stats</code> argument controls what is printed inside the stacked bars — <code>"pct"</code> (default, within-group percentage), <code>"n"</code> (count only), <code>"n_and_pct"</code> (count and percentage formatted as <code>n (pct%)</code>), or <code>"none"</code> (no labels).</li>
+<li>
 <code>plot_dotmap</code>: new <code>q</code> argument accepts an optional column name of per-cell q-values (e.g. FDR-adjusted p-values) to use for cell shading instead of raw p-values. When both <code>p</code> and <code>q</code> are supplied the combined p-value barplot (right panel) is still computed from <code>p</code>, so Fisher/CMC combination uses raw p-values while cells reflect adjusted values.</li>
 <li>
 <code>plot_pvalue_barplot</code>: <code>NA</code> p-values are now handled gracefully — rows with missing p-values are silently dropped rather than causing an error, and BH correction for q-values is applied only to the non-missing subset so adjusted values are not distorted.</li>
 <li>Use <code><a href="https://rdrr.io/r/stats/delete.response.html" class="external-link">stats::reformulate()</a></code> with backticks when building formulas in numeric-by-group plotting functions to support non-syntactic column names (fixes issue with spaces/hyphens).</li>
 </ul></div>
 <div class="section level3">
-<h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
+<h3 id="fixed-0-3-0">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-3-0"></a></h3>
 <ul><li>…</li>
 </ul></div>
 </div>
