@@ -21,8 +21,8 @@ You can install the development version of statplot from
 [GitHub](https://github.com/) with:
 
 ``` r
-pak::pak("jarbet/statplot")
+pak::pak("StatGenCore/statplot")
 
 # Or you can try remotes:
-# remotes::install_github("jarbet/statplot")
+# remotes::install_github("StatGenCore/statplot")
 ```
