@@ -57,15 +57,25 @@ co-expression structure.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_pathways</span><span class="op">(</span></span>
 <span>  <span class="va">gsea_result</span>,</span>
 <span>  <span class="va">fold_change</span>,</span>
-<span>  show_category <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>  fc_threshold <span class="op">=</span> <span class="fl">1.5</span>,</span>
-<span>  size_item <span class="op">=</span> <span class="fl">0.7</span>,</span>
-<span>  size_edge <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>  category_color <span class="op">=</span> <span class="st">"black"</span>,</span>
-<span>  category_size <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>  item_color <span class="op">=</span> <span class="st">"grey30"</span>,</span>
-<span>  item_size <span class="op">=</span> <span class="fl">2.5</span>,</span>
-<span>  title <span class="op">=</span> <span class="st">"Gene-Pathway network (GSEA)"</span></span>
+<span>  show_pathways <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  effect_size_threshold <span class="op">=</span> <span class="fl">1.5</span>,</span>
+<span>  subtitle_effect_size_label <span class="op">=</span> <span class="st">"effect size"</span>,</span>
+<span>  max_genes_shown <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  gene_node_size <span class="op">=</span> <span class="fl">0.7</span>,</span>
+<span>  line_size <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>  pathway_color <span class="op">=</span> <span class="st">"black"</span>,</span>
+<span>  pathway_label_size <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  gene_color <span class="op">=</span> <span class="st">"grey30"</span>,</span>
+<span>  gene_label_size <span class="op">=</span> <span class="fl">2.5</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Effect sizes of genes in selected pathways"</span>,</span>
+<span>  legend_pathway_size_title <span class="op">=</span> <span class="st">"Num. genes"</span>,</span>
+<span>  legend_color_title <span class="op">=</span> <span class="st">"Effect size"</span>,</span>
+<span>  colorkey_breaks <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  colorkey_limits <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  color_low <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  color_mid <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  color_high <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  plot_margin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -79,55 +89,126 @@ co-expression structure.</p>
 
 
 <dt id="arg-fold-change">fold_change<a class="anchor" aria-label="anchor" href="#arg-fold-change"></a></dt>
-<dd><p>named numeric vector Gene-level statistics used to color
+<dd><p>named numeric vector. Gene-level statistics used to color
 gene nodes (e.g. log2 fold change, t-statistic).  Names must be gene
 symbols matching those in <code>gsea_result</code>.  Typically the <code>gene_vec</code>
 element returned by <code><a href="run_gsea.html">run_gsea()</a></code>.</p></dd>
 
 
-<dt id="arg-show-category">show_category<a class="anchor" aria-label="anchor" href="#arg-show-category"></a></dt>
+<dt id="arg-show-pathways">show_pathways<a class="anchor" aria-label="anchor" href="#arg-show-pathways"></a></dt>
 <dd><p>integer(1) Number of top pathways to display (default
 <code>5</code>).  Must be a single positive whole number.</p></dd>
 
 
-<dt id="arg-fc-threshold">fc_threshold<a class="anchor" aria-label="anchor" href="#arg-fc-threshold"></a></dt>
+<dt id="arg-effect-size-threshold">effect_size_threshold<a class="anchor" aria-label="anchor" href="#arg-effect-size-threshold"></a></dt>
 <dd><p>numeric(1) Only show gene nodes whose
-<code>abs(fold_change) &gt;= fc_threshold</code> (default <code>1.5</code>).  Set to <code>0</code> to show
-all genes.  Must be a single finite non-negative value.</p></dd>
+<code>abs(fold_change) &gt;= effect_size_threshold</code> (default <code>1.5</code>).  Set to <code>0</code>
+to show all genes.  Must be a single finite non-negative value.</p></dd>
 
 
-<dt id="arg-size-item">size_item<a class="anchor" aria-label="anchor" href="#arg-size-item"></a></dt>
+<dt id="arg-subtitle-effect-size-label">subtitle_effect_size_label<a class="anchor" aria-label="anchor" href="#arg-subtitle-effect-size-label"></a></dt>
+<dd><p>character(1) String placed inside <code><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs()</a></code> in the
+auto-generated subtitle when a threshold is applied
+(default <code>"effect size"</code>).  Change to match your effect-size metric, e.g.
+<code>"log2FC"</code>, <code>"t-statistic"</code>, or <code>"z-score"</code>.</p></dd>
+
+
+<dt id="arg-max-genes-shown">max_genes_shown<a class="anchor" aria-label="anchor" href="#arg-max-genes-shown"></a></dt>
+<dd><p>integer(1) Maximum number of gene nodes to display
+(default <code>NULL</code>, no limit).  If the number of genes belonging to the top
+<code>show_pathways</code> pathways and passing <code>effect_size_threshold</code> exceeds this value,
+the threshold is raised adaptively (via quantile of <code>abs(fold_change)</code>
+among pathway genes) until at most <code>max_genes_shown</code> genes remain.  The
+effective threshold will never drop below <code>effect_size_threshold</code>.  Must be
+a single positive whole number.</p></dd>
+
+
+<dt id="arg-gene-node-size">gene_node_size<a class="anchor" aria-label="anchor" href="#arg-gene-node-size"></a></dt>
 <dd><p>numeric(1) Relative size of gene circles/nodes (default
 <code>0.7</code>).  Must be a single positive value.</p></dd>
 
 
-<dt id="arg-size-edge">size_edge<a class="anchor" aria-label="anchor" href="#arg-size-edge"></a></dt>
+<dt id="arg-line-size">line_size<a class="anchor" aria-label="anchor" href="#arg-line-size"></a></dt>
 <dd><p>numeric(1) Relative thickness of edges (default <code>0.5</code>).
 Must be a single positive value.</p></dd>
 
 
-<dt id="arg-category-color">category_color<a class="anchor" aria-label="anchor" href="#arg-category-color"></a></dt>
+<dt id="arg-pathway-color">pathway_color<a class="anchor" aria-label="anchor" href="#arg-pathway-color"></a></dt>
 <dd><p>character(1) Color of pathway label text (default
 <code>"black"</code>).</p></dd>
 
 
-<dt id="arg-category-size">category_size<a class="anchor" aria-label="anchor" href="#arg-category-size"></a></dt>
+<dt id="arg-pathway-label-size">pathway_label_size<a class="anchor" aria-label="anchor" href="#arg-pathway-label-size"></a></dt>
 <dd><p>numeric(1) Font size of pathway labels (default <code>4</code>).
 Must be a single positive value.</p></dd>
 
 
-<dt id="arg-item-color">item_color<a class="anchor" aria-label="anchor" href="#arg-item-color"></a></dt>
+<dt id="arg-gene-color">gene_color<a class="anchor" aria-label="anchor" href="#arg-gene-color"></a></dt>
 <dd><p>character(1) Color of gene label text (default
 <code>"grey30"</code>).</p></dd>
 
 
-<dt id="arg-item-size">item_size<a class="anchor" aria-label="anchor" href="#arg-item-size"></a></dt>
+<dt id="arg-gene-label-size">gene_label_size<a class="anchor" aria-label="anchor" href="#arg-gene-label-size"></a></dt>
 <dd><p>numeric(1) Font size of gene labels (default <code>2.5</code>).
 Must be a single positive value.</p></dd>
 
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
-<dd><p>character(1) Plot title (default <code>"Gene-Pathway network (GSEA)"</code>).</p></dd>
+<dd><p>character(1) Plot title (default <code>"Effect sizes of genes in selected pathways"</code>).</p></dd>
+
+
+<dt id="arg-legend-pathway-size-title">legend_pathway_size_title<a class="anchor" aria-label="anchor" href="#arg-legend-pathway-size-title"></a></dt>
+<dd><p>character(1) Title for the node-size legend (default
+<code>"Num. genes"</code>).  Set to <code>NULL</code> to show the legend without a title.</p></dd>
+
+
+<dt id="arg-legend-color-title">legend_color_title<a class="anchor" aria-label="anchor" href="#arg-legend-color-title"></a></dt>
+<dd><p>character(1) Title for the color scale legend
+(default <code>"Effect size"</code>).  Set to <code>NULL</code> to show the legend without a
+title.</p></dd>
+
+
+<dt id="arg-colorkey-breaks">colorkey_breaks<a class="anchor" aria-label="anchor" href="#arg-colorkey-breaks"></a></dt>
+<dd><p>numeric vector of values at which tick marks and
+labels are drawn on the color legend (default <code>NULL</code>, automatic).  For
+example, <code>c(-2, -1, 0, 1, 2)</code> to show five labeled ticks.  When
+supplied without any <code>color_*</code> arguments, the existing cnetplot palette
+is preserved and only the break positions are updated.</p></dd>
+
+
+<dt id="arg-colorkey-limits">colorkey_limits<a class="anchor" aria-label="anchor" href="#arg-colorkey-limits"></a></dt>
+<dd><p>numeric vector of length 2 giving the lower and
+upper bounds of the color scale (default <code>NULL</code>, automatic).  Values
+outside this range are mapped to the nearest extreme color.  Most
+useful together with <code>colorkey_breaks</code>.  Like <code>colorkey_breaks</code>,
+this preserves the cnetplot palette when no <code>color_*</code> arguments are set.</p></dd>
+
+
+<dt id="arg-color-low">color_low<a class="anchor" aria-label="anchor" href="#arg-color-low"></a></dt>
+<dd><p>character(1) Color for the low end of the scale (default
+<code>NULL</code>, uses cnetplot's palette).  Combine with <code>color_high</code> for a
+2-color sequential scale, or also set <code>color_mid</code> for a 3-color
+diverging scale.</p></dd>
+
+
+<dt id="arg-color-mid">color_mid<a class="anchor" aria-label="anchor" href="#arg-color-mid"></a></dt>
+<dd><p>character(1) Color for the midpoint of the scale (default
+<code>NULL</code>).  When non-<code>NULL</code>, a 3-color diverging
+<code><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">ggplot2::scale_color_gradient2()</a></code> is used (e.g. <code>color_mid = "white"</code>).
+Leave as <code>NULL</code> to use a 2-color <code><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">ggplot2::scale_color_gradient()</a></code> when
+<code>color_low</code> or <code>color_high</code> are set.</p></dd>
+
+
+<dt id="arg-color-high">color_high<a class="anchor" aria-label="anchor" href="#arg-color-high"></a></dt>
+<dd><p>character(1) Color for the high end of the scale (default
+<code>NULL</code>, uses cnetplot's palette).</p></dd>
+
+
+<dt id="arg-plot-margin">plot_margin<a class="anchor" aria-label="anchor" href="#arg-plot-margin"></a></dt>
+<dd><p>numeric vector of length 4 giving the plot margin in
+lines: <code>c(top, right, bottom, left)</code> (default <code>c(0.5, 0.5, 0.5, 0.5)</code>).
+All values must be finite and non-negative.  Increase
+the left/right values if node labels are being clipped at the edges.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -145,12 +226,65 @@ Must be a single positive value.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_gsea.html">run_gsea</a></span><span class="op">(</span><span class="va">gene_vec</span>, term2gene <span class="op">=</span> <span class="va">hallmark_t2g</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Basic usage</span></span></span>
+<span class="r-in"><span><span class="fu">plot_pathways</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    gsea_result           <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
+<span class="r-in"><span>    fold_change           <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
+<span class="r-in"><span>    show_pathways         <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>    effect_size_threshold <span class="op">=</span> <span class="fl">1.5</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot_pathways-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Adaptively cap gene nodes at 50: effect_size_threshold is raised automatically</span></span></span>
+<span class="r-in"><span><span class="co"># so at most 50 genes appear; the subtitle reports the effective threshold used</span></span></span>
+<span class="r-in"><span><span class="fu">plot_pathways</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    gsea_result        <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
+<span class="r-in"><span>    fold_change        <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
+<span class="r-in"><span>    show_pathways      <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>    max_genes_shown    <span class="op">=</span> <span class="fl">50</span>,</span></span>
+<span class="r-in"><span>    subtitle_effect_size_label  <span class="op">=</span> <span class="st">"log2FC"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot_pathways-2.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 3-color diverging scale (blue -&gt; white -&gt; red)</span></span></span>
 <span class="r-in"><span><span class="fu">plot_pathways</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    gsea_result   <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
 <span class="r-in"><span>    fold_change   <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
-<span class="r-in"><span>    show_category <span class="op">=</span> <span class="fl">5</span></span></span>
+<span class="r-in"><span>    show_pathways <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>    color_low     <span class="op">=</span> <span class="st">"blue"</span>,</span></span>
+<span class="r-in"><span>    color_mid     <span class="op">=</span> <span class="st">"white"</span>,</span></span>
+<span class="r-in"><span>    color_high    <span class="op">=</span> <span class="st">"red"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="plot_pathways-1.png" alt="" width="700" height="433"></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">colour</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">colour</span>, which will replace the existing scale.</span>
+<span class="r-plt img"><img src="plot_pathways-3.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 2-color sequential scale (white -&gt; red)</span></span></span>
+<span class="r-in"><span><span class="fu">plot_pathways</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    gsea_result   <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
+<span class="r-in"><span>    fold_change   <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
+<span class="r-in"><span>    show_pathways <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>    color_low     <span class="op">=</span> <span class="st">"white"</span>,</span></span>
+<span class="r-in"><span>    color_high    <span class="op">=</span> <span class="st">"red"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">colour</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">colour</span>, which will replace the existing scale.</span>
+<span class="r-plt img"><img src="plot_pathways-4.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Custom colors with explicit breaks and limits</span></span></span>
+<span class="r-in"><span><span class="fu">plot_pathways</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    gsea_result     <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
+<span class="r-in"><span>    fold_change     <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
+<span class="r-in"><span>    show_pathways   <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>    color_low       <span class="op">=</span> <span class="st">"blue"</span>,</span></span>
+<span class="r-in"><span>    color_mid       <span class="op">=</span> <span class="st">"white"</span>,</span></span>
+<span class="r-in"><span>    color_high      <span class="op">=</span> <span class="st">"red"</span>,</span></span>
+<span class="r-in"><span>    colorkey_breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    colorkey_limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">colour</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">colour</span>, which will replace the existing scale.</span>
+<span class="r-plt img"><img src="plot_pathways-5.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

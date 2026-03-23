@@ -3,12 +3,12 @@
 pathway and draws the resulting network.  Edges are drawn only for gene
 pairs whose absolute correlation meets cor_thresh.  Node size encodes
 degree (number of connections), so hub genes appear larger.  Node color
-encodes the gene-level statistic supplied via log2fc (e.g. log2 fold
+encodes the gene-level statistic supplied via effect_size (e.g. log2 fold
 change)."><meta property="og:description" content="Computes pairwise Pearson correlations among genes belonging to a chosen
 pathway and draws the resulting network.  Edges are drawn only for gene
 pairs whose absolute correlation meets cor_thresh.  Node size encodes
 degree (number of connections), so hub genes appear larger.  Node color
-encodes the gene-level statistic supplied via log2fc (e.g. log2 fold
+encodes the gene-level statistic supplied via effect_size (e.g. log2 fold
 change)."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -48,7 +48,7 @@ change)."></head><body>
 pathway and draws the resulting network.  Edges are drawn only for gene
 pairs whose absolute correlation meets <code>cor_thresh</code>.  Node size encodes
 <strong>degree</strong> (number of connections), so hub genes appear larger.  Node color
-encodes the gene-level statistic supplied via <code>log2fc</code> (e.g. log2 fold
+encodes the gene-level statistic supplied via <code>effect_size</code> (e.g. log2 fold
 change).</p>
     </div>
 
@@ -58,19 +58,23 @@ change).</p>
 <span>  <span class="va">expr</span>,</span>
 <span>  <span class="va">pathway</span>,</span>
 <span>  <span class="va">gene_sets</span>,</span>
-<span>  <span class="va">log2fc</span>,</span>
+<span>  <span class="va">effect_size</span>,</span>
 <span>  top_n_genes <span class="op">=</span> <span class="fl">30</span>,</span>
 <span>  cor_thresh <span class="op">=</span> <span class="fl">0.6</span>,</span>
 <span>  cor_low <span class="op">=</span> <span class="st">"steelblue"</span>,</span>
 <span>  cor_mid <span class="op">=</span> <span class="st">"grey85"</span>,</span>
 <span>  cor_high <span class="op">=</span> <span class="st">"firebrick"</span>,</span>
-<span>  fc_low <span class="op">=</span> <span class="fu">RColorBrewer</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html" class="external-link">brewer.pal</a></span><span class="op">(</span><span class="fl">11</span>, <span class="st">"PiYG"</span><span class="op">)</span><span class="op">[</span><span class="fl">10</span><span class="op">]</span>,</span>
-<span>  fc_mid <span class="op">=</span> <span class="fu">RColorBrewer</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html" class="external-link">brewer.pal</a></span><span class="op">(</span><span class="fl">11</span>, <span class="st">"PiYG"</span><span class="op">)</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span>,</span>
-<span>  fc_high <span class="op">=</span> <span class="fu">RColorBrewer</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html" class="external-link">brewer.pal</a></span><span class="op">(</span><span class="fl">11</span>, <span class="st">"PiYG"</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>  color_low <span class="op">=</span> <span class="fu">RColorBrewer</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html" class="external-link">brewer.pal</a></span><span class="op">(</span><span class="fl">11</span>, <span class="st">"PiYG"</span><span class="op">)</span><span class="op">[</span><span class="fl">10</span><span class="op">]</span>,</span>
+<span>  color_mid <span class="op">=</span> <span class="fu">RColorBrewer</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html" class="external-link">brewer.pal</a></span><span class="op">(</span><span class="fl">11</span>, <span class="st">"PiYG"</span><span class="op">)</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span>,</span>
+<span>  color_high <span class="op">=</span> <span class="fu">RColorBrewer</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html" class="external-link">brewer.pal</a></span><span class="op">(</span><span class="fl">11</span>, <span class="st">"PiYG"</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
 <span>  title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Gene-Gene correlation network for pathway: %s"</span>, <span class="va">pathway</span><span class="op">)</span>,</span>
-<span>  label_size <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  gene_label_size <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  label_bold <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_size_legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  legend_gene_color_title <span class="op">=</span> <span class="st">"Gene effect size"</span>,</span>
+<span>  legend_correlation_title <span class="op">=</span> <span class="st">"Correlation\nbetween genes"</span>,</span>
+<span>  legend_gene_size_title <span class="op">=</span> <span class="st">"# connections"</span>,</span>
+<span>  plot_margin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">42L</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -95,17 +99,17 @@ value in the <code>term</code> column of <code>gene_sets</code>.</p></dd>
 element returned by <code><a href="run_gsea.html">run_gsea()</a></code>.</p></dd>
 
 
-<dt id="arg-log-fc">log2fc<a class="anchor" aria-label="anchor" href="#arg-log-fc"></a></dt>
-<dd><p>named numeric vector Gene-level statistics (e.g. log2 fold
-change) used to color nodes.  Names must be gene symbols.  Missing genes
-are treated as 0.</p></dd>
+<dt id="arg-effect-size">effect_size<a class="anchor" aria-label="anchor" href="#arg-effect-size"></a></dt>
+<dd><p>named numeric vector Gene-level statistics (e.g. log2
+fold change, t-statistic) used to color nodes.  Names must be gene
+symbols.  Missing genes are treated as 0.</p></dd>
 
 
 <dt id="arg-top-n-genes">top_n_genes<a class="anchor" aria-label="anchor" href="#arg-top-n-genes"></a></dt>
 <dd><p>integer(1) Before computing correlations, retain only the
-top <code>top_n_genes</code> genes ranked by <code>abs(log2fc)</code>.  Reduces visual clutter
-on large pathways.  Set to <code>Inf</code> to use all pathway genes (default <code>30</code>).
-Must be a single positive whole number (≥ 1) or <code>Inf</code>.</p></dd>
+top <code>top_n_genes</code> genes ranked by <code>abs(effect_size)</code>.  Reduces visual
+clutter on large pathways.  Set to <code>Inf</code> to use all pathway genes
+(default <code>30</code>).  Must be a single positive whole number (≥ 1) or <code>Inf</code>.</p></dd>
 
 
 <dt id="arg-cor-thresh">cor_thresh<a class="anchor" aria-label="anchor" href="#arg-cor-thresh"></a></dt>
@@ -129,19 +133,21 @@ finite value in [0, 1].</p></dd>
 (default <code>"firebrick"</code>).</p></dd>
 
 
-<dt id="arg-fc-low">fc_low<a class="anchor" aria-label="anchor" href="#arg-fc-low"></a></dt>
-<dd><p>character(1) Node color for strongly negative <code>log2fc</code> values.
-Defaults to the 10th color of the <code>PiYG</code> palette.</p></dd>
+<dt id="arg-color-low">color_low<a class="anchor" aria-label="anchor" href="#arg-color-low"></a></dt>
+<dd><p>character(1) Node color for the low end of the effect size
+scale.  Defaults to the 10th color of the <code>PiYG</code> palette.</p></dd>
 
 
-<dt id="arg-fc-mid">fc_mid<a class="anchor" aria-label="anchor" href="#arg-fc-mid"></a></dt>
-<dd><p>character(1) Node color at <code>log2fc = 0</code>.  Defaults to the
-neutral midpoint of the <code>PiYG</code> palette.</p></dd>
+<dt id="arg-color-mid">color_mid<a class="anchor" aria-label="anchor" href="#arg-color-mid"></a></dt>
+<dd><p>character(1) Node color at the midpoint of the scale
+(default: 6th color of <code>PiYG</code>).  Set to <code>NULL</code> for a 2-color sequential
+scale (<code><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">ggplot2::scale_color_gradient()</a></code>) instead of the default 3-color
+diverging scale (<code><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">ggplot2::scale_color_gradient2()</a></code>).</p></dd>
 
 
-<dt id="arg-fc-high">fc_high<a class="anchor" aria-label="anchor" href="#arg-fc-high"></a></dt>
-<dd><p>character(1) Node color for strongly positive <code>log2fc</code>
-values.  Defaults to the 2nd color of the <code>PiYG</code> palette.</p></dd>
+<dt id="arg-color-high">color_high<a class="anchor" aria-label="anchor" href="#arg-color-high"></a></dt>
+<dd><p>character(1) Node color for the high end of the effect
+size scale.  Defaults to the 2nd color of the <code>PiYG</code> palette.</p></dd>
 
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
@@ -149,7 +155,7 @@ values.  Defaults to the 2nd color of the <code>PiYG</code> palette.</p></dd>
 <code>"Gene-Gene correlation network for pathway: &lt;pathway&gt;"</code>.</p></dd>
 
 
-<dt id="arg-label-size">label_size<a class="anchor" aria-label="anchor" href="#arg-label-size"></a></dt>
+<dt id="arg-gene-label-size">gene_label_size<a class="anchor" aria-label="anchor" href="#arg-gene-label-size"></a></dt>
 <dd><p>numeric(1) Gene label font size (default <code>3</code>).</p></dd>
 
 
@@ -160,6 +166,27 @@ values.  Defaults to the 2nd color of the <code>PiYG</code> palette.</p></dd>
 <dt id="arg-show-size-legend">show_size_legend<a class="anchor" aria-label="anchor" href="#arg-show-size-legend"></a></dt>
 <dd><p>logical(1) Whether to display the node-size legend
 ("# connections") (default <code>TRUE</code>).</p></dd>
+
+
+<dt id="arg-legend-gene-color-title">legend_gene_color_title<a class="anchor" aria-label="anchor" href="#arg-legend-gene-color-title"></a></dt>
+<dd><p>character(1) Title for the node color (effect
+size) legend (default <code>"Gene effect size"</code>).</p></dd>
+
+
+<dt id="arg-legend-correlation-title">legend_correlation_title<a class="anchor" aria-label="anchor" href="#arg-legend-correlation-title"></a></dt>
+<dd><p>character(1) Title for the edge color
+(correlation) legend (default <code>"Correlation\nbetween genes"</code>).</p></dd>
+
+
+<dt id="arg-legend-gene-size-title">legend_gene_size_title<a class="anchor" aria-label="anchor" href="#arg-legend-gene-size-title"></a></dt>
+<dd><p>character(1) Title for the node size (# connections)
+legend (default <code>"# connections"</code>).  Ignored when <code>show_size_legend = FALSE</code>.</p></dd>
+
+
+<dt id="arg-plot-margin">plot_margin<a class="anchor" aria-label="anchor" href="#arg-plot-margin"></a></dt>
+<dd><p>numeric vector of length 4 giving the plot margin in
+lines: <code>c(top, right, bottom, left)</code> (default <code>c(1, 1, 1, 1)</code>).  Increase
+the left/right values if node labels are being clipped at the edges.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
@@ -193,7 +220,7 @@ genes within a single pathway.</p>
 <span class="r-in"><span>    expr      <span class="op">=</span> <span class="va">ex_expr_pathway</span>,</span></span>
 <span class="r-in"><span>    pathway   <span class="op">=</span> <span class="st">"MYC_TARGETS_V1"</span>,</span></span>
 <span class="r-in"><span>    gene_sets <span class="op">=</span> <span class="va">hallmark_t2g</span>,</span></span>
-<span class="r-in"><span>    log2fc    <span class="op">=</span> <span class="va">ex_log2fc_pathway</span></span></span>
+<span class="r-in"><span>    effect_size <span class="op">=</span> <span class="va">ex_log2fc_pathway</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot_pathway_correlation_network-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>

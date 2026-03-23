@@ -4,8 +4,8 @@ Computes pairwise Pearson correlations among genes belonging to a chosen
 pathway and draws the resulting network. Edges are drawn only for gene
 pairs whose absolute correlation meets `cor_thresh`. Node size encodes
 **degree** (number of connections), so hub genes appear larger. Node
-color encodes the gene-level statistic supplied via `log2fc` (e.g. log2
-fold change).
+color encodes the gene-level statistic supplied via `effect_size` (e.g.
+log2 fold change).
 
 ## Usage
 
@@ -14,19 +14,23 @@ plot_pathway_correlation_network(
   expr,
   pathway,
   gene_sets,
-  log2fc,
+  effect_size,
   top_n_genes = 30,
   cor_thresh = 0.6,
   cor_low = "steelblue",
   cor_mid = "grey85",
   cor_high = "firebrick",
-  fc_low = RColorBrewer::brewer.pal(11, "PiYG")[10],
-  fc_mid = RColorBrewer::brewer.pal(11, "PiYG")[6],
-  fc_high = RColorBrewer::brewer.pal(11, "PiYG")[2],
+  color_low = RColorBrewer::brewer.pal(11, "PiYG")[10],
+  color_mid = RColorBrewer::brewer.pal(11, "PiYG")[6],
+  color_high = RColorBrewer::brewer.pal(11, "PiYG")[2],
   title = sprintf("Gene-Gene correlation network for pathway: %s", pathway),
-  label_size = 3,
+  gene_label_size = 3,
   label_bold = TRUE,
   show_size_legend = TRUE,
+  legend_gene_color_title = "Gene effect size",
+  legend_correlation_title = "Correlation\nbetween genes",
+  legend_gene_size_title = "# connections",
+  plot_margin = c(1, 1, 1, 1),
   seed = 42L
 )
 ```
@@ -50,18 +54,18 @@ plot_pathway_correlation_network(
   element returned by
   [`run_gsea()`](https://github.com/jarbet/statplot/reference/run_gsea.md).
 
-- log2fc:
+- effect_size:
 
-  named numeric vector Gene-level statistics (e.g. log2 fold change)
-  used to color nodes. Names must be gene symbols. Missing genes are
-  treated as 0.
+  named numeric vector Gene-level statistics (e.g. log2 fold change,
+  t-statistic) used to color nodes. Names must be gene symbols. Missing
+  genes are treated as 0.
 
 - top_n_genes:
 
   integer(1) Before computing correlations, retain only the top
-  `top_n_genes` genes ranked by `abs(log2fc)`. Reduces visual clutter on
-  large pathways. Set to `Inf` to use all pathway genes (default `30`).
-  Must be a single positive whole number (≥ 1) or `Inf`.
+  `top_n_genes` genes ranked by `abs(effect_size)`. Reduces visual
+  clutter on large pathways. Set to `Inf` to use all pathway genes
+  (default `30`). Must be a single positive whole number (≥ 1) or `Inf`.
 
 - cor_thresh:
 
@@ -83,19 +87,22 @@ plot_pathway_correlation_network(
   character(1) Edge color for strongly positive correlations (default
   `"firebrick"`).
 
-- fc_low:
+- color_low:
 
-  character(1) Node color for strongly negative `log2fc` values.
+  character(1) Node color for the low end of the effect size scale.
   Defaults to the 10th color of the `PiYG` palette.
 
-- fc_mid:
+- color_mid:
 
-  character(1) Node color at `log2fc = 0`. Defaults to the neutral
-  midpoint of the `PiYG` palette.
+  character(1) Node color at the midpoint of the scale (default: 6th
+  color of `PiYG`). Set to `NULL` for a 2-color sequential scale
+  ([`ggplot2::scale_color_gradient()`](https://ggplot2.tidyverse.org/reference/scale_gradient.html))
+  instead of the default 3-color diverging scale
+  ([`ggplot2::scale_color_gradient2()`](https://ggplot2.tidyverse.org/reference/scale_gradient.html)).
 
-- fc_high:
+- color_high:
 
-  character(1) Node color for strongly positive `log2fc` values.
+  character(1) Node color for the high end of the effect size scale.
   Defaults to the 2nd color of the `PiYG` palette.
 
 - title:
@@ -103,7 +110,7 @@ plot_pathway_correlation_network(
   character(1) Plot title. Defaults to
   `"Gene-Gene correlation network for pathway: <pathway>"`.
 
-- label_size:
+- gene_label_size:
 
   numeric(1) Gene label font size (default `3`).
 
@@ -115,6 +122,27 @@ plot_pathway_correlation_network(
 
   logical(1) Whether to display the node-size legend ("# connections")
   (default `TRUE`).
+
+- legend_gene_color_title:
+
+  character(1) Title for the node color (effect size) legend (default
+  `"Gene effect size"`).
+
+- legend_correlation_title:
+
+  character(1) Title for the edge color (correlation) legend (default
+  `"Correlation\nbetween genes"`).
+
+- legend_gene_size_title:
+
+  character(1) Title for the node size (# connections) legend (default
+  `"# connections"`). Ignored when `show_size_legend = FALSE`.
+
+- plot_margin:
+
+  numeric vector of length 4 giving the plot margin in lines:
+  `c(top, right, bottom, left)` (default `c(1, 1, 1, 1)`). Increase the
+  left/right values if node labels are being clipped at the edges.
 
 - seed:
 
@@ -148,7 +176,7 @@ plot_pathway_correlation_network(
     expr      = ex_expr_pathway,
     pathway   = "MYC_TARGETS_V1",
     gene_sets = hallmark_t2g,
-    log2fc    = ex_log2fc_pathway
+    effect_size = ex_log2fc_pathway
 )
 
 ```

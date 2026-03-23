@@ -14,15 +14,25 @@ for co-expression structure.
 plot_pathways(
   gsea_result,
   fold_change,
-  show_category = 5,
-  fc_threshold = 1.5,
-  size_item = 0.7,
-  size_edge = 0.5,
-  category_color = "black",
-  category_size = 4,
-  item_color = "grey30",
-  item_size = 2.5,
-  title = "Gene-Pathway network (GSEA)"
+  show_pathways = 5,
+  effect_size_threshold = 1.5,
+  subtitle_effect_size_label = "effect size",
+  max_genes_shown = NULL,
+  gene_node_size = 0.7,
+  line_size = 0.5,
+  pathway_color = "black",
+  pathway_label_size = 4,
+  gene_color = "grey30",
+  gene_label_size = 2.5,
+  title = "Effect sizes of genes in selected pathways",
+  legend_pathway_size_title = "Num. genes",
+  legend_color_title = "Effect size",
+  colorkey_breaks = NULL,
+  colorkey_limits = NULL,
+  color_low = NULL,
+  color_mid = NULL,
+  color_high = NULL,
+  plot_margin = c(0.5, 0.5, 0.5, 0.5)
 )
 ```
 
@@ -37,54 +47,127 @@ plot_pathways(
 
 - fold_change:
 
-  named numeric vector Gene-level statistics used to color gene nodes
+  named numeric vector. Gene-level statistics used to color gene nodes
   (e.g. log2 fold change, t-statistic). Names must be gene symbols
   matching those in `gsea_result`. Typically the `gene_vec` element
   returned by
   [`run_gsea()`](https://github.com/jarbet/statplot/reference/run_gsea.md).
 
-- show_category:
+- show_pathways:
 
   integer(1) Number of top pathways to display (default `5`). Must be a
   single positive whole number.
 
-- fc_threshold:
+- effect_size_threshold:
 
   numeric(1) Only show gene nodes whose
-  `abs(fold_change) >= fc_threshold` (default `1.5`). Set to `0` to show
-  all genes. Must be a single finite non-negative value.
+  `abs(fold_change) >= effect_size_threshold` (default `1.5`). Set to
+  `0` to show all genes. Must be a single finite non-negative value.
 
-- size_item:
+- subtitle_effect_size_label:
+
+  character(1) String placed inside
+  [`abs()`](https://rdrr.io/r/base/MathFun.html) in the auto-generated
+  subtitle when a threshold is applied (default `"effect size"`). Change
+  to match your effect-size metric, e.g. `"log2FC"`, `"t-statistic"`, or
+  `"z-score"`.
+
+- max_genes_shown:
+
+  integer(1) Maximum number of gene nodes to display (default `NULL`, no
+  limit). If the number of genes belonging to the top `show_pathways`
+  pathways and passing `effect_size_threshold` exceeds this value, the
+  threshold is raised adaptively (via quantile of `abs(fold_change)`
+  among pathway genes) until at most `max_genes_shown` genes remain. The
+  effective threshold will never drop below `effect_size_threshold`.
+  Must be a single positive whole number.
+
+- gene_node_size:
 
   numeric(1) Relative size of gene circles/nodes (default `0.7`). Must
   be a single positive value.
 
-- size_edge:
+- line_size:
 
   numeric(1) Relative thickness of edges (default `0.5`). Must be a
   single positive value.
 
-- category_color:
+- pathway_color:
 
   character(1) Color of pathway label text (default `"black"`).
 
-- category_size:
+- pathway_label_size:
 
   numeric(1) Font size of pathway labels (default `4`). Must be a single
   positive value.
 
-- item_color:
+- gene_color:
 
   character(1) Color of gene label text (default `"grey30"`).
 
-- item_size:
+- gene_label_size:
 
   numeric(1) Font size of gene labels (default `2.5`). Must be a single
   positive value.
 
 - title:
 
-  character(1) Plot title (default `"Gene-Pathway network (GSEA)"`).
+  character(1) Plot title (default
+  `"Effect sizes of genes in selected pathways"`).
+
+- legend_pathway_size_title:
+
+  character(1) Title for the node-size legend (default `"Num. genes"`).
+  Set to `NULL` to show the legend without a title.
+
+- legend_color_title:
+
+  character(1) Title for the color scale legend (default
+  `"Effect size"`). Set to `NULL` to show the legend without a title.
+
+- colorkey_breaks:
+
+  numeric vector of values at which tick marks and labels are drawn on
+  the color legend (default `NULL`, automatic). For example,
+  `c(-2, -1, 0, 1, 2)` to show five labeled ticks. When supplied without
+  any `color_*` arguments, the existing cnetplot palette is preserved
+  and only the break positions are updated.
+
+- colorkey_limits:
+
+  numeric vector of length 2 giving the lower and upper bounds of the
+  color scale (default `NULL`, automatic). Values outside this range are
+  mapped to the nearest extreme color. Most useful together with
+  `colorkey_breaks`. Like `colorkey_breaks`, this preserves the cnetplot
+  palette when no `color_*` arguments are set.
+
+- color_low:
+
+  character(1) Color for the low end of the scale (default `NULL`, uses
+  cnetplot's palette). Combine with `color_high` for a 2-color
+  sequential scale, or also set `color_mid` for a 3-color diverging
+  scale.
+
+- color_mid:
+
+  character(1) Color for the midpoint of the scale (default `NULL`).
+  When non-`NULL`, a 3-color diverging
+  [`ggplot2::scale_color_gradient2()`](https://ggplot2.tidyverse.org/reference/scale_gradient.html)
+  is used (e.g. `color_mid = "white"`). Leave as `NULL` to use a 2-color
+  [`ggplot2::scale_color_gradient()`](https://ggplot2.tidyverse.org/reference/scale_gradient.html)
+  when `color_low` or `color_high` are set.
+
+- color_high:
+
+  character(1) Color for the high end of the scale (default `NULL`, uses
+  cnetplot's palette).
+
+- plot_margin:
+
+  numeric vector of length 4 giving the plot margin in lines:
+  `c(top, right, bottom, left)` (default `c(0.5, 0.5, 0.5, 0.5)`). All
+  values must be finite and non-negative. Increase the left/right values
+  if node labels are being clipped at the edges.
 
 ## Value
 
@@ -101,10 +184,63 @@ gene_vec  <- setNames(rnorm(length(all_genes)), all_genes)
 
 res <- run_gsea(gene_vec, term2gene = hallmark_t2g)
 
+# Basic usage
+plot_pathways(
+    gsea_result           = res$gsea_result,
+    fold_change           = res$gene_vec,
+    show_pathways         = 5,
+    effect_size_threshold = 1.5
+)
+
+
+# Adaptively cap gene nodes at 50: effect_size_threshold is raised automatically
+# so at most 50 genes appear; the subtitle reports the effective threshold used
+plot_pathways(
+    gsea_result        = res$gsea_result,
+    fold_change        = res$gene_vec,
+    show_pathways      = 5,
+    max_genes_shown    = 50,
+    subtitle_effect_size_label  = "log2FC"
+)
+
+
+# 3-color diverging scale (blue -> white -> red)
 plot_pathways(
     gsea_result   = res$gsea_result,
     fold_change   = res$gene_vec,
-    show_category = 5
+    show_pathways = 5,
+    color_low     = "blue",
+    color_mid     = "white",
+    color_high    = "red"
 )
+#> Scale for colour is already present.
+#> Adding another scale for colour, which will replace the existing scale.
+
+
+# 2-color sequential scale (white -> red)
+plot_pathways(
+    gsea_result   = res$gsea_result,
+    fold_change   = res$gene_vec,
+    show_pathways = 5,
+    color_low     = "white",
+    color_high    = "red"
+)
+#> Scale for colour is already present.
+#> Adding another scale for colour, which will replace the existing scale.
+
+
+# Custom colors with explicit breaks and limits
+plot_pathways(
+    gsea_result     = res$gsea_result,
+    fold_change     = res$gene_vec,
+    show_pathways   = 5,
+    color_low       = "blue",
+    color_mid       = "white",
+    color_high      = "red",
+    colorkey_breaks = c(-2, -1, 0, 1, 2),
+    colorkey_limits = c(-3, 3)
+)
+#> Scale for colour is already present.
+#> Adding another scale for colour, which will replace the existing scale.
 
 ```

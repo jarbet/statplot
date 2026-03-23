@@ -36,16 +36,12 @@
 <h2 class="pkg-version" data-toc-text="development version" id="statplot-development-version">statplot (development version)<a class="anchor" aria-label="anchor" href="#statplot-development-version"></a></h2>
 <div class="section level3">
 <h3 id="added-development-version">Added<a class="anchor" aria-label="anchor" href="#added-development-version"></a></h3>
-<ul><li>…</li>
-</ul></div>
+<p>…</p>
+</div>
 <div class="section level3">
 <h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
-<ul><li>…</li>
-</ul></div>
-<div class="section level3">
-<h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
-<ul><li>…</li>
-</ul></div>
+<p>…</p>
+</div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="statplot-030---2026-03-20">statplot 0.3.0 - 2026-03-20<a class="anchor" aria-label="anchor" href="#statplot-030---2026-03-20"></a></h2>
@@ -66,6 +62,42 @@
 <div class="section level3">
 <h3 id="changed-0-3-0">Changed<a class="anchor" aria-label="anchor" href="#changed-0-3-0"></a></h3>
 <ul><li>
+<code>plot_pathways</code>: several arguments renamed for clarity:
+<ul><li>
+<code>fc_threshold</code> → <code>effect_size_threshold</code>
+</li>
+<li>
+<code>fc_threshold_label</code> → <code>subtitle_effect_size_label</code>
+</li>
+<li>
+<code>show_category</code> → <code>show_pathways</code>
+</li>
+<li>
+<code>size_item</code> → <code>gene_node_size</code>
+</li>
+<li>
+<code>size_edge</code> → <code>line_size</code>
+</li>
+<li>
+<code>category_color</code> / <code>category_size</code> → <code>pathway_color</code> / <code>pathway_label_size</code>
+</li>
+<li>
+<code>item_color</code> / <code>item_size</code> → <code>gene_color</code> / <code>gene_label_size</code>
+</li>
+</ul></li>
+<li>
+<code>plot_pathways</code>: new <code>max_genes_shown</code> argument adaptively raises <code>effect_size_threshold</code> so that at most <code>max_genes_shown</code> gene nodes are displayed; the chosen cutoff is reported in an auto-generated plot subtitle (subtitle is suppressed when <code>max_genes_shown</code> is <code>NULL</code>).</li>
+<li>
+<code>plot_pathways</code>: new <code>subtitle_effect_size_label</code> argument controls the effect-size label shown inside <code><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs()</a></code> in the subtitle (default <code>"effect size"</code>).</li>
+<li>
+<code>plot_pathways</code>: new <code>legend_pathway_size_title</code> (default <code>"Num. genes"</code>) and <code>legend_color_title</code> (default <code>"Effect size"</code>) arguments to customise legend titles for node size and color, respectively.</li>
+<li>
+<code>plot_pathways</code>: new <code>colorkey_breaks</code> and <code>colorkey_limits</code> arguments to control the tick-mark values and range shown on the color legend.</li>
+<li>
+<code>plot_pathways</code>: new <code>color_low</code>, <code>color_mid</code>, and <code>color_high</code> arguments to customise the color scale. Supplying all three produces a 3-color diverging scale; omitting <code>color_mid</code> produces a 2-color sequential scale; leaving all three <code>NULL</code> preserves the default cnetplot palette.</li>
+<li>
+<code>plot_pathways</code>: new <code>plot_margin</code> argument (<code>c(top, right, bottom, left)</code> in lines, default <code>c(0.5, 0.5, 0.5, 0.5)</code>) to control whitespace around the plot and prevent node labels from being clipped at the edges.</li>
+<li>
 <code>plot_2_categorical_vars</code>: new <code>inside_bar_stats</code> argument controls what is printed inside the stacked bars — <code>"pct"</code> (default, within-group percentage), <code>"n"</code> (count only), <code>"n_and_pct"</code> (count and percentage formatted as <code>n (pct%)</code>), or <code>"none"</code> (no labels).</li>
 <li>
 <code>plot_2_categorical_vars</code>: new <code>include_overall_bar</code> argument (default <code>FALSE</code>); when <code>TRUE</code>, a pooled bar showing the marginal distribution of <code>yvar</code> across all observations is prepended to the left of the per-group bars and separated by a vertical line. The bar respects <code>inside_bar_stats</code> and displays the total N label above it like all other bars. The bar label defaults to <code>"Overall"</code> and can be customised via the new <code>overall_label</code> argument.</li>
