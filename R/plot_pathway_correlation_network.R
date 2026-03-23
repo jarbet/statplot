@@ -4,7 +4,7 @@
 #' pathway and draws the resulting network.  Edges are drawn only for gene
 #' pairs whose absolute correlation meets `cor_thresh`.  Node size encodes
 #' **degree** (number of connections), so hub genes appear larger.  Node color
-#' encodes the gene-level statistic supplied via `log2fc` (e.g. log2 fold
+#' encodes the gene-level statistic supplied via `effect_size` (e.g. log2 fold
 #' change).
 #'
 #' Unlike [plot_pathways()], which uses network layout to reflect shared
@@ -18,13 +18,13 @@
 #' @param gene_sets data.frame Two-column data frame with columns `"term"` and
 #'   `"gene"` mapping pathway names to gene symbols.  Typically the `term2gene`
 #'   element returned by [run_gsea()].
-#' @param log2fc named numeric vector Gene-level statistics (e.g. log2 fold
-#'   change) used to color nodes.  Names must be gene symbols.  Missing genes
-#'   are treated as 0.
+#' @param effect_size named numeric vector Gene-level statistics (e.g. log2
+#'   fold change, t-statistic) used to color nodes.  Names must be gene
+#'   symbols.  Missing genes are treated as 0.
 #' @param top_n_genes integer(1) Before computing correlations, retain only the
-#'   top `top_n_genes` genes ranked by `abs(log2fc)`.  Reduces visual clutter
-#'   on large pathways.  Set to `Inf` to use all pathway genes (default `30`).
-#'   Must be a single positive whole number (≥ 1) or `Inf`.
+#'   top `top_n_genes` genes ranked by `abs(effect_size)`.  Reduces visual
+#'   clutter on large pathways.  Set to `Inf` to use all pathway genes
+#'   (default `30`).  Must be a single positive whole number (≥ 1) or `Inf`.
 #' @param cor_thresh numeric(1) Minimum absolute Pearson correlation required
 #'   to draw an edge between two genes (default `0.6`).  Must be a single
 #'   finite value in \[0, 1\].
@@ -34,18 +34,30 @@
 #'   `"grey85"`).
 #' @param cor_high character(1) Edge color for strongly positive correlations
 #'   (default `"firebrick"`).
-#' @param fc_low character(1) Node color for strongly negative `log2fc` values.
-#'   Defaults to the 10th color of the `PiYG` palette.
-#' @param fc_mid character(1) Node color at `log2fc = 0`.  Defaults to the
-#'   neutral midpoint of the `PiYG` palette.
-#' @param fc_high character(1) Node color for strongly positive `log2fc`
-#'   values.  Defaults to the 2nd color of the `PiYG` palette.
+#' @param color_low character(1) Node color for the low end of the effect size
+#'   scale.  Defaults to the 10th color of the `PiYG` palette.
+#' @param color_mid character(1) Node color at the midpoint of the scale
+#'   (default: 6th color of `PiYG`).  Set to `NULL` for a 2-color sequential
+#'   scale ([ggplot2::scale_color_gradient()]) instead of the default 3-color
+#'   diverging scale ([ggplot2::scale_color_gradient2()]).
+#' @param color_high character(1) Node color for the high end of the effect
+#'   size scale.  Defaults to the 2nd color of the `PiYG` palette.
 #' @param title character(1) Plot title.  Defaults to
 #'   `"Gene-Gene correlation network for pathway: <pathway>"`.
-#' @param label_size numeric(1) Gene label font size (default `3`).
+#' @param gene_label_size numeric(1) Gene label font size (default `3`).
 #' @param label_bold logical(1) Whether gene labels are bold (default `TRUE`).
 #' @param show_size_legend logical(1) Whether to display the node-size legend
 #'   ("# connections") (default `TRUE`).
+#' @param legend_gene_color_title character(1) Title for the node color (effect
+#'   size) legend (default `"Gene effect size"`).
+#' @param legend_correlation_title character(1) Title for the edge color
+#'   (correlation) legend (default `"Correlation\nbetween genes"`).
+#' @param legend_gene_size_title character(1) Title for the node size (# connections)
+#'   legend (default `"# connections"`).  Ignored when `show_size_legend =
+#'   FALSE`.
+#' @param plot_margin numeric vector of length 4 giving the plot margin in
+#'   lines: `c(top, right, bottom, left)` (default `c(1, 1, 1, 1)`).  Increase
+#'   the left/right values if node labels are being clipped at the edges.
 #' @param seed integer(1) or `NULL`.  Random seed used for the
 #'   Fruchterman-Reingold layout so the graph is drawn the same way each time.
 #'   The caller's RNG state is saved before the seed is set and fully restored
@@ -65,12 +77,12 @@
 #'     expr      = ex_expr_pathway,
 #'     pathway   = "MYC_TARGETS_V1",
 #'     gene_sets = hallmark_t2g,
-#'     log2fc    = ex_log2fc_pathway
+#'     effect_size = ex_log2fc_pathway
 #' )
 #'
 #' @importFrom igraph graph_from_data_frame degree
 #' @importFrom ggraph ggraph geom_edge_link geom_node_point geom_node_text
-#' @importFrom ggplot2 aes ggtitle scale_color_gradient2 theme_void
+#' @importFrom ggplot2 aes ggtitle scale_color_gradient scale_color_gradient2 theme_void
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom scales squish
 #' @importFrom stats cor
@@ -79,21 +91,25 @@ plot_pathway_correlation_network <- function(
     expr,
     pathway,
     gene_sets,
-    log2fc,
+    effect_size,
     top_n_genes = 30,
     cor_thresh = 0.6,
     # edge (correlation) color scale
     cor_low = "steelblue",
     cor_mid = "grey85",
     cor_high = "firebrick",
-    # node (log2FC) color scale
-    fc_low = RColorBrewer::brewer.pal(11, "PiYG")[10],
-    fc_mid = RColorBrewer::brewer.pal(11, "PiYG")[6],
-    fc_high = RColorBrewer::brewer.pal(11, "PiYG")[2],
+    # node (effect size) color scale
+    color_low = RColorBrewer::brewer.pal(11, "PiYG")[10],
+    color_mid = RColorBrewer::brewer.pal(11, "PiYG")[6],
+    color_high = RColorBrewer::brewer.pal(11, "PiYG")[2],
     title = sprintf("Gene-Gene correlation network for pathway: %s", pathway),
-    label_size = 3,
+    gene_label_size = 3,
     label_bold = TRUE,
     show_size_legend = TRUE,
+    legend_gene_color_title = "Gene effect size",
+    legend_correlation_title = "Correlation\nbetween genes",
+    legend_gene_size_title = "# connections",
+    plot_margin = c(1, 1, 1, 1),
     seed = 42L
 ) {
     stopifnot(
@@ -103,8 +119,10 @@ plot_pathway_correlation_network <- function(
             gene_sets
         ) &&
             all(c("term", "gene") %in% colnames(gene_sets)),
-        "log2fc must be a named numeric vector" = is.numeric(log2fc) &&
-            !is.null(names(log2fc)),
+        "effect_size must be a named numeric vector" = is.numeric(
+            effect_size
+        ) &&
+            !is.null(names(effect_size)),
         "pathway must be a single character string" = is.character(pathway) &&
             length(pathway) == 1,
         "top_n_genes must be a single positive number or Inf" = is.numeric(
@@ -135,11 +153,11 @@ plot_pathway_correlation_network <- function(
         return(invisible(NULL))
     }
 
-    # Optionally restrict to top N genes by |log2fc| to reduce clutter
+    # Optionally restrict to top N genes by |effect_size| to reduce clutter
     if (is.finite(top_n_genes) && length(genes_in_term) > top_n_genes) {
         fc_vals <- abs(replace(
-            log2fc[genes_in_term],
-            is.na(log2fc[genes_in_term]),
+            effect_size[genes_in_term],
+            is.na(effect_size[genes_in_term]),
             0
         ))
         genes_in_term <- names(sort(fc_vals, decreasing = TRUE))[seq_len(
@@ -172,7 +190,11 @@ plot_pathway_correlation_network <- function(
     node_genes <- unique(c(edge_df$from, edge_df$to))
     node_df <- data.frame(
         gene = node_genes,
-        stat = replace(log2fc[node_genes], is.na(log2fc[node_genes]), 0)
+        stat = replace(
+            effect_size[node_genes],
+            is.na(effect_size[node_genes]),
+            0
+        )
     )
 
     g <- igraph::graph_from_data_frame(
@@ -228,7 +250,7 @@ plot_pathway_correlation_network <- function(
         ggraph::geom_node_text(
             ggplot2::aes(label = name),
             repel = TRUE,
-            size = label_size,
+            size = gene_label_size,
             fontface = if (label_bold) "bold" else "plain",
             bg.colour = "white",
             bg.r = 0.15
@@ -239,26 +261,43 @@ plot_pathway_correlation_network <- function(
             high = cor_high,
             midpoint = 0,
             limits = c(-1, 1),
-            name = "Correlation",
+            name = legend_correlation_title,
             guide = ggraph::guide_edge_colourbar()
         ) +
         ggraph::scale_edge_width(range = c(0.5, 2), guide = "none") +
         ggplot2::scale_size_continuous(
-            name = "# connections",
+            name = legend_gene_size_title,
             breaks = function(limits) {
                 unique(round(scales::breaks_pretty()(limits)))
             },
             guide = if (show_size_legend) "legend" else "none"
         ) +
-        ggplot2::scale_color_gradient2(
-            low = fc_low,
-            mid = fc_mid,
-            high = fc_high,
-            midpoint = 0,
-            limits = c(-1, 1),
-            oob = scales::squish,
-            name = expression(log[2] ~ Fold ~ Change)
-        ) +
         ggplot2::theme_void() +
-        ggplot2::ggtitle(title)
+        ggplot2::theme(
+            plot.margin = ggplot2::margin(
+                t = plot_margin[1],
+                r = plot_margin[2],
+                b = plot_margin[3],
+                l = plot_margin[4],
+                unit = "lines"
+            )
+        ) +
+        ggplot2::ggtitle(title) +
+        (if (!is.null(color_mid)) {
+            ggplot2::scale_color_gradient2(
+                low = color_low,
+                mid = color_mid,
+                high = color_high,
+                midpoint = 0,
+                limits = c(-1, 1),
+                oob = scales::squish,
+                name = legend_gene_color_title
+            )
+        } else {
+            ggplot2::scale_color_gradient(
+                low = color_low,
+                high = color_high,
+                name = legend_gene_color_title
+            )
+        })
 }

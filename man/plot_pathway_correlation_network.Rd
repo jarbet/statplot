@@ -8,19 +8,23 @@ plot_pathway_correlation_network(
   expr,
   pathway,
   gene_sets,
-  log2fc,
+  effect_size,
   top_n_genes = 30,
   cor_thresh = 0.6,
   cor_low = "steelblue",
   cor_mid = "grey85",
   cor_high = "firebrick",
-  fc_low = RColorBrewer::brewer.pal(11, "PiYG")[10],
-  fc_mid = RColorBrewer::brewer.pal(11, "PiYG")[6],
-  fc_high = RColorBrewer::brewer.pal(11, "PiYG")[2],
+  color_low = RColorBrewer::brewer.pal(11, "PiYG")[10],
+  color_mid = RColorBrewer::brewer.pal(11, "PiYG")[6],
+  color_high = RColorBrewer::brewer.pal(11, "PiYG")[2],
   title = sprintf("Gene-Gene correlation network for pathway: \%s", pathway),
-  label_size = 3,
+  gene_label_size = 3,
   label_bold = TRUE,
   show_size_legend = TRUE,
+  legend_gene_color_title = "Gene effect size",
+  legend_correlation_title = "Correlation\\nbetween genes",
+  legend_gene_size_title = "# connections",
+  plot_margin = c(1, 1, 1, 1),
   seed = 42L
 )
 }
@@ -35,14 +39,14 @@ value in the \code{term} column of \code{gene_sets}.}
 \code{"gene"} mapping pathway names to gene symbols.  Typically the \code{term2gene}
 element returned by \code{\link[=run_gsea]{run_gsea()}}.}
 
-\item{log2fc}{named numeric vector Gene-level statistics (e.g. log2 fold
-change) used to color nodes.  Names must be gene symbols.  Missing genes
-are treated as 0.}
+\item{effect_size}{named numeric vector Gene-level statistics (e.g. log2
+fold change, t-statistic) used to color nodes.  Names must be gene
+symbols.  Missing genes are treated as 0.}
 
 \item{top_n_genes}{integer(1) Before computing correlations, retain only the
-top \code{top_n_genes} genes ranked by \code{abs(log2fc)}.  Reduces visual clutter
-on large pathways.  Set to \code{Inf} to use all pathway genes (default \code{30}).
-Must be a single positive whole number (≥ 1) or \code{Inf}.}
+top \code{top_n_genes} genes ranked by \code{abs(effect_size)}.  Reduces visual
+clutter on large pathways.  Set to \code{Inf} to use all pathway genes
+(default \code{30}).  Must be a single positive whole number (≥ 1) or \code{Inf}.}
 
 \item{cor_thresh}{numeric(1) Minimum absolute Pearson correlation required
 to draw an edge between two genes (default \code{0.6}).  Must be a single
@@ -57,24 +61,39 @@ finite value in [0, 1].}
 \item{cor_high}{character(1) Edge color for strongly positive correlations
 (default \code{"firebrick"}).}
 
-\item{fc_low}{character(1) Node color for strongly negative \code{log2fc} values.
-Defaults to the 10th color of the \code{PiYG} palette.}
+\item{color_low}{character(1) Node color for the low end of the effect size
+scale.  Defaults to the 10th color of the \code{PiYG} palette.}
 
-\item{fc_mid}{character(1) Node color at \code{log2fc = 0}.  Defaults to the
-neutral midpoint of the \code{PiYG} palette.}
+\item{color_mid}{character(1) Node color at the midpoint of the scale
+(default: 6th color of \code{PiYG}).  Set to \code{NULL} for a 2-color sequential
+scale (\code{\link[ggplot2:scale_gradient]{ggplot2::scale_color_gradient()}}) instead of the default 3-color
+diverging scale (\code{\link[ggplot2:scale_gradient]{ggplot2::scale_color_gradient2()}}).}
 
-\item{fc_high}{character(1) Node color for strongly positive \code{log2fc}
-values.  Defaults to the 2nd color of the \code{PiYG} palette.}
+\item{color_high}{character(1) Node color for the high end of the effect
+size scale.  Defaults to the 2nd color of the \code{PiYG} palette.}
 
 \item{title}{character(1) Plot title.  Defaults to
 \code{"Gene-Gene correlation network for pathway: <pathway>"}.}
 
-\item{label_size}{numeric(1) Gene label font size (default \code{3}).}
+\item{gene_label_size}{numeric(1) Gene label font size (default \code{3}).}
 
 \item{label_bold}{logical(1) Whether gene labels are bold (default \code{TRUE}).}
 
 \item{show_size_legend}{logical(1) Whether to display the node-size legend
 ("# connections") (default \code{TRUE}).}
+
+\item{legend_gene_color_title}{character(1) Title for the node color (effect
+size) legend (default \code{"Gene effect size"}).}
+
+\item{legend_correlation_title}{character(1) Title for the edge color
+(correlation) legend (default \code{"Correlation\\nbetween genes"}).}
+
+\item{legend_gene_size_title}{character(1) Title for the node size (# connections)
+legend (default \code{"# connections"}).  Ignored when \code{show_size_legend = FALSE}.}
+
+\item{plot_margin}{numeric vector of length 4 giving the plot margin in
+lines: \code{c(top, right, bottom, left)} (default \code{c(1, 1, 1, 1)}).  Increase
+the left/right values if node labels are being clipped at the edges.}
 
 \item{seed}{integer(1) or \code{NULL}.  Random seed used for the
 Fruchterman-Reingold layout so the graph is drawn the same way each time.
@@ -92,7 +111,7 @@ Computes pairwise Pearson correlations among genes belonging to a chosen
 pathway and draws the resulting network.  Edges are drawn only for gene
 pairs whose absolute correlation meets \code{cor_thresh}.  Node size encodes
 \strong{degree} (number of connections), so hub genes appear larger.  Node color
-encodes the gene-level statistic supplied via \code{log2fc} (e.g. log2 fold
+encodes the gene-level statistic supplied via \code{effect_size} (e.g. log2 fold
 change).
 }
 \details{
@@ -109,7 +128,7 @@ plot_pathway_correlation_network(
     expr      = ex_expr_pathway,
     pathway   = "MYC_TARGETS_V1",
     gene_sets = hallmark_t2g,
-    log2fc    = ex_log2fc_pathway
+    effect_size = ex_log2fc_pathway
 )
 
 }
