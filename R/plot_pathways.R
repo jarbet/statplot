@@ -20,11 +20,11 @@
 #'   to show all genes.  Must be a single finite non-negative value.
 #' @param subtitle_effect_size_label character(1) String placed inside `abs()` in the
 #'   auto-generated subtitle when a threshold is applied
-#'   (default `"log2FC"`).  Change to match your effect-size metric, e.g.
-#'   `"t-statistic"` or `"z-score"`.
+#'   (default `"effect size"`).  Change to match your effect-size metric, e.g.
+#'   `"log2FC"`, `"t-statistic"`, or `"z-score"`.
 #' @param max_genes_shown integer(1) Maximum number of gene nodes to display
 #'   (default `NULL`, no limit).  If the number of genes belonging to the top
-#'   `show_pathways` pathways and passing `fc_threshold` exceeds this value,
+#'   `show_pathways` pathways and passing `effect_size_threshold` exceeds this value,
 #'   the threshold is raised adaptively (via quantile of `abs(fold_change)`
 #'   among pathway genes) until at most `max_genes_shown` genes remain.  The
 #'   effective threshold will never drop below `effect_size_threshold`.  Must be
@@ -41,21 +41,22 @@
 #'   `"grey30"`).
 #' @param gene_label_size numeric(1) Font size of gene labels (default `2.5`).
 #'   Must be a single positive value.
-#' @param title character(1) Plot title (default `"Gene-Pathway Network
-#'   (GSEA)"`).
+#' @param title character(1) Plot title (default `"Effect sizes of genes in selected pathways"`).
 #' @param legend_pathway_size_title character(1) Title for the node-size legend (default
-#'   `"Num. genes"`).  Set to `NULL` to suppress the size legend entirely.
+#'   `"Num. genes"`).  Set to `NULL` to show the legend without a title.
 #' @param legend_color_title character(1) Title for the color scale legend
-#'   (default `"Effect size"`).  Set to `NULL` to suppress the color legend
-#'   entirely.
+#'   (default `"Effect size"`).  Set to `NULL` to show the legend without a
+#'   title.
 #' @param colorkey_breaks numeric vector of values at which tick marks and
 #'   labels are drawn on the color legend (default `NULL`, automatic).  For
 #'   example, `c(-2, -1, 0, 1, 2)` to show five labeled ticks.  When
-#'   supplied, the color scale is overridden with [ggplot2::scale_color_gradient2()].
+#'   supplied without any `color_*` arguments, the existing cnetplot palette
+#'   is preserved and only the break positions are updated.
 #' @param colorkey_limits numeric vector of length 2 giving the lower and
 #'   upper bounds of the color scale (default `NULL`, automatic).  Values
 #'   outside this range are mapped to the nearest extreme color.  Most
-#'   useful together with `colorkey_breaks`.
+#'   useful together with `colorkey_breaks`.  Like `colorkey_breaks`,
+#'   this preserves the cnetplot palette when no `color_*` arguments are set.
 #' @param color_low character(1) Color for the low end of the scale (default
 #'   `NULL`, uses cnetplot's palette).  Combine with `color_high` for a
 #'   2-color sequential scale, or also set `color_mid` for a 3-color
@@ -68,7 +69,8 @@
 #' @param color_high character(1) Color for the high end of the scale (default
 #'   `NULL`, uses cnetplot's palette).
 #' @param plot_margin numeric vector of length 4 giving the plot margin in
-#'   lines: `c(top, right, bottom, left)` (default `c(1, 1, 1, 1)`).  Increase
+#'   lines: `c(top, right, bottom, left)` (default `c(0.5, 0.5, 0.5, 0.5)`).
+#'   All values must be finite and non-negative.  Increase
 #'   the left/right values if node labels are being clipped at the edges.
 #'
 #' @return A ggplot2 object.
@@ -90,8 +92,8 @@
 #'     effect_size_threshold = 1.5
 #' )
 #'
-#' # Adaptively cap gene nodes at 50: fc_threshold is raised automatically
-#' # so at most 50 genes appear; the subtitle reports the chosen cutoff
+#' # Adaptively cap gene nodes at 50: effect_size_threshold is raised automatically
+#' # so at most 50 genes appear; the subtitle reports the effective threshold used
 #' plot_pathways(
 #'     gsea_result        = res$gsea_result,
 #'     fold_change        = res$gene_vec,
@@ -175,6 +177,10 @@ plot_pathways <- function(
             length(effect_size_threshold) == 1 &&
             is.finite(effect_size_threshold) &&
             effect_size_threshold >= 0,
+        "subtitle_effect_size_label must be a single character string" = is.character(
+            subtitle_effect_size_label
+        ) &&
+            length(subtitle_effect_size_label) == 1,
         "max_genes_shown must be a single positive whole number or NULL" = is.null(
             max_genes_shown
         ) ||
@@ -195,18 +201,38 @@ plot_pathways <- function(
             length(line_size) == 1 &&
             is.finite(line_size) &&
             line_size > 0,
+        "pathway_color must be a single character string" = is.character(
+            pathway_color
+        ) &&
+            length(pathway_color) == 1,
         "pathway_label_size must be a single positive numeric value" = is.numeric(
             pathway_label_size
         ) &&
             length(pathway_label_size) == 1 &&
             is.finite(pathway_label_size) &&
             pathway_label_size > 0,
+        "gene_color must be a single character string" = is.character(
+            gene_color
+        ) &&
+            length(gene_color) == 1,
         "gene_label_size must be a single positive numeric value" = is.numeric(
             gene_label_size
         ) &&
             length(gene_label_size) == 1 &&
             is.finite(gene_label_size) &&
             gene_label_size > 0,
+        "title must be a single character string or NULL" = is.null(title) ||
+            (is.character(title) && length(title) == 1),
+        "legend_pathway_size_title must be a single character string or NULL" = is.null(
+            legend_pathway_size_title
+        ) ||
+            (is.character(legend_pathway_size_title) &&
+                length(legend_pathway_size_title) == 1),
+        "legend_color_title must be a single character string or NULL" = is.null(
+            legend_color_title
+        ) ||
+            (is.character(legend_color_title) &&
+                length(legend_color_title) == 1),
         "colorkey_breaks must be a numeric vector or NULL" = is.null(
             colorkey_breaks
         ) ||
@@ -226,7 +252,13 @@ plot_pathways <- function(
         "color_high must be a single character string or NULL" = is.null(
             color_high
         ) ||
-            (is.character(color_high) && length(color_high) == 1)
+            (is.character(color_high) && length(color_high) == 1),
+        "plot_margin must be a numeric vector of length 4 with finite non-negative values" = is.numeric(
+            plot_margin
+        ) &&
+            length(plot_margin) == 4 &&
+            all(is.finite(plot_margin)) &&
+            all(plot_margin >= 0)
     )
 
     # Determine genes that could appear in the plot (all genes in the
@@ -236,6 +268,7 @@ plot_pathways <- function(
     pathway_genes <- unique(unlist(gsea_result@geneSets[top_ids]))
     genes_in_plot <- intersect(pathway_genes, names(fold_change))
     abs_fc_path <- abs(fold_change[genes_in_plot])
+    abs_fc_path <- abs_fc_path[is.finite(abs_fc_path)]
     effective_threshold <- effect_size_threshold
     if (!is.null(max_genes_shown) && length(abs_fc_path) > 0) {
         if (sum(abs_fc_path >= effective_threshold) > max_genes_shown) {
@@ -364,7 +397,9 @@ plot_pathways <- function(
                 color = ggplot2::guide_colorbar(title = legend_color_title)
             )
         if (any_key) {
-            # Preserve the existing palette; only update breaks/limits in-place
+            # Preserve the existing palette; only update breaks/limits in-place.
+            # Use idx[1] to safely handle the unlikely case of multiple colour
+            # scales (cnetplot adds exactly one, but guard defensively).
             idx <- which(vapply(
                 p$scales$scales,
                 function(s) "colour" %in% s$aesthetics,
@@ -372,10 +407,10 @@ plot_pathways <- function(
             ))
             if (length(idx) > 0) {
                 if (!is.null(colorkey_breaks)) {
-                    p$scales$scales[[idx]]$breaks <- colorkey_breaks
+                    p$scales$scales[[idx[1]]]$breaks <- colorkey_breaks
                 }
                 if (!is.null(colorkey_limits)) {
-                    p$scales$scales[[idx]]$limits <- colorkey_limits
+                    p$scales$scales[[idx[1]]]$limits <- colorkey_limits
                 }
             }
         }

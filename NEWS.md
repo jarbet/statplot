@@ -52,7 +52,7 @@
   scale; omitting `color_mid` produces a 2-color sequential scale; leaving all
   three `NULL` preserves the default cnetplot palette.
 * `plot_pathways`: new `plot_margin` argument (`c(top, right, bottom, left)` in
-  lines, default `c(1, 1, 1, 1)`) to control whitespace around the plot and
+  lines, default `c(0.5, 0.5, 0.5, 0.5)`) to control whitespace around the plot and
   prevent node labels from being clipped at the edges.
 * `plot_2_categorical_vars`: new `inside_bar_stats` argument controls what is printed inside the stacked bars — `"pct"` (default, within-group percentage), `"n"` (count only), `"n_and_pct"` (count and percentage formatted as `n (pct%)`), or `"none"` (no labels).
 * `plot_2_categorical_vars`: new `include_overall_bar` argument (default `FALSE`); when `TRUE`, a pooled bar showing the marginal distribution of `yvar` across all observations is prepended to the left of the per-group bars and separated by a vertical line. The bar respects `inside_bar_stats` and displays the total N label above it like all other bars. The bar label defaults to `"Overall"` and can be customised via the new `overall_label` argument.
