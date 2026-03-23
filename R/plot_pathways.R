@@ -84,9 +84,10 @@
 #'
 #' # Basic usage
 #' plot_pathways(
-#'     gsea_result   = res$gsea_result,
-#'     fold_change   = res$gene_vec,
-#'     show_pathways = 5
+#'     gsea_result           = res$gsea_result,
+#'     fold_change           = res$gene_vec,
+#'     show_pathways         = 5,
+#'     effect_size_threshold = 1.5
 #' )
 #'
 #' # Adaptively cap gene nodes at 50: fc_threshold is raised automatically
@@ -154,7 +155,7 @@ plot_pathways <- function(
     color_low = NULL,
     color_mid = NULL,
     color_high = NULL,
-    plot_margin = c(1, 1, 1, 1)
+    plot_margin = c(0.5, 0.5, 0.5, 0.5)
 ) {
     stopifnot(
         "fold_change must be a named numeric vector" = is.numeric(
@@ -248,15 +249,31 @@ plot_pathways <- function(
         }
     }
 
-    # Build a concise subtitle describing the adaptive threshold (only when
-    # max_genes_shown is set; otherwise no subtitle is shown)
+    # Build subtitle:
+    # - max_genes_shown set: report the adaptive threshold chosen
+    # - effect_size_threshold > 0 (no cap): report how many genes are shown
+    # - effect_size_threshold == 0: no subtitle needed (all genes shown)
+    n_genes_shown <- if (effective_threshold == 0) {
+        length(genes_in_plot)
+    } else {
+        sum(abs_fc_path >= effective_threshold)
+    }
     if (!is.null(max_genes_shown)) {
         subtitle <- paste0(
-            "An effect size cutoff was chosen to show at most ",
+            "Showing at most ",
             max_genes_shown,
             " gene nodes: abs(",
             subtitle_effect_size_label,
-            ") > ",
+            ") \u2265 ",
+            round(effective_threshold, 2)
+        )
+    } else if (effective_threshold > 0) {
+        subtitle <- paste0(
+            "Showing ",
+            n_genes_shown,
+            " gene nodes with abs(",
+            subtitle_effect_size_label,
+            ") \u2265 ",
             round(effective_threshold, 2)
         )
     } else {
@@ -286,8 +303,7 @@ plot_pathways <- function(
             size = gene_label_size
         ) +
         ggplot2::guides(
-            size = ggplot2::guide_legend(title = legend_pathway_size_title),
-            color = ggplot2::guide_colorbar(title = legend_color_title)
+            size = ggplot2::guide_legend(title = legend_pathway_size_title)
         ) +
         ggplot2::ggtitle(title) +
         ggplot2::labs(subtitle = subtitle) +
@@ -318,8 +334,13 @@ plot_pathways <- function(
                     low = if (!is.null(color_low)) color_low else "blue",
                     mid = color_mid,
                     high = if (!is.null(color_high)) color_high else "red",
-                    breaks = colorkey_breaks,
-                    limits = colorkey_limits
+                    breaks = if (!is.null(colorkey_breaks)) {
+                        colorkey_breaks
+                    } else {
+                        ggplot2::waiver()
+                    },
+                    limits = colorkey_limits,
+                    guide = ggplot2::guide_colorbar(title = legend_color_title)
                 )
         } else {
             # 2-colour sequential scale
@@ -327,23 +348,35 @@ plot_pathways <- function(
                 ggplot2::scale_color_gradient(
                     low = if (!is.null(color_low)) color_low else "white",
                     high = if (!is.null(color_high)) color_high else "red",
-                    breaks = colorkey_breaks,
-                    limits = colorkey_limits
+                    breaks = if (!is.null(colorkey_breaks)) {
+                        colorkey_breaks
+                    } else {
+                        ggplot2::waiver()
+                    },
+                    limits = colorkey_limits,
+                    guide = ggplot2::guide_colorbar(title = legend_color_title)
                 )
         }
-    } else if (any_key) {
-        # Preserve the existing palette; only update breaks/limits in-place
-        idx <- which(vapply(
-            p$scales$scales,
-            function(s) "colour" %in% s$aesthetics,
-            logical(1)
-        ))
-        if (length(idx) > 0) {
-            if (!is.null(colorkey_breaks)) {
-                p$scales$scales[[idx]]$breaks <- colorkey_breaks
-            }
-            if (!is.null(colorkey_limits)) {
-                p$scales$scales[[idx]]$limits <- colorkey_limits
+    } else {
+        # No colour customisation — apply the colorbar guide via guides()
+        p <- p +
+            ggplot2::guides(
+                color = ggplot2::guide_colorbar(title = legend_color_title)
+            )
+        if (any_key) {
+            # Preserve the existing palette; only update breaks/limits in-place
+            idx <- which(vapply(
+                p$scales$scales,
+                function(s) "colour" %in% s$aesthetics,
+                logical(1)
+            ))
+            if (length(idx) > 0) {
+                if (!is.null(colorkey_breaks)) {
+                    p$scales$scales[[idx]]$breaks <- colorkey_breaks
+                }
+                if (!is.null(colorkey_limits)) {
+                    p$scales$scales[[idx]]$limits <- colorkey_limits
+                }
             }
         }
     }

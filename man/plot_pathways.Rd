@@ -25,7 +25,7 @@ plot_pathways(
   color_low = NULL,
   color_mid = NULL,
   color_high = NULL,
-  plot_margin = c(1, 1, 1, 1)
+  plot_margin = c(0.5, 0.5, 0.5, 0.5)
 )
 }
 \arguments{
@@ -134,9 +134,10 @@ res <- run_gsea(gene_vec, term2gene = hallmark_t2g)
 
 # Basic usage
 plot_pathways(
-    gsea_result   = res$gsea_result,
-    fold_change   = res$gene_vec,
-    show_pathways = 5
+    gsea_result           = res$gsea_result,
+    fold_change           = res$gene_vec,
+    show_pathways         = 5,
+    effect_size_threshold = 1.5
 )
 
 # Adaptively cap gene nodes at 50: fc_threshold is raised automatically

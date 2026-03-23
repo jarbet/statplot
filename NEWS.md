@@ -27,14 +27,33 @@
 
 ## Changed
 
-* `plot_pathways`: new `max_genes_shown` argument adaptively raises `fc_threshold`
-  so that at most `max_genes_shown` gene nodes are displayed; the chosen cutoff
-  is reported in an auto-generated plot subtitle.
-* `plot_pathways`: new `fc_threshold_label` argument controls the effect-size
-  label shown inside `abs()` in the subtitle (default `"log2FC"`).
+* `plot_pathways`: several arguments renamed for clarity:
+    + `fc_threshold` → `effect_size_threshold`
+    + `fc_threshold_label` → `subtitle_effect_size_label`
+    + `show_category` → `show_pathways`
+    + `size_item` → `gene_node_size`
+    + `size_edge` → `line_size`
+    + `category_color` / `category_size` → `pathway_color` / `pathway_label_size`
+    + `item_color` / `item_size` → `gene_color` / `gene_label_size`
+* `plot_pathways`: new `max_genes_shown` argument adaptively raises
+  `effect_size_threshold` so that at most `max_genes_shown` gene nodes are
+  displayed; the chosen cutoff is reported in an auto-generated plot subtitle
+  (subtitle is suppressed when `max_genes_shown` is `NULL`).
+* `plot_pathways`: new `subtitle_effect_size_label` argument controls the
+  effect-size label shown inside `abs()` in the subtitle (default
+  `"effect size"`).
 * `plot_pathways`: new `legend_pathway_size_title` (default `"Num. genes"`) and
-  `legend_color_title` (default `"Effect size"`) arguments to customize legend
+  `legend_color_title` (default `"Effect size"`) arguments to customise legend
   titles for node size and color, respectively.
+* `plot_pathways`: new `colorkey_breaks` and `colorkey_limits` arguments to
+  control the tick-mark values and range shown on the color legend.
+* `plot_pathways`: new `color_low`, `color_mid`, and `color_high` arguments to
+  customise the color scale.  Supplying all three produces a 3-color diverging
+  scale; omitting `color_mid` produces a 2-color sequential scale; leaving all
+  three `NULL` preserves the default cnetplot palette.
+* `plot_pathways`: new `plot_margin` argument (`c(top, right, bottom, left)` in
+  lines, default `c(1, 1, 1, 1)`) to control whitespace around the plot and
+  prevent node labels from being clipped at the edges.
 * `plot_2_categorical_vars`: new `inside_bar_stats` argument controls what is printed inside the stacked bars — `"pct"` (default, within-group percentage), `"n"` (count only), `"n_and_pct"` (count and percentage formatted as `n (pct%)`), or `"none"` (no labels).
 * `plot_2_categorical_vars`: new `include_overall_bar` argument (default `FALSE`); when `TRUE`, a pooled bar showing the marginal distribution of `yvar` across all observations is prepended to the left of the per-group bars and separated by a vertical line. The bar respects `inside_bar_stats` and displays the total N label above it like all other bars. The bar label defaults to `"Overall"` and can be customised via the new `overall_label` argument.
 * `plot_dotmap`: new `q` argument accepts an optional column name of per-cell q-values (e.g. FDR-adjusted p-values) to use for cell shading instead of raw p-values. When both `p` and `q` are supplied the combined p-value barplot (right panel) is still computed from `p`, so Fisher/CMC combination uses raw p-values while cells reflect adjusted values.
