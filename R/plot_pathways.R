@@ -41,13 +41,21 @@
 #'   `"grey30"`).
 #' @param item_size numeric(1) Font size of gene labels (default `2.5`).
 #'   Must be a single positive value.
-#' @param title character(1) Plot title (default `"Gene-Pathway network
+#' @param title character(1) Plot title (default `"Gene-Pathway Network
 #'   (GSEA)"`).
 #' @param legend_pathway_size_title character(1) Title for the node-size legend (default
 #'   `"Num. genes"`).  Set to `NULL` to suppress the size legend entirely.
 #' @param legend_color_title character(1) Title for the color scale legend
 #'   (default `"Effect size"`).  Set to `NULL` to suppress the color legend
 #'   entirely.
+#' @param colorkey_breaks numeric vector of values at which tick marks and
+#'   labels are drawn on the color legend (default `NULL`, automatic).  For
+#'   example, `c(-2, -1, 0, 1, 2)` to show five labeled ticks.  When
+#'   supplied, the color scale is overridden with [ggplot2::scale_color_gradient2()].
+#' @param colorkey_limits numeric vector of length 2 giving the lower and
+#'   upper bounds of the color scale (default `NULL`, automatic).  Values
+#'   outside this range are mapped to the nearest extreme color.  Most
+#'   useful together with `colorkey_breaks`.
 #'
 #' @return A ggplot2 object.
 #'
@@ -93,9 +101,11 @@ plot_pathways <- function(
     category_size = 4,
     item_color = "grey30",
     item_size = 2.5,
-    title = "Gene-Pathway network (GSEA)",
+    title = "Effect sizes of genes in selected pathways",
     legend_pathway_size_title = "Num. genes",
-    legend_color_title = "Effect size"
+    legend_color_title = "Effect size",
+    colorkey_breaks = NULL,
+    colorkey_limits = NULL
 ) {
     stopifnot(
         "fold_change must be a named numeric vector" = is.numeric(
@@ -146,7 +156,15 @@ plot_pathways <- function(
         ) &&
             length(item_size) == 1 &&
             is.finite(item_size) &&
-            item_size > 0
+            item_size > 0,
+        "colorkey_breaks must be a numeric vector or NULL" = is.null(
+            colorkey_breaks
+        ) ||
+            (is.numeric(colorkey_breaks) && length(colorkey_breaks) >= 1),
+        "colorkey_limits must be a numeric vector of length 2 or NULL" = is.null(
+            colorkey_limits
+        ) ||
+            (is.numeric(colorkey_limits) && length(colorkey_limits) == 2)
     )
 
     # Determine genes that could appear in the plot (all genes in the
@@ -218,6 +236,12 @@ plot_pathways <- function(
             color = item_color,
             size = item_size
         ) +
+        (if (!is.null(colorkey_breaks) || !is.null(colorkey_limits)) {
+            ggplot2::scale_color_gradient2(
+                breaks = colorkey_breaks,
+                limits = colorkey_limits
+            )
+        }) +
         ggplot2::guides(
             size = ggplot2::guide_legend(title = legend_pathway_size_title),
             color = ggplot2::guide_colorbar(title = legend_color_title)

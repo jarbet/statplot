@@ -17,16 +17,18 @@ plot_pathways(
   category_size = 4,
   item_color = "grey30",
   item_size = 2.5,
-  title = "Gene-Pathway network (GSEA)",
+  title = "Effect sizes of genes in selected pathways",
   legend_pathway_size_title = "Num. genes",
-  legend_color_title = "Effect size"
+  legend_color_title = "Effect size",
+  colorkey_breaks = NULL,
+  colorkey_limits = NULL
 )
 }
 \arguments{
 \item{gsea_result}{A \code{gseaResult} object returned by \code{\link[=run_gsea]{run_gsea()}} or
 \code{\link[clusterProfiler:GSEA]{clusterProfiler::GSEA()}}.}
 
-\item{fold_change}{named numeric vector Gene-level statistics used to color
+\item{fold_change}{named numeric vector. Gene-level statistics used to color
 gene nodes (e.g. log2 fold change, t-statistic).  Names must be gene
 symbols matching those in \code{gsea_result}.  Typically the \code{gene_vec}
 element returned by \code{\link[=run_gsea]{run_gsea()}}.}
@@ -69,7 +71,7 @@ Must be a single positive value.}
 \item{item_size}{numeric(1) Font size of gene labels (default \code{2.5}).
 Must be a single positive value.}
 
-\item{title}{character(1) Plot title (default \code{"Gene-Pathway network (GSEA)"}).}
+\item{title}{character(1) Plot title (default \code{"Gene-Pathway Network (GSEA)"}).}
 
 \item{legend_pathway_size_title}{character(1) Title for the node-size legend (default
 \code{"Num. genes"}).  Set to \code{NULL} to suppress the size legend entirely.}
@@ -77,6 +79,16 @@ Must be a single positive value.}
 \item{legend_color_title}{character(1) Title for the color scale legend
 (default \code{"Effect size"}).  Set to \code{NULL} to suppress the color legend
 entirely.}
+
+\item{colorkey_breaks}{numeric vector of values at which tick marks and
+labels are drawn on the color legend (default \code{NULL}, automatic).  For
+example, \code{c(-2, -1, 0, 1, 2)} to show five labeled ticks.  When
+supplied, the color scale is overridden with \code{\link[ggplot2:scale_gradient]{ggplot2::scale_color_gradient2()}}.}
+
+\item{colorkey_limits}{numeric vector of length 2 giving the lower and
+upper bounds of the color scale (default \code{NULL}, automatic).  Values
+outside this range are mapped to the nearest extreme color.  Most
+useful together with \code{colorkey_breaks}.}
 }
 \value{
 A ggplot2 object.
