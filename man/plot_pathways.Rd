@@ -9,13 +9,17 @@ plot_pathways(
   fold_change,
   show_category = 5,
   fc_threshold = 1.5,
+  fc_threshold_label = "log2FC",
+  max_genes_shown = NULL,
   size_item = 0.7,
   size_edge = 0.5,
   category_color = "black",
   category_size = 4,
   item_color = "grey30",
   item_size = 2.5,
-  title = "Gene-Pathway network (GSEA)"
+  title = "Gene-Pathway network (GSEA)",
+  legend_pathway_size_title = "Num. genes",
+  legend_color_title = "Effect size"
 )
 }
 \arguments{
@@ -33,6 +37,19 @@ element returned by \code{\link[=run_gsea]{run_gsea()}}.}
 \item{fc_threshold}{numeric(1) Only show gene nodes whose
 \code{abs(fold_change) >= fc_threshold} (default \code{1.5}).  Set to \code{0} to show
 all genes.  Must be a single finite non-negative value.}
+
+\item{fc_threshold_label}{character(1) String placed inside \code{abs()} in the
+auto-generated subtitle when a threshold is applied
+(default \code{"log2FC"}).  Change to match your effect-size metric, e.g.
+\code{"t-statistic"} or \code{"z-score"}.}
+
+\item{max_genes_shown}{integer(1) Maximum number of gene nodes to display
+(default \code{NULL}, no limit).  If the number of genes belonging to the top
+\code{show_category} pathways and passing \code{fc_threshold} exceeds this value,
+the threshold is raised adaptively (via quantile of \code{abs(fold_change)}
+among pathway genes) until at most \code{max_genes_shown} genes remain.  The
+effective threshold will never drop below \code{fc_threshold}.  Must be a
+single positive whole number.}
 
 \item{size_item}{numeric(1) Relative size of gene circles/nodes (default
 \code{0.7}).  Must be a single positive value.}
@@ -53,6 +70,13 @@ Must be a single positive value.}
 Must be a single positive value.}
 
 \item{title}{character(1) Plot title (default \code{"Gene-Pathway network (GSEA)"}).}
+
+\item{legend_pathway_size_title}{character(1) Title for the node-size legend (default
+\code{"Num. genes"}).  Set to \code{NULL} to suppress the size legend entirely.}
+
+\item{legend_color_title}{character(1) Title for the color scale legend
+(default \code{"Effect size"}).  Set to \code{NULL} to suppress the color legend
+entirely.}
 }
 \value{
 A ggplot2 object.
@@ -74,10 +98,21 @@ gene_vec  <- setNames(rnorm(length(all_genes)), all_genes)
 
 res <- run_gsea(gene_vec, term2gene = hallmark_t2g)
 
+# Basic usage
 plot_pathways(
     gsea_result   = res$gsea_result,
     fold_change   = res$gene_vec,
     show_category = 5
+)
+
+# Adaptively cap gene nodes at 50: fc_threshold is raised automatically
+# so at most 50 genes appear; the subtitle reports the chosen cutoff
+plot_pathways(
+    gsea_result      = res$gsea_result,
+    fold_change      = res$gene_vec,
+    show_category    = 5,
+    max_genes_shown  = 50,
+    fc_threshold_label = "log2FC"
 )
 
 }
