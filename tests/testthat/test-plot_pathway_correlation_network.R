@@ -13,7 +13,7 @@ make_network_inputs <- function() {
     data(hallmark_t2g, package = "statplot", envir = parent.frame())
     list(
         expr = ex_expr_pathway,
-        log2fc = ex_log2fc_pathway,
+        effect_size = ex_log2fc_pathway,
         gene_sets = hallmark_t2g,
         pathway = "MYC_TARGETS_V1"
     )
@@ -36,7 +36,7 @@ test_that("plot_pathway_correlation_network() does not alter the caller's RNG st
             expr = inp$expr,
             pathway = inp$pathway,
             gene_sets = inp$gene_sets,
-            log2fc = inp$log2fc,
+            effect_size = inp$effect_size,
             seed = 42L
         )
     )
@@ -57,7 +57,7 @@ test_that("plot_pathway_correlation_network() with seed = NULL does not restore 
             expr = inp$expr,
             pathway = inp$pathway,
             gene_sets = inp$gene_sets,
-            log2fc = inp$log2fc,
+            effect_size = inp$effect_size,
             seed = NULL
         )
     )
@@ -85,7 +85,7 @@ test_that("plot_pathway_correlation_network() preserves RNG even when no .Random
             expr = inp$expr,
             pathway = inp$pathway,
             gene_sets = inp$gene_sets,
-            log2fc = inp$log2fc,
+            effect_size = inp$effect_size,
             seed = 42L
         )
     )
@@ -108,7 +108,7 @@ test_that("plot_pathway_correlation_network() produces the same layout for the s
             expr = inp$expr,
             pathway = inp$pathway,
             gene_sets = inp$gene_sets,
-            log2fc = inp$log2fc,
+            effect_size = inp$effect_size,
             seed = 42L
         )
     )
@@ -117,7 +117,7 @@ test_that("plot_pathway_correlation_network() produces the same layout for the s
             expr = inp$expr,
             pathway = inp$pathway,
             gene_sets = inp$gene_sets,
-            log2fc = inp$log2fc,
+            effect_size = inp$effect_size,
             seed = 42L
         )
     )
@@ -172,7 +172,7 @@ test_that("plot_pathway_correlation_network() errors when expr is not a matrix",
             expr = as.data.frame(make_sim_expr()),
             pathway = "PATHWAY_A",
             gene_sets = make_sim_gs(),
-            log2fc = make_sim_lfc()
+            effect_size = make_sim_lfc()
         ),
         "expr must be a matrix with rownames"
     )
@@ -187,7 +187,7 @@ test_that("plot_pathway_correlation_network() errors when expr has no rownames",
             expr = mat,
             pathway = "PATHWAY_A",
             gene_sets = make_sim_gs(),
-            log2fc = make_sim_lfc()
+            effect_size = make_sim_lfc()
         ),
         "expr must be a matrix with rownames"
     )
@@ -201,22 +201,22 @@ test_that("plot_pathway_correlation_network() errors when gene_sets lacks requir
             expr = make_sim_expr(),
             pathway = "PATHWAY_A",
             gene_sets = bad_gs,
-            log2fc = make_sim_lfc()
+            effect_size = make_sim_lfc()
         ),
         "gene_sets must be a data.frame with columns 'term' and 'gene'"
     )
 })
 
-test_that("plot_pathway_correlation_network() errors when log2fc is unnamed", {
+test_that("plot_pathway_correlation_network() errors when effect_size is unnamed", {
     skip_network_deps()
     expect_error(
         plot_pathway_correlation_network(
             expr = make_sim_expr(),
             pathway = "PATHWAY_A",
             gene_sets = make_sim_gs(),
-            log2fc = 1:5
+            effect_size = 1:5
         ),
-        "log2fc must be a named numeric vector"
+        "effect_size must be a named numeric vector"
     )
 })
 
@@ -227,7 +227,7 @@ test_that("plot_pathway_correlation_network() errors when pathway is not length 
             expr = make_sim_expr(),
             pathway = c("PATHWAY_A", "PATHWAY_B"),
             gene_sets = make_sim_gs(),
-            log2fc = make_sim_lfc()
+            effect_size = make_sim_lfc()
         ),
         "pathway must be a single character string"
     )
@@ -246,7 +246,7 @@ test_that("plot_pathway_correlation_network() returns NULL when fewer than 3 pat
             expr = make_sim_expr(),
             pathway = "PATHWAY_A",
             gene_sets = gs_2,
-            log2fc = make_sim_lfc()
+            effect_size = make_sim_lfc()
         ),
         "Fewer than 3 pathway genes"
     )
@@ -261,7 +261,7 @@ test_that("plot_pathway_correlation_network() returns NULL when no gene pairs pa
             expr = make_sim_expr(),
             pathway = "PATHWAY_A",
             gene_sets = make_sim_gs(),
-            log2fc = make_sim_lfc(),
+            effect_size = make_sim_lfc(),
             cor_thresh = 1
         ),
         "No gene pairs pass"
@@ -280,7 +280,7 @@ test_that("plot_pathway_correlation_network() returns a ggplot when edges exist"
             expr = make_sim_expr(),
             pathway = "PATHWAY_A",
             gene_sets = make_sim_gs(),
-            log2fc = make_sim_lfc(),
+            effect_size = make_sim_lfc(),
             cor_thresh = 0 # accept all pairs
         )
     )
@@ -299,7 +299,7 @@ test_that("plot_pathway_correlation_network() restricts nodes to top_n_genes", {
             expr = make_sim_expr(n_genes = 5),
             pathway = "PATHWAY_A",
             gene_sets = make_sim_gs(n_genes = 5),
-            log2fc = make_sim_lfc(n_genes = 5),
+            effect_size = make_sim_lfc(n_genes = 5),
             top_n_genes = 3,
             cor_thresh = 0
         )
@@ -317,7 +317,7 @@ test_that("plot_pathway_correlation_network() uses all genes when top_n_genes = 
             expr = make_sim_expr(n_genes = n),
             pathway = "PATHWAY_A",
             gene_sets = make_sim_gs(n_genes = n),
-            log2fc = make_sim_lfc(n_genes = n),
+            effect_size = make_sim_lfc(n_genes = n),
             top_n_genes = Inf,
             cor_thresh = 0
         )
@@ -335,7 +335,7 @@ test_that("plot_pathway_correlation_network() rejects non-positive top_n_genes",
         expr = make_sim_expr(),
         pathway = "PATHWAY_A",
         gene_sets = make_sim_gs(),
-        log2fc = make_sim_lfc()
+        effect_size = make_sim_lfc()
     )
     expect_error(
         do.call(
@@ -365,7 +365,7 @@ test_that("plot_pathway_correlation_network() rejects cor_thresh outside [0, 1]"
         expr = make_sim_expr(),
         pathway = "PATHWAY_A",
         gene_sets = make_sim_gs(),
-        log2fc = make_sim_lfc()
+        effect_size = make_sim_lfc()
     )
     expect_error(
         do.call(

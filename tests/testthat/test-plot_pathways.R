@@ -24,106 +24,106 @@ test_that("plot_pathways() errors when fold_change is not a named numeric", {
     )
 })
 
-test_that("plot_pathways() errors when show_category is not a positive whole number", {
+test_that("plot_pathways() errors when show_pathways is not a positive whole number", {
     fc <- make_fc()
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, show_category = 0),
-        "show_category"
+        plot_pathways(make_fake_gsea(), fc, show_pathways = 0),
+        "show_pathways"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, show_category = -1),
-        "show_category"
+        plot_pathways(make_fake_gsea(), fc, show_pathways = -1),
+        "show_pathways"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, show_category = 2.5),
-        "show_category"
+        plot_pathways(make_fake_gsea(), fc, show_pathways = 2.5),
+        "show_pathways"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, show_category = c(3L, 5L)),
-        "show_category"
+        plot_pathways(make_fake_gsea(), fc, show_pathways = c(3L, 5L)),
+        "show_pathways"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, show_category = Inf),
-        "show_category"
+        plot_pathways(make_fake_gsea(), fc, show_pathways = Inf),
+        "show_pathways"
     )
 })
 
-test_that("plot_pathways() errors when fc_threshold is invalid", {
+test_that("plot_pathways() errors when effect_size_threshold is invalid", {
     fc <- make_fc()
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, fc_threshold = -1),
-        "fc_threshold"
+        plot_pathways(make_fake_gsea(), fc, effect_size_threshold = -1),
+        "effect_size_threshold"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, fc_threshold = c(1, 2)),
-        "fc_threshold"
+        plot_pathways(make_fake_gsea(), fc, effect_size_threshold = c(1, 2)),
+        "effect_size_threshold"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, fc_threshold = Inf),
-        "fc_threshold"
+        plot_pathways(make_fake_gsea(), fc, effect_size_threshold = Inf),
+        "effect_size_threshold"
     )
 })
 
-test_that("plot_pathways() errors when size_item is invalid", {
+test_that("plot_pathways() errors when gene_node_size is invalid", {
     fc <- make_fc()
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, size_item = 0),
-        "size_item"
+        plot_pathways(make_fake_gsea(), fc, gene_node_size = 0),
+        "gene_node_size"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, size_item = -1),
-        "size_item"
+        plot_pathways(make_fake_gsea(), fc, gene_node_size = -1),
+        "gene_node_size"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, size_item = c(0.5, 1)),
-        "size_item"
+        plot_pathways(make_fake_gsea(), fc, gene_node_size = c(0.5, 1)),
+        "gene_node_size"
     )
 })
 
-test_that("plot_pathways() errors when size_edge is invalid", {
+test_that("plot_pathways() errors when line_size is invalid", {
     fc <- make_fc()
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, size_edge = 0),
-        "size_edge"
+        plot_pathways(make_fake_gsea(), fc, line_size = 0),
+        "line_size"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, size_edge = -0.1),
-        "size_edge"
+        plot_pathways(make_fake_gsea(), fc, line_size = -0.1),
+        "line_size"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, size_edge = c(0.5, 1)),
-        "size_edge"
+        plot_pathways(make_fake_gsea(), fc, line_size = c(0.5, 1)),
+        "line_size"
     )
 })
 
-test_that("plot_pathways() errors when category_size is invalid", {
+test_that("plot_pathways() errors when pathway_label_size is invalid", {
     fc <- make_fc()
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, category_size = 0),
-        "category_size"
+        plot_pathways(make_fake_gsea(), fc, pathway_label_size = 0),
+        "pathway_label_size"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, category_size = -2),
-        "category_size"
+        plot_pathways(make_fake_gsea(), fc, pathway_label_size = -2),
+        "pathway_label_size"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, category_size = c(3, 4)),
-        "category_size"
+        plot_pathways(make_fake_gsea(), fc, pathway_label_size = c(3, 4)),
+        "pathway_label_size"
     )
 })
 
-test_that("plot_pathways() errors when item_size is invalid", {
+test_that("plot_pathways() errors when gene_label_size is invalid", {
     fc <- make_fc()
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, item_size = 0),
-        "item_size"
+        plot_pathways(make_fake_gsea(), fc, gene_label_size = 0),
+        "gene_label_size"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, item_size = -1),
-        "item_size"
+        plot_pathways(make_fake_gsea(), fc, gene_label_size = -1),
+        "gene_label_size"
     )
     expect_error(
-        plot_pathways(make_fake_gsea(), fc, item_size = c(2, 3)),
-        "item_size"
+        plot_pathways(make_fake_gsea(), fc, gene_label_size = c(2, 3)),
+        "gene_label_size"
     )
 })
