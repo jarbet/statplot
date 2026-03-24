@@ -71,8 +71,9 @@
   prevent node labels from being clipped at the edges.
 - `plot_2_categorical_vars`: new `inside_bar_stats` argument controls
   what is printed inside the stacked bars — `"pct"` (default,
-  within-group percentage), `"n"` (count only), `"n_and_pct"` (count and
-  percentage formatted as `n (pct%)`), or `"none"` (no labels).
+  within-group percentage), `"n"` (count only), `"pct_and_n"`
+  (percentage and count formatted as `pct% (n)`), or `"none"` (no
+  labels).
 - `plot_2_categorical_vars`: new `include_overall_bar` argument (default
   `FALSE`); when `TRUE`, a pooled bar showing the marginal distribution
   of `yvar` across all observations is prepended to the left of the

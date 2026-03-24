@@ -29,7 +29,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/jarbet/statplot/blob/v0.3.0/NEWS.md"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/jarbet/statplot/blob/main/NEWS.md"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
@@ -98,7 +98,7 @@
 <li>
 <code>plot_pathways</code>: new <code>plot_margin</code> argument (<code>c(top, right, bottom, left)</code> in lines, default <code>c(0.5, 0.5, 0.5, 0.5)</code>) to control whitespace around the plot and prevent node labels from being clipped at the edges.</li>
 <li>
-<code>plot_2_categorical_vars</code>: new <code>inside_bar_stats</code> argument controls what is printed inside the stacked bars — <code>"pct"</code> (default, within-group percentage), <code>"n"</code> (count only), <code>"n_and_pct"</code> (count and percentage formatted as <code>n (pct%)</code>), or <code>"none"</code> (no labels).</li>
+<code>plot_2_categorical_vars</code>: new <code>inside_bar_stats</code> argument controls what is printed inside the stacked bars — <code>"pct"</code> (default, within-group percentage), <code>"n"</code> (count only), <code>"pct_and_n"</code> (percentage and count formatted as <code>pct% (n)</code>), or <code>"none"</code> (no labels).</li>
 <li>
 <code>plot_2_categorical_vars</code>: new <code>include_overall_bar</code> argument (default <code>FALSE</code>); when <code>TRUE</code>, a pooled bar showing the marginal distribution of <code>yvar</code> across all observations is prepended to the left of the per-group bars and separated by a vertical line. The bar respects <code>inside_bar_stats</code> and displays the total N label above it like all other bars. The bar label defaults to <code>"Overall"</code> and can be customised via the new <code>overall_label</code> argument.</li>
 <li>

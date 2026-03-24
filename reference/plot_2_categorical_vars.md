@@ -19,7 +19,7 @@ plot_2_categorical_vars(
   title_nchar_wrap = 30,
   show_effect_size = TRUE,
   n_pct_size = 3.5,
-  inside_bar_stats = c("pct", "n", "n_and_pct", "none"),
+  inside_bar_stats = c("pct", "n", "pct_and_n", "none"),
   pct_digits = 0,
   plot_horizontal = FALSE,
   flip = FALSE,
@@ -82,8 +82,8 @@ plot_2_categorical_vars(
 
   Character scalar controlling what statistics are printed inside the
   stacked bars. One of `"pct"` (default; shows within-group percentage),
-  `"n"` (shows count only), `"n_and_pct"` (shows count with percentage
-  below it), or `"none"` (no labels inside bars).
+  `"n"` (shows count only), `"pct_and_n"` (shows percentage with count
+  in parentheses, e.g. "12% (34)"), or `"none"` (no labels inside bars).
 
 - pct_digits:
 
