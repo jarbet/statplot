@@ -2,7 +2,7 @@
 
 ## Added
 
-...
+* `plot_data_avail_by_group`: tile plot showing availability (0/1) of data types across groups, with a black border, no whitespace padding, and optional bold axis labels.
 
 ## Changed
 
