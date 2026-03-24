@@ -34,10 +34,27 @@ plot_data_avail_by_group <- function(
     ylabel = NULL,
     xlabel_top_margin = 8
 ) {
-    data = data.frame(data, check.names = FALSE)
+    stopifnot(
+        is.character(data_type),
+        length(data_type) == 1,
+        is.character(group),
+        length(group) == 1,
+        is.character(available),
+        length(available) == 1
+    )
+    data <- data.frame(data, check.names = FALSE)
+    missing_cols <- setdiff(c(data_type, group, available), names(data))
+    if (length(missing_cols) > 0) {
+        stop(
+            "Column(s) not found in `data`: ",
+            paste(missing_cols, collapse = ", ")
+        )
+    }
+    # NA values in `available` are allowed; they map to NA fill and appear as
+    # a third tile colour distinct from 0/1. Validation ignores them via na.omit().
     stopifnot(all(unique(stats::na.omit(data[, available])) %in% c(0, 1)))
     fill_values <- c(`0` = "white", `1` = "black")
-    fill_labels <- c("No", "Yes")
+    fill_labels <- c(`0` = "No", `1` = "Yes")
     dt <- data
 
     p <- ggplot2::ggplot(
@@ -55,8 +72,9 @@ plot_data_avail_by_group <- function(
         ggplot2::scale_y_discrete(expand = c(0, 0)) +
         ggplot2::scale_fill_manual(
             values = fill_values,
-            name = "Available",
-            labels = fill_labels
+            breaks = c("0", "1"),
+            labels = fill_labels,
+            name = "Available"
         ) +
         ggplot2::theme_minimal() +
         ggplot2::theme(
