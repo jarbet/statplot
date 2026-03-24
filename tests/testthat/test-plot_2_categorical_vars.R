@@ -56,14 +56,14 @@ test_that("inside_bar_stats = 'n' runs without error", {
     )
 })
 
-test_that("inside_bar_stats = 'n_and_pct' runs without error", {
+test_that("inside_bar_stats = 'pct_and_n' runs without error", {
     d <- make_cat_df()
     expect_no_error(
         plot_2_categorical_vars(
             d,
             "cyl",
             "gear",
-            inside_bar_stats = "n_and_pct"
+            inside_bar_stats = "pct_and_n"
         )
     )
 })
@@ -102,17 +102,17 @@ test_that("inside_bar_stats = 'n' bar labels are numeric strings (no '%')", {
     expect_true(all(!is.na(as.numeric(gsub(",", "", labels)))))
 })
 
-test_that("inside_bar_stats = 'n_and_pct' bar labels contain both count and '%'", {
+test_that("inside_bar_stats = 'pct_and_n' bar labels contain both count and '%'", {
     d <- make_cat_df()
     res <- plot_2_categorical_vars(
         d,
         "cyl",
         "gear",
-        inside_bar_stats = "n_and_pct"
+        inside_bar_stats = "pct_and_n"
     )
     labels <- res$ggplot$data$bar_label
     expect_true(all(grepl("%", labels)))
-    expect_true(all(grepl("\\(", labels))) # format: "42 (12%)"
+    expect_true(all(grepl("\\(", labels))) # format: "12% (42)"
 })
 
 test_that("inside_bar_stats = 'none' bar labels are all NA", {
