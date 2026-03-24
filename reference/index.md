@@ -21,6 +21,8 @@
   : Stacked percent bar chart for two categorical variables
 - [`plot_bars()`](https://github.com/jarbet/statplot/reference/plot_bars.md)
   : Bar plot by group
+- [`plot_data_avail_by_group()`](https://github.com/jarbet/statplot/reference/plot_data_avail_by_group.md)
+  : Plot data availability by group
 - [`plot_dot_whiskers()`](https://github.com/jarbet/statplot/reference/plot_dot_whiskers.md)
   : Dot-and-whisker plot of estimates with confidence intervals
 - [`plot_dotmap()`](https://github.com/jarbet/statplot/reference/plot_dotmap.md)
