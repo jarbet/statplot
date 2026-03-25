@@ -27,8 +27,12 @@
 #' @param anno_colors Named list specifying colors for annotation covariates.
 #'   For discrete (categorical) covariates, each element should be a named
 #'   character vector mapping annotation levels to hex colors; any levels not
-#'   supplied are auto-colored. For continuous (numeric) covariates, each
-#'   element may instead be a function that maps numeric values to colors
+#'   supplied are auto-colored. All levels explicitly named in this vector will
+#'   appear in the annotation legend, even if they are absent from the current
+#'   data (useful for maintaining consistent legends across multiple plots from
+#'   subsetted data). To show only levels present in the data, simply omit the
+#'   unwanted levels from the named vector. For continuous (numeric) covariates,
+#'   each element may instead be a function that maps numeric values to colors
 #'   (e.g., a function created by \code{circlize::colorRamp2}), which will be
 #'   applied to the numeric annotation values to generate colors. Default
 #'   \code{NULL}.
@@ -538,13 +542,18 @@ plot_heatmap <- function(
                     var_index = i
                 )
             } else {
-                usr <- usr[intersect(names(usr), lv)]
-                missing <- setdiff(lv, names(usr))
-                if (length(missing)) {
-                    add <- distinct_default_for_levels(missing, var_index = i)
+                # Ensure every data-present level has a color
+                missing_from_usr <- setdiff(lv, names(usr))
+                if (length(missing_from_usr)) {
+                    add <- distinct_default_for_levels(
+                        missing_from_usr,
+                        var_index = i
+                    )
                     usr <- c(usr, add)
                 }
-                final_colors[[v]] <- usr[lv]
+                # Always keep all user-specified levels so they appear in
+                # the legend, even if absent from the current data
+                final_colors[[v]] <- usr
             }
         }
     }
@@ -556,10 +565,17 @@ plot_heatmap <- function(
 
     ha_col <- if (length(col_covariates)) {
         anno_df <- col_df[, col_covariates, drop = FALSE]
-        # Ensure continuous covariates remain numeric (not factor)
         for (v in col_covariates) {
-            if (is_continuous_cov(v) && !is.numeric(anno_df[[v]])) {
-                anno_df[[v]] <- as.numeric(as.character(anno_df[[v]]))
+            if (is_continuous_cov(v)) {
+                # Ensure continuous covariates remain numeric (not factor)
+                if (!is.numeric(anno_df[[v]])) {
+                    anno_df[[v]] <- as.numeric(as.character(anno_df[[v]]))
+                }
+            } else {
+                # Factor with all levels from final_colors so ComplexHeatmap
+                # renders every user-specified level in the legend
+                all_lvls <- names(final_colors[[v]])
+                anno_df[[v]] <- factor(anno_df[[v]], levels = all_lvls)
             }
         }
         ComplexHeatmap::HeatmapAnnotation(
@@ -573,10 +589,17 @@ plot_heatmap <- function(
 
     ha_row <- if (length(row_covariates)) {
         anno_df <- row_df[, row_covariates, drop = FALSE]
-        # Ensure continuous covariates remain numeric (not factor)
         for (v in row_covariates) {
-            if (is_continuous_cov(v) && !is.numeric(anno_df[[v]])) {
-                anno_df[[v]] <- as.numeric(as.character(anno_df[[v]]))
+            if (is_continuous_cov(v)) {
+                # Ensure continuous covariates remain numeric (not factor)
+                if (!is.numeric(anno_df[[v]])) {
+                    anno_df[[v]] <- as.numeric(as.character(anno_df[[v]]))
+                }
+            } else {
+                # Factor with all levels from final_colors so ComplexHeatmap
+                # renders every user-specified level in the legend
+                all_lvls <- names(final_colors[[v]])
+                anno_df[[v]] <- factor(anno_df[[v]], levels = all_lvls)
             }
         }
         ComplexHeatmap::rowAnnotation(
