@@ -24,6 +24,7 @@ plot_heatmap(
   return_details = FALSE,
   heatmap_legend_title = "Value",
   rect_gp = grid::gpar(col = "white", lwd = 1),
+  merge_legends = FALSE,
   ...
 )
 }
@@ -93,6 +94,25 @@ Use it to control cell borders and lines (e.g. \code{col}, \code{lwd},
 \code{lty}) or fill behavior. Default:
 \code{grid::gpar(col = "white", lwd = 1)}. To hide borders use
 \code{rect_gp = grid::gpar(col = NA)}.}
+
+\item{merge_legends}{Logical. Controls two related legend behaviors when
+\code{TRUE}:
+\enumerate{
+\item \strong{Deduplication (this wrapper):} annotation covariates with
+semantically equivalent color mappings are collapsed into a single
+legend whose title is the covariate names joined by \code{"\\n"} (e.g.
+\code{"pvalue\\nqvalue"}); redundant duplicate legends are suppressed.
+Equivalence is determined by value, not object identity: named
+character vectors are compared after sorting by name; functions
+produced by \code{\link[circlize]{colorRamp2}} are compared by their
+break-points and colors; other function types fall back to
+\code{identical()}.
+\item \strong{Legend packing (\code{ComplexHeatmap::draw()}):} the value
+is forwarded as \code{merge_legends} to
+\code{\link[ComplexHeatmap]{draw}}, which packs heatmap and annotation
+legends into a single combined block rather than separate groups.
+}
+Default \code{FALSE} for backward compatibility.}
 
 \item{...}{Additional arguments passed to
 \code{\link[ComplexHeatmap]{Heatmap}}.}

@@ -51,6 +51,24 @@
 #'   \code{lty}) or fill behavior. Default:
 #'   \code{grid::gpar(col = "white", lwd = 1)}. To hide borders use
 #'   \code{rect_gp = grid::gpar(col = NA)}.
+#' @param merge_legends Logical. Controls two related legend behaviors when
+#'   \code{TRUE}:
+#'   \enumerate{
+#'     \item \strong{Deduplication (this wrapper):} annotation covariates with
+#'       semantically equivalent color mappings are collapsed into a single
+#'       legend whose title is the covariate names joined by \code{"\\n"} (e.g.
+#'       \code{"pvalue\\nqvalue"}); redundant duplicate legends are suppressed.
+#'       Equivalence is determined by value, not object identity: named
+#'       character vectors are compared after sorting by name; functions
+#'       produced by \code{\link[circlize]{colorRamp2}} are compared by their
+#'       break-points and colors; other function types fall back to
+#'       \code{identical()}.
+#'     \item \strong{Legend packing (\code{ComplexHeatmap::draw()}):} the value
+#'       is forwarded as \code{merge_legends} to
+#'       \code{\link[ComplexHeatmap]{draw}}, which packs heatmap and annotation
+#'       legends into a single combined block rather than separate groups.
+#'   }
+#'   Default \code{FALSE} for backward compatibility.
 #' @param ... Additional arguments passed to
 #'   \code{\link[ComplexHeatmap]{Heatmap}}.
 #'
@@ -231,6 +249,7 @@ plot_heatmap <- function(
     return_details = FALSE,
     heatmap_legend_title = 'Value',
     rect_gp = grid::gpar(col = "white", lwd = 1),
+    merge_legends = FALSE,
     ...
 ) {
     # --- mapping names
@@ -592,6 +611,81 @@ plot_heatmap <- function(
     # passed via `df=` arg, NOT via individual named args -- this is fine.
     # But we must ensure continuous columns are NOT coerced to factor/character.
 
+    # Helper: when merge_legends = TRUE, group covariates that share the exact
+    # same color mapping object (checked via identical()). Two separately
+    # constructed objects with equivalent values are NOT considered duplicates;
+    # the user must reuse the same R variable in anno_colors to trigger merging.
+    # The first covariate in each group keeps its legend with a combined title
+    # (e.g. "pvalue\nqvalue"); duplicates have their legend suppressed.
+    # Returns a list with `show_legend` (named logical) and
+    # `annotation_legend_param` (named list of per-annotation legend params).
+
+    # Normalise a color mapping to a comparable value-based key so that
+    # semantically equivalent mappings are detected even when constructed
+    # separately (different R objects, same meaning).
+    color_key <- function(col) {
+        if (is.function(col)) {
+            env <- environment(col)
+            env_names <- ls(env)
+            # colorRamp2 closures store breaks and colors in their environment
+            if (all(c("breaks", "colors") %in% env_names)) {
+                list(
+                    type = "colorRamp2",
+                    breaks = env$breaks,
+                    colors = env$colors
+                )
+            } else {
+                # Unknown function type: fall back to object identity
+                list(type = "unknown_fn", fn = col)
+            }
+        } else if (is.character(col) && !is.null(names(col))) {
+            # Named character vector: normalise by sorting on names so ordering
+            # differences don't prevent merging
+            list(type = "named_vector", sorted = col[order(names(col))])
+        } else {
+            list(type = "other", val = col)
+        }
+    }
+
+    dedup_anno_legend <- function(covariates, colors) {
+        show <- stats::setNames(rep(TRUE, length(covariates)), covariates)
+        params <- stats::setNames(
+            vector("list", length(covariates)),
+            covariates
+        )
+        # Map each covariate to a representative using semantic color_key()
+        group_rep <- character(length(covariates))
+        seen_keys <- list()
+        seen_reps <- character()
+        for (v in covariates) {
+            key <- color_key(colors[[v]])
+            match_idx <- which(vapply(
+                seen_keys,
+                function(s) identical(s, key),
+                logical(1)
+            ))
+            if (length(match_idx)) {
+                group_rep[[which(covariates == v)]] <- seen_reps[[match_idx]]
+                show[[v]] <- FALSE
+            } else {
+                seen_keys <- c(seen_keys, list(key))
+                seen_reps <- c(seen_reps, v)
+                group_rep[[which(covariates == v)]] <- v
+            }
+        }
+        # Build combined titles for each representative
+        for (rep_v in unique(group_rep)) {
+            members <- covariates[group_rep == rep_v]
+            if (length(members) > 1L) {
+                params[[rep_v]] <- list(title = paste(members, collapse = "\n"))
+            }
+        }
+        # Drop NULL entries so ComplexHeatmap only sees covariates that need a
+        # custom title; passing NULLs can prevent title overrides from applying.
+        params_clean <- Filter(Negate(is.null), params)
+        list(show_legend = show, annotation_legend_param = params_clean)
+    }
+
     ha_col <- if (length(col_covariates)) {
         anno_df <- col_df[, col_covariates, drop = FALSE]
         for (v in col_covariates) {
@@ -607,9 +701,18 @@ plot_heatmap <- function(
                 anno_df[[v]] <- factor(anno_df[[v]], levels = all_lvls)
             }
         }
+        col_extra <- if (isTRUE(merge_legends)) {
+            dedup_anno_legend(col_covariates, final_colors)
+        } else {
+            NULL
+        }
         ComplexHeatmap::HeatmapAnnotation(
             df = anno_df,
             col = final_colors[col_covariates],
+            show_legend = if (!is.null(col_extra)) col_extra$show_legend,
+            annotation_legend_param = if (!is.null(col_extra)) {
+                col_extra$annotation_legend_param
+            },
             which = "column"
         )
     } else {
@@ -631,9 +734,18 @@ plot_heatmap <- function(
                 anno_df[[v]] <- factor(anno_df[[v]], levels = all_lvls)
             }
         }
+        row_extra <- if (isTRUE(merge_legends)) {
+            dedup_anno_legend(row_covariates, final_colors)
+        } else {
+            NULL
+        }
         ComplexHeatmap::rowAnnotation(
             df = anno_df,
-            col = final_colors[row_covariates]
+            col = final_colors[row_covariates],
+            show_legend = if (!is.null(row_extra)) row_extra$show_legend,
+            annotation_legend_param = if (!is.null(row_extra)) {
+                row_extra$annotation_legend_param
+            }
         )
     } else {
         NULL
@@ -662,7 +774,8 @@ plot_heatmap <- function(
     ht_drawn <- ComplexHeatmap::draw(
         ht,
         heatmap_legend_side = "right",
-        annotation_legend_side = "right"
+        annotation_legend_side = "right",
+        merge_legends = merge_legends
     )
 
     if (isTRUE(return_details)) {
