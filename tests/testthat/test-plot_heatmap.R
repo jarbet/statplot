@@ -101,3 +101,61 @@ test_that("data-present levels always have a color", {
     data_levels <- unique(df$direction) # "up"
     expect_true(all(data_levels %in% names(out$final_colors$direction)))
 })
+
+test_that("levels and final_colors are consistent: phantom levels appear in both", {
+    df <- make_heatmap_df()
+    out <- plot_heatmap(
+        df,
+        row_var = external_gene_name,
+        col_var = sample,
+        value_var = expression,
+        col_covariates = c("direction", "sample_type"),
+        anno_colors = anno_cols_with_phantom,
+        scale_rows = FALSE,
+        return_details = TRUE
+    )
+    # levels[[v]] and names(final_colors[[v]]) should contain the same elements
+    expect_setequal(
+        out$levels$direction,
+        names(out$final_colors$direction)
+    )
+})
+
+# ---------------------------------------------------------------------------
+# NULL row_df / col_df robustness
+# ---------------------------------------------------------------------------
+
+test_that("col_covariates-only call does not error when row_df is NULL", {
+    df <- make_heatmap_df()
+    expect_no_error(
+        plot_heatmap(
+            df,
+            row_var = external_gene_name,
+            col_var = sample,
+            value_var = expression,
+            col_covariates = c("direction", "sample_type"),
+            row_covariates = NULL,
+            anno_colors = anno_cols_with_phantom,
+            scale_rows = FALSE,
+            cluster_rows = FALSE,
+            cluster_columns = FALSE
+        )
+    )
+})
+
+test_that("row_covariates-only call does not error when col_df is NULL", {
+    df <- make_heatmap_df()
+    expect_no_error(
+        plot_heatmap(
+            df,
+            row_var = external_gene_name,
+            col_var = sample,
+            value_var = expression,
+            row_covariates = c("direction"),
+            col_covariates = NULL,
+            scale_rows = FALSE,
+            cluster_rows = FALSE,
+            cluster_columns = FALSE
+        )
+    )
+})

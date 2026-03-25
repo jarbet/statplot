@@ -504,8 +504,20 @@ plot_heatmap <- function(
         if (is.function(usr)) {
             return(TRUE)
         }
-        # Also treat numeric covariates with no user color spec as continuous
-        val <- c(row_df[[v]], col_df[[v]])
+        # Also treat numeric covariates with no user color spec as continuous.
+        # Either frame can be NULL when only one side's covariates are used,
+        # so extract each side conditionally before combining.
+        val_row <- if (!is.null(row_df) && v %in% names(row_df)) {
+            row_df[[v]]
+        } else {
+            NULL
+        }
+        val_col <- if (!is.null(col_df) && v %in% names(col_df)) {
+            col_df[[v]]
+        } else {
+            NULL
+        }
+        val <- c(val_row, val_col)
         val <- val[!is.na(val)]
         is.numeric(val) && is.null(usr)
     }
@@ -520,7 +532,24 @@ plot_heatmap <- function(
         if (is_continuous_cov(v)) {
             return(NULL)
         }
-        sort(unique(as.character(c(row_df[[v]], col_df[[v]]))))
+        val_row <- if (!is.null(row_df) && v %in% names(row_df)) {
+            row_df[[v]]
+        } else {
+            NULL
+        }
+        val_col <- if (!is.null(col_df) && v %in% names(col_df)) {
+            col_df[[v]]
+        } else {
+            NULL
+        }
+        data_lvls <- unique(as.character(c(val_row, val_col)))
+        usr <- if (!is.null(anno_colors)) anno_colors[[v]] else NULL
+        # Include any user-specified levels (even if absent from the data) so
+        # that levels_list is consistent with final_colors and the legend
+        if (!is.null(usr) && !is.function(usr)) {
+            data_lvls <- union(data_lvls, names(usr))
+        }
+        sort(data_lvls)
     })
     names(levels_list) <- var_names
 
