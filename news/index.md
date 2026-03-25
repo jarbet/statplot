@@ -10,7 +10,11 @@
 
 ### Changed
 
-…
+- `plot_heatmap`: when `anno_colors` is supplied for a categorical
+  covariate, all user-specified color levels now always appear in the
+  annotation legend—including levels absent from the current data
+  (e.g. when plotting a subset). To show only levels present in the
+  data, omit the unwanted levels from the `anno_colors` named vector.
 
 ## statplot 0.3.0 - 2026-03-20
 
