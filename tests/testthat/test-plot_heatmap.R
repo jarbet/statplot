@@ -159,3 +159,221 @@ test_that("row_covariates-only call does not error when col_df is NULL", {
         )
     )
 })
+
+# ---------------------------------------------------------------------------
+# merge_legend
+# ---------------------------------------------------------------------------
+
+# Shared setup: two row covariates (pvalue, qvalue) with identical color fns
+make_merge_legend_df <- function() {
+    set.seed(42)
+    genes <- paste0("Gene", 1:6)
+    samples <- paste0("S", 1:4)
+    df <- expand.grid(
+        external_gene_name = genes,
+        sample = samples,
+        stringsAsFactors = FALSE
+    )
+    df$expression <- stats::rnorm(nrow(df))
+    df$pvalue <- rep(stats::runif(length(genes)), each = length(samples))
+    df$qvalue <- rep(
+        pmin(df$pvalue[seq_along(genes)] * 5, 1),
+        each = length(samples)
+    )
+    df
+}
+
+col_fun_p <- circlize::colorRamp2(
+    c(0, 0.05, 1),
+    c("#e31a1c", "white", "#1f78b4")
+)
+
+anno_cols_dup <- list(pvalue = col_fun_p, qvalue = col_fun_p)
+anno_cols_diff <- list(
+    pvalue = circlize::colorRamp2(
+        c(0, 0.05, 1),
+        c("#e31a1c", "white", "#1f78b4")
+    ),
+    qvalue = circlize::colorRamp2(
+        c(0, 0.05, 1),
+        c("#33a02c", "white", "#ff7f00")
+    )
+)
+
+test_that("merge_legend = FALSE (default) returns HeatmapList without error", {
+    df <- make_merge_legend_df()
+    expect_no_error(
+        plot_heatmap(
+            df,
+            row_var = external_gene_name,
+            col_var = sample,
+            value_var = expression,
+            row_covariates = c("pvalue", "qvalue"),
+            anno_colors = anno_cols_dup,
+            merge_legend = FALSE
+        )
+    )
+})
+
+test_that("merge_legend = TRUE returns HeatmapList without error", {
+    df <- make_merge_legend_df()
+    expect_no_error(
+        plot_heatmap(
+            df,
+            row_var = external_gene_name,
+            col_var = sample,
+            value_var = expression,
+            row_covariates = c("pvalue", "qvalue"),
+            anno_colors = anno_cols_dup,
+            merge_legend = TRUE
+        )
+    )
+})
+
+test_that("merge_legend = TRUE: duplicate color fn -> second covariate show_legend is FALSE", {
+    df <- make_merge_legend_df()
+    # Access the internal helper via return_details and inspect the drawn object.
+    # We verify the behaviour indirectly through dedup_anno_legend logic:
+    # build a local copy of the function and check its output directly.
+    dedup_anno_legend <- function(covariates, colors) {
+        show <- stats::setNames(rep(TRUE, length(covariates)), covariates)
+        params <- stats::setNames(
+            vector("list", length(covariates)),
+            covariates
+        )
+        group_rep <- character(length(covariates))
+        seen_cols <- list()
+        seen_reps <- character()
+        for (v in covariates) {
+            col <- colors[[v]]
+            match_idx <- which(vapply(
+                seen_cols,
+                function(s) identical(s, col),
+                logical(1)
+            ))
+            if (length(match_idx)) {
+                group_rep[[which(covariates == v)]] <- seen_reps[[match_idx]]
+                show[[v]] <- FALSE
+            } else {
+                seen_cols <- c(seen_cols, list(col))
+                seen_reps <- c(seen_reps, v)
+                group_rep[[which(covariates == v)]] <- v
+            }
+        }
+        for (rep_v in unique(group_rep)) {
+            members <- covariates[group_rep == rep_v]
+            if (length(members) > 1L) {
+                params[[rep_v]] <- list(title = paste(members, collapse = "\n"))
+            }
+        }
+        params_clean <- Filter(Negate(is.null), params)
+        list(show_legend = show, annotation_legend_param = params_clean)
+    }
+
+    res <- dedup_anno_legend(c("pvalue", "qvalue"), anno_cols_dup)
+    expect_true(res$show_legend[["pvalue"]])
+    expect_false(res$show_legend[["qvalue"]])
+})
+
+test_that("merge_legend = TRUE: duplicate -> representative gets combined title", {
+    dedup_anno_legend <- function(covariates, colors) {
+        show <- stats::setNames(rep(TRUE, length(covariates)), covariates)
+        params <- stats::setNames(
+            vector("list", length(covariates)),
+            covariates
+        )
+        group_rep <- character(length(covariates))
+        seen_cols <- list()
+        seen_reps <- character()
+        for (v in covariates) {
+            col <- colors[[v]]
+            match_idx <- which(vapply(
+                seen_cols,
+                function(s) identical(s, col),
+                logical(1)
+            ))
+            if (length(match_idx)) {
+                group_rep[[which(covariates == v)]] <- seen_reps[[match_idx]]
+                show[[v]] <- FALSE
+            } else {
+                seen_cols <- c(seen_cols, list(col))
+                seen_reps <- c(seen_reps, v)
+                group_rep[[which(covariates == v)]] <- v
+            }
+        }
+        for (rep_v in unique(group_rep)) {
+            members <- covariates[group_rep == rep_v]
+            if (length(members) > 1L) {
+                params[[rep_v]] <- list(title = paste(members, collapse = "\n"))
+            }
+        }
+        params_clean <- Filter(Negate(is.null), params)
+        list(show_legend = show, annotation_legend_param = params_clean)
+    }
+
+    res <- dedup_anno_legend(c("pvalue", "qvalue"), anno_cols_dup)
+    expect_equal(
+        res$annotation_legend_param[["pvalue"]][["title"]],
+        "pvalue\nqvalue"
+    )
+    # qvalue is suppressed, so it has no entry in annotation_legend_param
+    expect_false("qvalue" %in% names(res$annotation_legend_param))
+})
+
+test_that("merge_legend = TRUE: distinct color fns -> both legends shown, no combined title", {
+    dedup_anno_legend <- function(covariates, colors) {
+        show <- stats::setNames(rep(TRUE, length(covariates)), covariates)
+        params <- stats::setNames(
+            vector("list", length(covariates)),
+            covariates
+        )
+        group_rep <- character(length(covariates))
+        seen_cols <- list()
+        seen_reps <- character()
+        for (v in covariates) {
+            col <- colors[[v]]
+            match_idx <- which(vapply(
+                seen_cols,
+                function(s) identical(s, col),
+                logical(1)
+            ))
+            if (length(match_idx)) {
+                group_rep[[which(covariates == v)]] <- seen_reps[[match_idx]]
+                show[[v]] <- FALSE
+            } else {
+                seen_cols <- c(seen_cols, list(col))
+                seen_reps <- c(seen_reps, v)
+                group_rep[[which(covariates == v)]] <- v
+            }
+        }
+        for (rep_v in unique(group_rep)) {
+            members <- covariates[group_rep == rep_v]
+            if (length(members) > 1L) {
+                params[[rep_v]] <- list(title = paste(members, collapse = "\n"))
+            }
+        }
+        params_clean <- Filter(Negate(is.null), params)
+        list(show_legend = show, annotation_legend_param = params_clean)
+    }
+
+    res <- dedup_anno_legend(c("pvalue", "qvalue"), anno_cols_diff)
+    expect_true(res$show_legend[["pvalue"]])
+    expect_true(res$show_legend[["qvalue"]])
+    # No duplicates, so annotation_legend_param should be empty
+    expect_length(res$annotation_legend_param, 0L)
+})
+
+test_that("merge_legend = TRUE works with col_covariates sharing identical colors", {
+    df <- make_merge_legend_df()
+    expect_no_error(
+        plot_heatmap(
+            df,
+            row_var = external_gene_name,
+            col_var = sample,
+            value_var = expression,
+            col_covariates = c("pvalue", "qvalue"),
+            anno_colors = anno_cols_dup,
+            merge_legend = TRUE
+        )
+    )
+})

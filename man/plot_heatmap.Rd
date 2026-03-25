@@ -24,6 +24,7 @@ plot_heatmap(
   return_details = FALSE,
   heatmap_legend_title = "Value",
   rect_gp = grid::gpar(col = "white", lwd = 1),
+  merge_legend = FALSE,
   ...
 )
 }
@@ -93,6 +94,12 @@ Use it to control cell borders and lines (e.g. \code{col}, \code{lwd},
 \code{lty}) or fill behavior. Default:
 \code{grid::gpar(col = "white", lwd = 1)}. To hide borders use
 \code{rect_gp = grid::gpar(col = NA)}.}
+
+\item{merge_legend}{Logical. If \\code{TRUE}, annotation covariates that
+share an identical color mapping are collapsed into a single legend whose
+title is the covariate names joined by \\code{"\\\\n"} (e.g.
+\\code{"pvalue\\\\nqvalue"}); redundant duplicate legends are suppressed.
+Default \\code{FALSE} for backward compatibility.}
 
 \item{...}{Additional arguments passed to
 \code{\link[ComplexHeatmap]{Heatmap}}.}
