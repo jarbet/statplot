@@ -27,6 +27,7 @@ plot_heatmap(
   return_details = FALSE,
   heatmap_legend_title = "Value",
   rect_gp = grid::gpar(col = "white", lwd = 1),
+  merge_legends = FALSE,
   ...
 )
 ```
@@ -138,6 +139,31 @@ plot_heatmap(
   control cell borders and lines (e.g. `col`, `lwd`, `lty`) or fill
   behavior. Default: `grid::gpar(col = "white", lwd = 1)`. To hide
   borders use `rect_gp = grid::gpar(col = NA)`.
+
+- merge_legends:
+
+  Logical. Controls two related legend behaviors when `TRUE`:
+
+  1.  **Deduplication (this wrapper):** annotation covariates with
+      semantically equivalent color mappings are collapsed into a single
+      legend whose title is the covariate names joined by `"\n"` (e.g.
+      `"pvalue\nqvalue"`); redundant duplicate legends are suppressed.
+      Equivalence is determined by value, not object identity: named
+      character vectors are compared after sorting by name; functions
+      produced by
+      [`colorRamp2`](https://rdrr.io/pkg/circlize/man/colorRamp2.html)
+      are compared by their break-points and colors; other function
+      types fall back to
+      [`identical()`](https://rdrr.io/r/base/identical.html).
+
+  2.  **Legend packing
+      ([`ComplexHeatmap::draw()`](https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html)):**
+      the value is forwarded as `merge_legends` to
+      [`draw`](https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html),
+      which packs heatmap and annotation legends into a single combined
+      block rather than separate groups.
+
+  Default `FALSE` for backward compatibility.
 
 - ...:
 

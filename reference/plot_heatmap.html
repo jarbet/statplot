@@ -65,6 +65,7 @@ splits, and row scaling.</p>
 <span>  return_details <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  heatmap_legend_title <span class="op">=</span> <span class="st">"Value"</span>,</span>
 <span>  rect_gp <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"white"</span>, lwd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  merge_legends <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -175,6 +176,24 @@ Use it to control cell borders and lines (e.g. <code>col</code>, <code>lwd</code
 <code>lty</code>) or fill behavior. Default:
 <code>grid::gpar(col = "white", lwd = 1)</code>. To hide borders use
 <code>rect_gp = grid::gpar(col = NA)</code>.</p></dd>
+
+
+<dt id="arg-merge-legends">merge_legends<a class="anchor" aria-label="anchor" href="#arg-merge-legends"></a></dt>
+<dd><p>Logical. Controls two related legend behaviors when
+<code>TRUE</code>:</p><ol><li><p><strong>Deduplication (this wrapper):</strong> annotation covariates with
+semantically equivalent color mappings are collapsed into a single
+legend whose title is the covariate names joined by <code>"\n"</code> (e.g.
+<code>"pvalue\nqvalue"</code>); redundant duplicate legends are suppressed.
+Equivalence is determined by value, not object identity: named
+character vectors are compared after sorting by name; functions
+produced by <code><a href="https://rdrr.io/pkg/circlize/man/colorRamp2.html" class="external-link">colorRamp2</a></code> are compared by their
+break-points and colors; other function types fall back to
+<code><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical()</a></code>.</p></li>
+<li><p><strong>Legend packing (<code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">ComplexHeatmap::draw()</a></code>):</strong> the value
+is forwarded as <code>merge_legends</code> to
+<code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></code>, which packs heatmap and annotation
+legends into a single combined block rather than separate groups.</p></li>
+</ol><p>Default <code>FALSE</code> for backward compatibility.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

@@ -43,6 +43,11 @@
 <h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
 <ul><li>
 <code>plot_heatmap</code>: when <code>anno_colors</code> is supplied for a categorical covariate, all user-specified color levels now always appear in the annotation legend—including levels absent from the current data (e.g. when plotting a subset). To show only levels present in the data, omit the unwanted levels from the <code>anno_colors</code> named vector.</li>
+<li>
+<code>plot_heatmap</code>: added a new <code>merge_legends</code> argument (default <code>FALSE</code>). When <code>TRUE</code> the function:
+<ul><li>deduplicates annotation legends whose color mappings are semantically equivalent (named vectors are compared after sorting by name; <code><a href="https://rdrr.io/pkg/circlize/man/colorRamp2.html" class="external-link">circlize::colorRamp2</a></code> functions are compared by their breakpoints and colours), combining their titles (e.g. <code>"pvalue\nqvalue"</code>) and suppressing redundant legends;</li>
+<li>forwards the flag to <code>ComplexHeatmap::draw(..., merge_legends = TRUE)</code> so heatmap and annotation legends are packed together. Unit tests covering the deduplication and semantic comparison behaviour were added.</li>
+</ul></li>
 </ul></div>
 </div>
     <div class="section level2">

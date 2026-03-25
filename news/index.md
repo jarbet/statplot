@@ -15,6 +15,19 @@
   annotation legend—including levels absent from the current data
   (e.g. when plotting a subset). To show only levels present in the
   data, omit the unwanted levels from the `anno_colors` named vector.
+- `plot_heatmap`: added a new `merge_legends` argument (default
+  `FALSE`). When `TRUE` the function:
+  - deduplicates annotation legends whose color mappings are
+    semantically equivalent (named vectors are compared after sorting by
+    name;
+    [`circlize::colorRamp2`](https://rdrr.io/pkg/circlize/man/colorRamp2.html)
+    functions are compared by their breakpoints and colours), combining
+    their titles (e.g. `"pvalue\nqvalue"`) and suppressing redundant
+    legends;
+  - forwards the flag to
+    `ComplexHeatmap::draw(..., merge_legends = TRUE)` so heatmap and
+    annotation legends are packed together. Unit tests covering the
+    deduplication and semantic comparison behaviour were added.
 
 ## statplot 0.3.0 - 2026-03-20
 
