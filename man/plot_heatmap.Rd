@@ -60,8 +60,12 @@ ComplexHeatmap's built-in default.}
 \item{anno_colors}{Named list specifying colors for annotation covariates.
 For discrete (categorical) covariates, each element should be a named
 character vector mapping annotation levels to hex colors; any levels not
-supplied are auto-colored. For continuous (numeric) covariates, each
-element may instead be a function that maps numeric values to colors
+supplied are auto-colored. All levels explicitly named in this vector will
+appear in the annotation legend, even if they are absent from the current
+data (useful for maintaining consistent legends across multiple plots from
+subsetted data). To show only levels present in the data, simply omit the
+unwanted levels from the named vector. For continuous (numeric) covariates,
+each element may instead be a function that maps numeric values to colors
 (e.g., a function created by \code{circlize::colorRamp2}), which will be
 applied to the numeric annotation values to generate colors. Default
 \code{NULL}.}
