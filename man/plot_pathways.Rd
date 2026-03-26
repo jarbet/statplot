@@ -6,9 +6,9 @@
 \usage{
 plot_pathways(
   gsea_result,
-  fold_change,
+  effect_size = NULL,
   show_pathways = 5,
-  effect_size_threshold = 1.5,
+  effect_size_threshold = 0,
   subtitle_effect_size_label = "effect size",
   max_genes_shown = NULL,
   gene_node_size = 0.7,
@@ -19,6 +19,7 @@ plot_pathways(
   gene_label_size = 2.5,
   title = "Effect sizes of genes in selected pathways",
   legend_pathway_size_title = "Num. genes",
+  legend_fixed_dot_size = NULL,
   legend_color_title = "Effect size",
   colorkey_breaks = NULL,
   colorkey_limits = NULL,
@@ -32,7 +33,7 @@ plot_pathways(
 \item{gsea_result}{A \code{gseaResult} object returned by \code{\link[=run_gsea]{run_gsea()}} or
 \code{\link[clusterProfiler:GSEA]{clusterProfiler::GSEA()}}.}
 
-\item{fold_change}{named numeric vector. Gene-level statistics used to color
+\item{effect_size}{named numeric vector. Gene-level statistics used to color
 gene nodes (e.g. log2 fold change, t-statistic).  Names must be gene
 symbols matching those in \code{gsea_result}.  Typically the \code{gene_vec}
 element returned by \code{\link[=run_gsea]{run_gsea()}}.}
@@ -41,7 +42,7 @@ element returned by \code{\link[=run_gsea]{run_gsea()}}.}
 \code{5}).  Must be a single positive whole number.}
 
 \item{effect_size_threshold}{numeric(1) Only show gene nodes whose
-\code{abs(fold_change) >= effect_size_threshold} (default \code{1.5}).  Set to \code{0}
+\code{abs(effect_size) >= effect_size_threshold} (default \code{1.5}).  Set to \code{0}
 to show all genes.  Must be a single finite non-negative value.}
 
 \item{subtitle_effect_size_label}{character(1) String placed inside \code{abs()} in the
@@ -52,7 +53,7 @@ auto-generated subtitle when a threshold is applied
 \item{max_genes_shown}{integer(1) Maximum number of gene nodes to display
 (default \code{NULL}, no limit).  If the number of genes belonging to the top
 \code{show_pathways} pathways and passing \code{effect_size_threshold} exceeds this value,
-the threshold is raised adaptively (via quantile of \code{abs(fold_change)}
+the threshold is raised adaptively (via quantile of \code{abs(effect_size)}
 among pathway genes) until at most \code{max_genes_shown} genes remain.  The
 effective threshold will never drop below \code{effect_size_threshold}.  Must be
 a single positive whole number.}
@@ -79,6 +80,15 @@ Must be a single positive value.}
 
 \item{legend_pathway_size_title}{character(1) Title for the node-size legend (default
 \code{"Num. genes"}).  Set to \code{NULL} to show the legend without a title.}
+
+\item{legend_fixed_dot_size}{numeric vector of gene-count values whose dot
+sizes should appear as keys in the size legend (default \code{NULL},
+automatic).  For example, \code{c(50, 100, 200)} causes exactly those three
+dot sizes to be shown.  The supplied values also become the scale limits
+(using their range), so the visual size mapping is identical across
+multiple plots combined with \code{patchwork}.  Values outside the range are
+squished to the nearest extreme rather than dropped.  All values must be
+finite and positive.}
 
 \item{legend_color_title}{character(1) Title for the color scale legend
 (default \code{"Effect size"}).  Set to \code{NULL} to show the legend without a
@@ -138,7 +148,7 @@ res <- run_gsea(gene_vec, term2gene = hallmark_t2g)
 # Basic usage
 plot_pathways(
     gsea_result           = res$gsea_result,
-    fold_change           = res$gene_vec,
+    effect_size           = res$gene_vec,
     show_pathways         = 5,
     effect_size_threshold = 1.5
 )
@@ -147,7 +157,7 @@ plot_pathways(
 # so at most 50 genes appear; the subtitle reports the effective threshold used
 plot_pathways(
     gsea_result        = res$gsea_result,
-    fold_change        = res$gene_vec,
+    effect_size        = res$gene_vec,
     show_pathways      = 5,
     max_genes_shown    = 50,
     subtitle_effect_size_label  = "log2FC"
@@ -156,32 +166,57 @@ plot_pathways(
 # 3-color diverging scale (blue -> white -> red)
 plot_pathways(
     gsea_result   = res$gsea_result,
-    fold_change   = res$gene_vec,
+    effect_size   = res$gene_vec,
     show_pathways = 5,
     color_low     = "blue",
     color_mid     = "white",
-    color_high    = "red"
+    color_high    = "red",
+    effect_size_threshold = 1.5
 )
 
 # 2-color sequential scale (white -> red)
 plot_pathways(
     gsea_result   = res$gsea_result,
-    fold_change   = res$gene_vec,
+    effect_size   = res$gene_vec,
     show_pathways = 5,
     color_low     = "white",
-    color_high    = "red"
+    color_high    = "red",
+    effect_size_threshold = 1.5
 )
 
 # Custom colors with explicit breaks and limits
 plot_pathways(
     gsea_result     = res$gsea_result,
-    fold_change     = res$gene_vec,
+    effect_size     = res$gene_vec,
     show_pathways   = 5,
     color_low       = "blue",
     color_mid       = "white",
     color_high      = "red",
     colorkey_breaks = c(-2, -1, 0, 1, 2),
-    colorkey_limits = c(-3, 3)
+    colorkey_limits = c(-3, 3),
+    effect_size_threshold = 1.5
 )
+
+# Two plots with a shared dot-size legend for use with patchwork.
+# Both plots use the same legend_fixed_dot_size so the size keys are
+# identical across panels, making visual comparisons meaningful.
+shared_dot_sizes <- c(50, 100, 200)
+
+p1 <- plot_pathways(
+    gsea_result           = res$gsea_result,
+    effect_size           = res$gene_vec,
+    show_pathways         = 3,
+    legend_fixed_dot_size = shared_dot_sizes,
+    effect_size_threshold = 1.5
+)
+p2 <- plot_pathways(
+    gsea_result           = res$gsea_result,
+    effect_size           = res$gene_vec,
+    show_pathways         = 3,
+    legend_fixed_dot_size = shared_dot_sizes,
+    effect_size_threshold = 1.5
+)
+
+patchwork::wrap_plots(p1, p2)
 
 }
