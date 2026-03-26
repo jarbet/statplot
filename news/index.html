@@ -107,6 +107,8 @@
 <li>
 <code>plot_pathways</code>: new <code>legend_pathway_size_title</code> (default <code>"Num. genes"</code>) and <code>legend_color_title</code> (default <code>"Effect size"</code>) arguments to customise legend titles for node size and color, respectively.</li>
 <li>
+<code>plot_pathways</code>: <code>legend_color_title</code> now accepts plotmath expressions via <code><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression()</a></code>; validation and documentation updated.</li>
+<li>
 <code>plot_pathways</code>: new <code>colorkey_breaks</code> and <code>colorkey_limits</code> arguments to control the tick-mark values and range shown on the color legend.</li>
 <li>
 <code>plot_pathways</code>: new <code>color_low</code>, <code>color_mid</code>, and <code>color_high</code> arguments to customise the color scale. Supplying all three produces a 3-color diverging scale; omitting <code>color_mid</code> produces a 2-color sequential scale; leaving all three <code>NULL</code> preserves the default cnetplot palette.</li>

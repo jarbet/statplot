@@ -133,8 +133,10 @@ plot_pathways(
 
 - legend_color_title:
 
-  character(1) Title for the color scale legend (default
+  character(1) or expression() Title for the color scale legend (default
   `"Effect size"`). Set to `NULL` to show the legend without a title.
+  Use [`expression()`](https://rdrr.io/r/base/expression.html) to supply
+  plotmath expressions.
 
 - colorkey_breaks:
 
