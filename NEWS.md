@@ -2,6 +2,20 @@
 
 ## Added
 
+...
+
+## Changed
+
+...
+
+## Fixed
+
+...
+
+# statplot 0.4.0 - 2026-03-26
+
+## Added
+
 * `plot_data_avail_by_group`: tile plot showing availability (0/1) of data types across groups, with a black border, no whitespace padding, and optional bold axis labels.
 * `plot_pathways`: new `legend_fixed_dot_size` argument (numeric vector) fixes the size-legend breaks and limits to user-supplied gene-count values so that multiple plots composed with `patchwork` share an identical visual size scale. Values outside the specified range are squished to the nearest extreme rather than dropped.
 
@@ -15,6 +29,10 @@
   - deduplicates annotation legends whose color mappings are semantically equivalent (named vectors are compared after sorting by name; `circlize::colorRamp2` functions are compared by their breakpoints and colours), combining their titles (e.g. `"pvalue\nqvalue"`) and suppressing redundant legends;
   - forwards the flag to `ComplexHeatmap::draw(..., merge_legends = TRUE)` so heatmap and annotation legends are packed together.
   Unit tests covering the deduplication and semantic comparison behaviour were added.
+
+## Fixed
+
+* `plot_dotmap`: `custom_qvalues` passed via `...` now correctly drives the q-value bars in the combined p-value barplot. Previously the argument was stripped before being forwarded to `plot_pvalue_barplot()`, causing the barplot to always display internally computed BH-adjusted q-values instead of the user-supplied ones. The supplied column is now joined from the input data into the combined-p data frame and forwarded as `custom_qvalues`; when not supplied, the BH fallback is used as before.
 
 # statplot 0.3.0 - 2026-03-20
 
@@ -68,10 +86,6 @@
 * `plot_dotmap`: new `q` argument accepts an optional column name of per-cell q-values (e.g. FDR-adjusted p-values) to use for cell shading instead of raw p-values. When both `p` and `q` are supplied the combined p-value barplot (right panel) is still computed from `p`, so Fisher/CMC combination uses raw p-values while cells reflect adjusted values.
 * `plot_pvalue_barplot`: `NA` p-values are now handled gracefully — rows with missing p-values are silently dropped rather than causing an error, and BH correction for q-values is applied only to the non-missing subset so adjusted values are not distorted.
 * Use `stats::reformulate()` with backticks when building formulas in numeric-by-group plotting functions to support non-syntactic column names (fixes issue with spaces/hyphens).
-
-## Fixed
-
-* ...
 
 # statplot 0.2.0 - 2026-03-06
 

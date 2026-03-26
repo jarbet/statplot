@@ -80,9 +80,12 @@ tile is drawn with the fill scale's \code{na.value} (grey95 by default), exactly
 \item{...}{Additional arguments passed on to \code{plot_pvalue_barplot()} when
 \code{add_combined_pvalue_barplot = TRUE}. The following arguments are set internally
 and will be ignored if supplied here: \code{data}, \code{x}, \code{y}, \code{fill},
-\code{show_y_labels}, \code{custom_qvalues} (the combined p-value barplot always uses
-\code{p} to compute Fisher/CMC combined p-values via \code{combine_pvalues()};
-the \code{q} argument only affects cell fill, not the barplot).}
+\code{show_y_labels}. \code{custom_qvalues} receives special handling: if supplied, it
+must be a column name present in \code{data} containing one pre-computed combined
+q-value per \code{y} level (repeated across rows is fine); those values are joined into
+the internal combined-p data frame and forwarded to \code{plot_pvalue_barplot()}.
+When not supplied, BH-adjusted q-values are computed from the internally combined
+p-values and used for the barplot.}
 
 \item{patchwork_widths}{Numeric(2); widths passed to \pkg{patchwork}::\code{wrap_plots()} when adding the combined p-value barplot (default c(3, 1))}
 }
@@ -126,6 +129,36 @@ plot_dotmap(
   combine_pvalue_method = "CMC"
   )
 
+# --- custom_qvalues: supply your own combined q-values to the barplot ---
+# By default the right-side barplot computes combined p-values internally
+# (via combine_pvalue_method) and then BH-adjusts them for the q-value bars.
+# Use custom_qvalues when you have already computed combined q-values outside
+# plot_dotmap (e.g. using a different multiple-testing method, or sharing a
+# consistent correction across several plots) and want the barplot to display
+# those exact values rather than re-deriving them.
+#
+# A common use case is when you pre-compute qvalues for tons of tests (too many to plot visually)
+# and you want to use the dotmap just for a small subset of those tests but still have the barplot reflect the same q-values that you have already computed for all tests.
+# In that case you can pass the pre-computed q-values via a column in your original data frame and specify that column name in custom_qvalues
+#
+### Simulate example dataset:
+set.seed(1)
+genes2 <- paste0("gene", 1:4)
+df2 <- expand.grid(col = c("A", "B", "C"), row = genes2, stringsAsFactors = FALSE)
+df2$effect <- rnorm(nrow(df2), sd = 1)
+df2$p      <- runif(nrow(df2), 0.05, 0.5)   # all p-values moderate on purpose
+df2$row    <- factor(df2$row, levels = rev(genes2))
+# Example Pre-computed combined q-values: one value per row category
+my_combined_q <- c(gene1 = 0.05, gene2 = 0.1, gene3 = 0.2, gene4 = 0.5)
+df2$my_q <- my_combined_q[as.character(df2$row)]
+plot_dotmap(
+  df2,
+  x = "col", y = "row", effect = "effect", p = "p",
+  mlog10_transform_pvalue = TRUE,
+  add_combined_pvalue_barplot = TRUE,
+  combine_pvalue_method = "fisher",
+  custom_qvalues = "my_q"   # <-- barplot q-bars reflect my_q, not internal BH
+)
 
 }
 \seealso{

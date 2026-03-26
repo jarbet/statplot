@@ -1,6 +1,6 @@
 Package: statplot
 Title: Convenient Tools for Generating Standard Statistical Plots
-Version: 0.3.0
+Version: 0.4.0
 Authors@R: c(
     person("Jaron Arbet", role = c("aut", "cre"), email = "jarbet@coh.org"))
 Maintainer: Jaron Arbet <jarbet@coh.org>

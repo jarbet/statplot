@@ -35,9 +35,12 @@
 #' @param ... Additional arguments passed on to \code{plot_pvalue_barplot()} when
 #'   \code{add_combined_pvalue_barplot = TRUE}. The following arguments are set internally
 #'   and will be ignored if supplied here: \code{data}, \code{x}, \code{y}, \code{fill},
-#'   \code{show_y_labels}, \code{custom_qvalues} (the combined p-value barplot always uses
-#'   \code{p} to compute Fisher/CMC combined p-values via \code{combine_pvalues()};
-#'   the \code{q} argument only affects cell fill, not the barplot).
+#'   \code{show_y_labels}. \code{custom_qvalues} receives special handling: if supplied, it
+#'   must be a column name present in \code{data} containing one pre-computed combined
+#'   q-value per \code{y} level (repeated across rows is fine); those values are joined into
+#'   the internal combined-p data frame and forwarded to \code{plot_pvalue_barplot()}.
+#'   When not supplied, BH-adjusted q-values are computed from the internally combined
+#'   p-values and used for the barplot.
 #' @param patchwork_widths Numeric(2); widths passed to \pkg{patchwork}::\code{wrap_plots()} when adding the combined p-value barplot (default c(3, 1))
 #' @param only_show_top_sig Numeric(1) or NULL; when adding the combined p-value barplot, if this is a positive integer then only the top X most significant rows by combined p-value are shown (default NULL, show all)
 #'
@@ -75,6 +78,36 @@
 #'   combine_pvalue_method = "CMC"
 #'   )
 #'
+#' # --- custom_qvalues: supply your own combined q-values to the barplot ---
+#' # By default the right-side barplot computes combined p-values internally
+#' # (via combine_pvalue_method) and then BH-adjusts them for the q-value bars.
+#' # Use custom_qvalues when you have already computed combined q-values outside
+#' # plot_dotmap (e.g. using a different multiple-testing method, or sharing a
+#' # consistent correction across several plots) and want the barplot to display
+#' # those exact values rather than re-deriving them.
+#' #
+#' # A common use case is when you pre-compute qvalues for tons of tests (too many to plot visually)
+#' # and you want to use the dotmap just for a small subset of those tests but still have the barplot reflect the same q-values that you have already computed for all tests.
+#' # In that case you can pass the pre-computed q-values via a column in your original data frame and specify that column name in custom_qvalues
+#' #
+#' ### Simulate example dataset:
+#' set.seed(1)
+#' genes2 <- paste0("gene", 1:4)
+#' df2 <- expand.grid(col = c("A", "B", "C"), row = genes2, stringsAsFactors = FALSE)
+#' df2$effect <- rnorm(nrow(df2), sd = 1)
+#' df2$p      <- runif(nrow(df2), 0.05, 0.5)   # all p-values moderate on purpose
+#' df2$row    <- factor(df2$row, levels = rev(genes2))
+#' # Example Pre-computed combined q-values: one value per row category
+#' my_combined_q <- c(gene1 = 0.05, gene2 = 0.1, gene3 = 0.2, gene4 = 0.5)
+#' df2$my_q <- my_combined_q[as.character(df2$row)]
+#' plot_dotmap(
+#'   df2,
+#'   x = "col", y = "row", effect = "effect", p = "p",
+#'   mlog10_transform_pvalue = TRUE,
+#'   add_combined_pvalue_barplot = TRUE,
+#'   combine_pvalue_method = "fisher",
+#'   custom_qvalues = "my_q"   # <-- barplot q-bars reflect my_q, not internal BH
+#' )
 #'
 #' @seealso plot_pvalue_barplot, combine_pvalues
 #' @export
@@ -478,10 +511,14 @@ plot_dotmap <- function(
 
         # ensure main plot uses the exact same discrete y limits / no expansion
         # build right-side combined p-value barplot but hide its y labels so only the left plot shows labels
-        # Capture ... and strip args already hardcoded below so that a user passing
-        # e.g. custom_qvalues via ... does not trigger
+        # Capture ... and strip args hardcoded below to avoid
         # "formal argument matched by multiple actual arguments".
+        # custom_qvalues is handled specially: when the user supplies a column name
+        # from `data` (one combined q-value per y level), it is joined into
+        # combined_df and forwarded; otherwise the internally computed q_combined
+        # (BH-adjusted from the combined p-values) is used.
         barplot_dots <- list(...)
+        user_custom_qvalues <- barplot_dots[["custom_qvalues"]]
         barplot_dots[c(
             "data",
             "x",
@@ -490,6 +527,22 @@ plot_dotmap <- function(
             "show_y_labels",
             "custom_qvalues"
         )] <- NULL
+
+        if (!is.null(user_custom_qvalues)) {
+            # join per-y custom q-values from the original data into combined_df
+            q_lookup <- data |>
+                dplyr::select(dplyr::all_of(c(y, user_custom_qvalues))) |>
+                dplyr::distinct() |>
+                dplyr::rename(
+                    .custom_q_combined = dplyr::all_of(user_custom_qvalues)
+                )
+            combined_df <- combined_df |>
+                dplyr::left_join(q_lookup, by = y)
+            qvalues_arg <- ".custom_q_combined"
+        } else {
+            qvalues_arg <- "q_combined"
+        }
+
         p_comb <- do.call(
             plot_pvalue_barplot,
             c(
@@ -500,7 +553,7 @@ plot_dotmap <- function(
                     fill = NULL,
                     mlog10_transform_pvalue = mlog10_transform_pvalue,
                     show_y_labels = FALSE, # <- hide labels on the right plot
-                    custom_qvalues = 'q_combined'
+                    custom_qvalues = qvalues_arg
                 ),
                 barplot_dots
             )
