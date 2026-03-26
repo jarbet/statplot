@@ -9,14 +9,14 @@
 #'
 #' @param gsea_result A `gseaResult` object returned by [run_gsea()] or
 #'   [clusterProfiler::GSEA()].
-#' @param fold_change named numeric vector. Gene-level statistics used to color
+#' @param effect_size named numeric vector. Gene-level statistics used to color
 #'   gene nodes (e.g. log2 fold change, t-statistic).  Names must be gene
 #'   symbols matching those in `gsea_result`.  Typically the `gene_vec`
 #'   element returned by [run_gsea()].
 #' @param show_pathways integer(1) Number of top pathways to display (default
 #'   `5`).  Must be a single positive whole number.
 #' @param effect_size_threshold numeric(1) Only show gene nodes whose
-#'   `abs(fold_change) >= effect_size_threshold` (default `1.5`).  Set to `0`
+#'   `abs(effect_size) >= effect_size_threshold` (default `0`).  Set to `0`
 #'   to show all genes.  Must be a single finite non-negative value.
 #' @param subtitle_effect_size_label character(1) String placed inside `abs()` in the
 #'   auto-generated subtitle when a threshold is applied
@@ -25,7 +25,7 @@
 #' @param max_genes_shown integer(1) Maximum number of gene nodes to display
 #'   (default `NULL`, no limit).  If the number of genes belonging to the top
 #'   `show_pathways` pathways and passing `effect_size_threshold` exceeds this value,
-#'   the threshold is raised adaptively (via quantile of `abs(fold_change)`
+#'   the threshold is raised adaptively (via quantile of `abs(effect_size)`
 #'   among pathway genes) until at most `max_genes_shown` genes remain.  The
 #'   effective threshold will never drop below `effect_size_threshold`.  Must be
 #'   a single positive whole number.
@@ -44,6 +44,14 @@
 #' @param title character(1) Plot title (default `"Effect sizes of genes in selected pathways"`).
 #' @param legend_pathway_size_title character(1) Title for the node-size legend (default
 #'   `"Num. genes"`).  Set to `NULL` to show the legend without a title.
+#' @param legend_fixed_dot_size numeric vector of gene-count values whose dot
+#'   sizes should appear as keys in the size legend (default `NULL`,
+#'   automatic).  For example, `c(50, 100, 200)` causes exactly those three
+#'   dot sizes to be shown.  The supplied values also become the scale limits
+#'   (using their range), so the visual size mapping is identical across
+#'   multiple plots combined with `patchwork`.  Values outside the range are
+#'   squished to the nearest extreme rather than dropped.  All values must be
+#'   finite and positive.
 #' @param legend_color_title character(1) Title for the color scale legend
 #'   (default `"Effect size"`).  Set to `NULL` to show the legend without a
 #'   title.
@@ -87,7 +95,7 @@
 #' # Basic usage
 #' plot_pathways(
 #'     gsea_result           = res$gsea_result,
-#'     fold_change           = res$gene_vec,
+#'     effect_size           = res$gene_vec,
 #'     show_pathways         = 5,
 #'     effect_size_threshold = 1.5
 #' )
@@ -96,7 +104,7 @@
 #' # so at most 50 genes appear; the subtitle reports the effective threshold used
 #' plot_pathways(
 #'     gsea_result        = res$gsea_result,
-#'     fold_change        = res$gene_vec,
+#'     effect_size        = res$gene_vec,
 #'     show_pathways      = 5,
 #'     max_genes_shown    = 50,
 #'     subtitle_effect_size_label  = "log2FC"
@@ -105,42 +113,67 @@
 #' # 3-color diverging scale (blue -> white -> red)
 #' plot_pathways(
 #'     gsea_result   = res$gsea_result,
-#'     fold_change   = res$gene_vec,
+#'     effect_size   = res$gene_vec,
 #'     show_pathways = 5,
 #'     color_low     = "blue",
 #'     color_mid     = "white",
-#'     color_high    = "red"
+#'     color_high    = "red",
+#'     effect_size_threshold = 1.5
 #' )
 #'
 #' # 2-color sequential scale (white -> red)
 #' plot_pathways(
 #'     gsea_result   = res$gsea_result,
-#'     fold_change   = res$gene_vec,
+#'     effect_size   = res$gene_vec,
 #'     show_pathways = 5,
 #'     color_low     = "white",
-#'     color_high    = "red"
+#'     color_high    = "red",
+#'     effect_size_threshold = 1.5
 #' )
 #'
 #' # Custom colors with explicit breaks and limits
 #' plot_pathways(
 #'     gsea_result     = res$gsea_result,
-#'     fold_change     = res$gene_vec,
+#'     effect_size     = res$gene_vec,
 #'     show_pathways   = 5,
 #'     color_low       = "blue",
 #'     color_mid       = "white",
 #'     color_high      = "red",
 #'     colorkey_breaks = c(-2, -1, 0, 1, 2),
-#'     colorkey_limits = c(-3, 3)
+#'     colorkey_limits = c(-3, 3),
+#'     effect_size_threshold = 1.5
 #' )
+#'
+#' # Two plots with a shared dot-size legend for use with patchwork.
+#' # Both plots use the same legend_fixed_dot_size so the size keys are
+#' # identical across panels, making visual comparisons meaningful.
+#' shared_dot_sizes <- c(50, 100, 200)
+#'
+#' p1 <- plot_pathways(
+#'     gsea_result           = res$gsea_result,
+#'     effect_size           = res$gene_vec,
+#'     show_pathways         = 3,
+#'     legend_fixed_dot_size = shared_dot_sizes,
+#'     effect_size_threshold = 1.5
+#' )
+#' p2 <- plot_pathways(
+#'     gsea_result           = res$gsea_result,
+#'     effect_size           = res$gene_vec,
+#'     show_pathways         = 3,
+#'     legend_fixed_dot_size = shared_dot_sizes,
+#'     effect_size_threshold = 1.5
+#' )
+#'
+#' patchwork::wrap_plots(p1, p2, guides = "collect")
 #'
 #' @importFrom enrichplot cnetplot
 #' @importFrom ggplot2 ggtitle
 #' @export
 plot_pathways <- function(
     gsea_result,
-    fold_change,
+    effect_size,
     show_pathways = 5,
-    effect_size_threshold = 1.5,
+    effect_size_threshold = 0,
     subtitle_effect_size_label = "effect size",
     max_genes_shown = NULL,
     gene_node_size = 0.7,
@@ -151,6 +184,7 @@ plot_pathways <- function(
     gene_label_size = 2.5,
     title = "Effect sizes of genes in selected pathways",
     legend_pathway_size_title = "Num. genes",
+    legend_fixed_dot_size = NULL,
     legend_color_title = "Effect size",
     colorkey_breaks = NULL,
     colorkey_limits = NULL,
@@ -160,10 +194,10 @@ plot_pathways <- function(
     plot_margin = c(0.5, 0.5, 0.5, 0.5)
 ) {
     stopifnot(
-        "fold_change must be a named numeric vector" = is.numeric(
-            fold_change
+        "effect_size must be a named numeric vector" = is.numeric(
+            effect_size
         ) &&
-            !is.null(names(fold_change)),
+            !is.null(names(effect_size)),
         "show_pathways must be a single positive whole number" = is.numeric(
             show_pathways
         ) &&
@@ -228,6 +262,13 @@ plot_pathways <- function(
         ) ||
             (is.character(legend_pathway_size_title) &&
                 length(legend_pathway_size_title) == 1),
+        "legend_fixed_dot_size must be a positive numeric vector or NULL" = is.null(
+            legend_fixed_dot_size
+        ) ||
+            (is.numeric(legend_fixed_dot_size) &&
+                length(legend_fixed_dot_size) >= 1 &&
+                all(is.finite(legend_fixed_dot_size)) &&
+                all(legend_fixed_dot_size > 0)),
         "legend_color_title must be a single character string or NULL" = is.null(
             legend_color_title
         ) ||
@@ -266,8 +307,8 @@ plot_pathways <- function(
     # threshold over those if `max_genes_shown` is set.
     top_ids <- utils::head(gsea_result@result$ID, show_pathways)
     pathway_genes <- unique(unlist(gsea_result@geneSets[top_ids]))
-    genes_in_plot <- intersect(pathway_genes, names(fold_change))
-    abs_fc_path <- abs(fold_change[genes_in_plot])
+    genes_in_plot <- intersect(pathway_genes, names(effect_size))
+    abs_fc_path <- abs(effect_size[genes_in_plot])
     abs_fc_path <- abs_fc_path[is.finite(abs_fc_path)]
     effective_threshold <- effect_size_threshold
     if (!is.null(max_genes_shown) && length(abs_fc_path) > 0) {
@@ -316,7 +357,7 @@ plot_pathways <- function(
     p <- enrichplot::cnetplot(
         gsea_result,
         showCategory = show_pathways,
-        foldChange = fold_change,
+        foldChange = effect_size,
         size_item = gene_node_size,
         size_edge = line_size,
         node_label = "none", # labels added separately below
@@ -350,6 +391,24 @@ plot_pathways <- function(
             )
         )
 
+    # Size-legend customisation: fix the breaks (and limits) shown in the
+    # dot-size legend so that multiple plots composed with patchwork share the
+    # same visual size scale.
+    if (!is.null(legend_fixed_dot_size)) {
+        idx_size <- which(vapply(
+            p$scales$scales,
+            function(s) "size" %in% s$aesthetics,
+            logical(1)
+        ))
+        if (length(idx_size) > 0) {
+            p$scales$scales[[idx_size[1]]]$breaks <- legend_fixed_dot_size
+            p$scales$scales[[idx_size[1]]]$limits <- range(
+                legend_fixed_dot_size
+            )
+            p$scales$scales[[idx_size[1]]]$oob <- scales::squish
+        }
+    }
+
     # Colour scale customisation:
     # - If any colours are specified, replace the scale entirely.
     # - If only breaks/limits are changed, modify the existing scale in-place
@@ -364,6 +423,7 @@ plot_pathways <- function(
             # 3-colour diverging scale
             p <- p +
                 ggplot2::scale_color_gradient2(
+                    name = legend_color_title,
                     low = if (!is.null(color_low)) color_low else "blue",
                     mid = color_mid,
                     high = if (!is.null(color_high)) color_high else "red",
@@ -373,12 +433,14 @@ plot_pathways <- function(
                         ggplot2::waiver()
                     },
                     limits = colorkey_limits,
+                    oob = scales::squish,
                     guide = ggplot2::guide_colorbar(title = legend_color_title)
                 )
         } else {
             # 2-colour sequential scale
             p <- p +
                 ggplot2::scale_color_gradient(
+                    name = legend_color_title,
                     low = if (!is.null(color_low)) color_low else "white",
                     high = if (!is.null(color_high)) color_high else "red",
                     breaks = if (!is.null(colorkey_breaks)) {
@@ -387,6 +449,7 @@ plot_pathways <- function(
                         ggplot2::waiver()
                     },
                     limits = colorkey_limits,
+                    oob = scales::squish,
                     guide = ggplot2::guide_colorbar(title = legend_color_title)
                 )
         }
@@ -411,6 +474,7 @@ plot_pathways <- function(
                 }
                 if (!is.null(colorkey_limits)) {
                     p$scales$scales[[idx[1]]]$limits <- colorkey_limits
+                    p$scales$scales[[idx[1]]]$oob <- scales::squish
                 }
             }
         }
