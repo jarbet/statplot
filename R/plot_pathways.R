@@ -16,7 +16,7 @@
 #' @param show_pathways integer(1) Number of top pathways to display (default
 #'   `5`).  Must be a single positive whole number.
 #' @param effect_size_threshold numeric(1) Only show gene nodes whose
-#'   `abs(effect_size) >= effect_size_threshold` (default `1.5`).  Set to `0`
+#'   `abs(effect_size) >= effect_size_threshold` (default `0`).  Set to `0`
 #'   to show all genes.  Must be a single finite non-negative value.
 #' @param subtitle_effect_size_label character(1) String placed inside `abs()` in the
 #'   auto-generated subtitle when a threshold is applied
@@ -171,7 +171,7 @@
 #' @export
 plot_pathways <- function(
     gsea_result,
-    effect_size = NULL,
+    effect_size,
     show_pathways = 5,
     effect_size_threshold = 0,
     subtitle_effect_size_label = "effect size",
@@ -193,10 +193,6 @@ plot_pathways <- function(
     color_high = NULL,
     plot_margin = c(0.5, 0.5, 0.5, 0.5)
 ) {
-    if (is.null(effect_size)) {
-        stop("effect_size must be provided", call. = FALSE)
-    }
-
     stopifnot(
         "effect_size must be a named numeric vector" = is.numeric(
             effect_size

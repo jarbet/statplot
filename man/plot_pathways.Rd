@@ -6,7 +6,7 @@
 \usage{
 plot_pathways(
   gsea_result,
-  effect_size = NULL,
+  effect_size,
   show_pathways = 5,
   effect_size_threshold = 0,
   subtitle_effect_size_label = "effect size",
@@ -42,7 +42,7 @@ element returned by \code{\link[=run_gsea]{run_gsea()}}.}
 \code{5}).  Must be a single positive whole number.}
 
 \item{effect_size_threshold}{numeric(1) Only show gene nodes whose
-\code{abs(effect_size) >= effect_size_threshold} (default \code{1.5}).  Set to \code{0}
+\code{abs(effect_size) >= effect_size_threshold} (default \code{0}).  Set to \code{0}
 to show all genes.  Must be a single finite non-negative value.}
 
 \item{subtitle_effect_size_label}{character(1) String placed inside \code{abs()} in the
@@ -217,6 +217,6 @@ p2 <- plot_pathways(
     effect_size_threshold = 1.5
 )
 
-patchwork::wrap_plots(p1, p2)
+patchwork::wrap_plots(p1, p2, guides = "collect")
 
 }
