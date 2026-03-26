@@ -364,18 +364,18 @@ plot_pathways <- function(
         node_label = "none", # labels added separately below
         fc_threshold = effective_threshold
     ) +
-        # pathway labels: bold, prominent
+        # gene labels: smaller, subdued (draw first)
+        ggtangle::geom_cnet_label(
+            node_label = "item",
+            color = gene_color,
+            size = gene_label_size
+        ) +
+        # pathway labels: bold, prominent (draw last so they appear on top)
         ggtangle::geom_cnet_label(
             node_label = "category",
             fontface = "bold",
             color = pathway_color,
             size = pathway_label_size
-        ) +
-        # gene labels: smaller, subdued
-        ggtangle::geom_cnet_label(
-            node_label = "item",
-            color = gene_color,
-            size = gene_label_size
         ) +
         ggplot2::guides(
             size = ggplot2::guide_legend(title = legend_pathway_size_title)
