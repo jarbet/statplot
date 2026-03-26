@@ -56,9 +56,9 @@ co-expression structure.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_pathways</span><span class="op">(</span></span>
 <span>  <span class="va">gsea_result</span>,</span>
-<span>  <span class="va">fold_change</span>,</span>
+<span>  <span class="va">effect_size</span>,</span>
 <span>  show_pathways <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>  effect_size_threshold <span class="op">=</span> <span class="fl">1.5</span>,</span>
+<span>  effect_size_threshold <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  subtitle_effect_size_label <span class="op">=</span> <span class="st">"effect size"</span>,</span>
 <span>  max_genes_shown <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  gene_node_size <span class="op">=</span> <span class="fl">0.7</span>,</span>
@@ -69,6 +69,7 @@ co-expression structure.</p>
 <span>  gene_label_size <span class="op">=</span> <span class="fl">2.5</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Effect sizes of genes in selected pathways"</span>,</span>
 <span>  legend_pathway_size_title <span class="op">=</span> <span class="st">"Num. genes"</span>,</span>
+<span>  legend_fixed_dot_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  legend_color_title <span class="op">=</span> <span class="st">"Effect size"</span>,</span>
 <span>  colorkey_breaks <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  colorkey_limits <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -88,7 +89,7 @@ co-expression structure.</p>
 <code><a href="https://rdrr.io/pkg/clusterProfiler/man/GSEA.html" class="external-link">clusterProfiler::GSEA()</a></code>.</p></dd>
 
 
-<dt id="arg-fold-change">fold_change<a class="anchor" aria-label="anchor" href="#arg-fold-change"></a></dt>
+<dt id="arg-effect-size">effect_size<a class="anchor" aria-label="anchor" href="#arg-effect-size"></a></dt>
 <dd><p>named numeric vector. Gene-level statistics used to color
 gene nodes (e.g. log2 fold change, t-statistic).  Names must be gene
 symbols matching those in <code>gsea_result</code>.  Typically the <code>gene_vec</code>
@@ -102,7 +103,7 @@ element returned by <code><a href="run_gsea.html">run_gsea()</a></code>.</p></dd
 
 <dt id="arg-effect-size-threshold">effect_size_threshold<a class="anchor" aria-label="anchor" href="#arg-effect-size-threshold"></a></dt>
 <dd><p>numeric(1) Only show gene nodes whose
-<code>abs(fold_change) &gt;= effect_size_threshold</code> (default <code>1.5</code>).  Set to <code>0</code>
+<code>abs(effect_size) &gt;= effect_size_threshold</code> (default <code>0</code>).  Set to <code>0</code>
 to show all genes.  Must be a single finite non-negative value.</p></dd>
 
 
@@ -117,7 +118,7 @@ auto-generated subtitle when a threshold is applied
 <dd><p>integer(1) Maximum number of gene nodes to display
 (default <code>NULL</code>, no limit).  If the number of genes belonging to the top
 <code>show_pathways</code> pathways and passing <code>effect_size_threshold</code> exceeds this value,
-the threshold is raised adaptively (via quantile of <code>abs(fold_change)</code>
+the threshold is raised adaptively (via quantile of <code>abs(effect_size)</code>
 among pathway genes) until at most <code>max_genes_shown</code> genes remain.  The
 effective threshold will never drop below <code>effect_size_threshold</code>.  Must be
 a single positive whole number.</p></dd>
@@ -160,6 +161,17 @@ Must be a single positive value.</p></dd>
 <dt id="arg-legend-pathway-size-title">legend_pathway_size_title<a class="anchor" aria-label="anchor" href="#arg-legend-pathway-size-title"></a></dt>
 <dd><p>character(1) Title for the node-size legend (default
 <code>"Num. genes"</code>).  Set to <code>NULL</code> to show the legend without a title.</p></dd>
+
+
+<dt id="arg-legend-fixed-dot-size">legend_fixed_dot_size<a class="anchor" aria-label="anchor" href="#arg-legend-fixed-dot-size"></a></dt>
+<dd><p>numeric vector of gene-count values whose dot
+sizes should appear as keys in the size legend (default <code>NULL</code>,
+automatic).  For example, <code>c(50, 100, 200)</code> causes exactly those three
+dot sizes to be shown.  The supplied values also become the scale limits
+(using their range), so the visual size mapping is identical across
+multiple plots combined with <code>patchwork</code>.  Values outside the range are
+squished to the nearest extreme rather than dropped.  All values must be
+finite and positive.</p></dd>
 
 
 <dt id="arg-legend-color-title">legend_color_title<a class="anchor" aria-label="anchor" href="#arg-legend-color-title"></a></dt>
@@ -229,7 +241,7 @@ the left/right values if node labels are being clipped at the edges.</p></dd>
 <span class="r-in"><span><span class="co"># Basic usage</span></span></span>
 <span class="r-in"><span><span class="fu">plot_pathways</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    gsea_result           <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
-<span class="r-in"><span>    fold_change           <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
+<span class="r-in"><span>    effect_size           <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
 <span class="r-in"><span>    show_pathways         <span class="op">=</span> <span class="fl">5</span>,</span></span>
 <span class="r-in"><span>    effect_size_threshold <span class="op">=</span> <span class="fl">1.5</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
@@ -239,7 +251,7 @@ the left/right values if node labels are being clipped at the edges.</p></dd>
 <span class="r-in"><span><span class="co"># so at most 50 genes appear; the subtitle reports the effective threshold used</span></span></span>
 <span class="r-in"><span><span class="fu">plot_pathways</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    gsea_result        <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
-<span class="r-in"><span>    fold_change        <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
+<span class="r-in"><span>    effect_size        <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
 <span class="r-in"><span>    show_pathways      <span class="op">=</span> <span class="fl">5</span>,</span></span>
 <span class="r-in"><span>    max_genes_shown    <span class="op">=</span> <span class="fl">50</span>,</span></span>
 <span class="r-in"><span>    subtitle_effect_size_label  <span class="op">=</span> <span class="st">"log2FC"</span></span></span>
@@ -249,11 +261,12 @@ the left/right values if node labels are being clipped at the edges.</p></dd>
 <span class="r-in"><span><span class="co"># 3-color diverging scale (blue -&gt; white -&gt; red)</span></span></span>
 <span class="r-in"><span><span class="fu">plot_pathways</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    gsea_result   <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
-<span class="r-in"><span>    fold_change   <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
+<span class="r-in"><span>    effect_size   <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
 <span class="r-in"><span>    show_pathways <span class="op">=</span> <span class="fl">5</span>,</span></span>
 <span class="r-in"><span>    color_low     <span class="op">=</span> <span class="st">"blue"</span>,</span></span>
 <span class="r-in"><span>    color_mid     <span class="op">=</span> <span class="st">"white"</span>,</span></span>
-<span class="r-in"><span>    color_high    <span class="op">=</span> <span class="st">"red"</span></span></span>
+<span class="r-in"><span>    color_high    <span class="op">=</span> <span class="st">"red"</span>,</span></span>
+<span class="r-in"><span>    effect_size_threshold <span class="op">=</span> <span class="fl">1.5</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">colour</span> is already present.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">colour</span>, which will replace the existing scale.</span>
@@ -262,10 +275,11 @@ the left/right values if node labels are being clipped at the edges.</p></dd>
 <span class="r-in"><span><span class="co"># 2-color sequential scale (white -&gt; red)</span></span></span>
 <span class="r-in"><span><span class="fu">plot_pathways</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    gsea_result   <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
-<span class="r-in"><span>    fold_change   <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
+<span class="r-in"><span>    effect_size   <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
 <span class="r-in"><span>    show_pathways <span class="op">=</span> <span class="fl">5</span>,</span></span>
 <span class="r-in"><span>    color_low     <span class="op">=</span> <span class="st">"white"</span>,</span></span>
-<span class="r-in"><span>    color_high    <span class="op">=</span> <span class="st">"red"</span></span></span>
+<span class="r-in"><span>    color_high    <span class="op">=</span> <span class="st">"red"</span>,</span></span>
+<span class="r-in"><span>    effect_size_threshold <span class="op">=</span> <span class="fl">1.5</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">colour</span> is already present.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">colour</span>, which will replace the existing scale.</span>
@@ -274,17 +288,41 @@ the left/right values if node labels are being clipped at the edges.</p></dd>
 <span class="r-in"><span><span class="co"># Custom colors with explicit breaks and limits</span></span></span>
 <span class="r-in"><span><span class="fu">plot_pathways</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    gsea_result     <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
-<span class="r-in"><span>    fold_change     <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
+<span class="r-in"><span>    effect_size     <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
 <span class="r-in"><span>    show_pathways   <span class="op">=</span> <span class="fl">5</span>,</span></span>
 <span class="r-in"><span>    color_low       <span class="op">=</span> <span class="st">"blue"</span>,</span></span>
 <span class="r-in"><span>    color_mid       <span class="op">=</span> <span class="st">"white"</span>,</span></span>
 <span class="r-in"><span>    color_high      <span class="op">=</span> <span class="st">"red"</span>,</span></span>
 <span class="r-in"><span>    colorkey_breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    colorkey_limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    colorkey_limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    effect_size_threshold <span class="op">=</span> <span class="fl">1.5</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">colour</span> is already present.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">colour</span>, which will replace the existing scale.</span>
 <span class="r-plt img"><img src="plot_pathways-5.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Two plots with a shared dot-size legend for use with patchwork.</span></span></span>
+<span class="r-in"><span><span class="co"># Both plots use the same legend_fixed_dot_size so the size keys are</span></span></span>
+<span class="r-in"><span><span class="co"># identical across panels, making visual comparisons meaningful.</span></span></span>
+<span class="r-in"><span><span class="va">shared_dot_sizes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">100</span>, <span class="fl">200</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu">plot_pathways</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    gsea_result           <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
+<span class="r-in"><span>    effect_size           <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
+<span class="r-in"><span>    show_pathways         <span class="op">=</span> <span class="fl">3</span>,</span></span>
+<span class="r-in"><span>    legend_fixed_dot_size <span class="op">=</span> <span class="va">shared_dot_sizes</span>,</span></span>
+<span class="r-in"><span>    effect_size_threshold <span class="op">=</span> <span class="fl">1.5</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu">plot_pathways</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    gsea_result           <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
+<span class="r-in"><span>    effect_size           <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
+<span class="r-in"><span>    show_pathways         <span class="op">=</span> <span class="fl">3</span>,</span></span>
+<span class="r-in"><span>    legend_fixed_dot_size <span class="op">=</span> <span class="va">shared_dot_sizes</span>,</span></span>
+<span class="r-in"><span>    effect_size_threshold <span class="op">=</span> <span class="fl">1.5</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">patchwork</span><span class="fu">::</span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, guides <span class="op">=</span> <span class="st">"collect"</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot_pathways-6.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

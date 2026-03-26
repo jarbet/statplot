@@ -7,9 +7,24 @@
 - `plot_data_avail_by_group`: tile plot showing availability (0/1) of
   data types across groups, with a black border, no whitespace padding,
   and optional bold axis labels.
+- `plot_pathways`: new `legend_fixed_dot_size` argument (numeric vector)
+  fixes the size-legend breaks and limits to user-supplied gene-count
+  values so that multiple plots composed with `patchwork` share an
+  identical visual size scale. Values outside the specified range are
+  squished to the nearest extreme rather than dropped.
 
 ### Changed
 
+- `plot_pathways`: the `fold_change` argument has been renamed to
+  `effect_size`. Code using `fold_change = ...` must be updated.
+- `plot_pathways`: default `effect_size_threshold` changed from `1.5` to
+  `0` (show all genes by default).
+- `plot_pathways`: out-of-bounds gene values are now squished (via
+  [`scales::squish`](https://scales.r-lib.org/reference/oob.html))
+  rather than censored to `NA` for all color scale paths (diverging,
+  sequential, and in-place `colorkey_limits`), and for the size scale
+  when `legend_fixed_dot_size` is set. This prevents genes outside
+  `colorkey_limits` from rendering as grey.
 - `plot_heatmap`: when `anno_colors` is supplied for a categorical
   covariate, all user-specified color levels now always appear in the
   annotation legend—including levels absent from the current data
