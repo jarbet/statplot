@@ -219,7 +219,7 @@ plot_pvalue_barplot <- function(
             maxb <- max(xbreaks)
             is_max <- abs(b - maxb) < .Machine$double.eps^0.5
             if (any(is_max)) {
-                labs[is_max] <- paste0("\u2264", labs[is_max])
+                labs[is_max] <- paste0("<", labs[is_max])
             }
             labs
         } else {
