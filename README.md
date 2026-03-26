@@ -25,4 +25,7 @@ pak::pak("jarbet/statplot")
 
 # Alternatively try:
 # BiocManager::install("jarbet/statplot")
+
+# Or if using renv:
+# renv::install("jarbet/statplot")
 ```

@@ -380,3 +380,179 @@ test_that("NAs in p are tolerated with q supplied (combined barplot)", {
         )
     )
 })
+
+# ---------------------------------------------------------------------------
+# custom_qvalues forwarding via ... into the combined p-value barplot
+# ---------------------------------------------------------------------------
+
+make_dotmap_df_with_combined_q <- function(seed = 42) {
+    set.seed(seed)
+    genes <- paste0("gene", 1:6)
+    df <- expand.grid(
+        col = c("A", "B", "C"),
+        row = genes,
+        stringsAsFactors = FALSE
+    )
+    df$effect <- rnorm(nrow(df), sd = 1.2)
+    df$p <- 10^(-runif(nrow(df), 0, 3))
+    df$row <- factor(df$row, levels = rev(genes))
+    # Attach one pre-computed combined q-value per row level
+    q_per_row <- df |>
+        dplyr::group_by(row) |>
+        dplyr::summarise(
+            my_q = stats::p.adjust(p, method = "bonferroni")[1],
+            .groups = "drop"
+        )
+    df <- dplyr::left_join(df, q_per_row, by = "row")
+    df
+}
+
+test_that("custom_qvalues forwarded via ... builds patchwork without error", {
+    df <- make_dotmap_df_with_combined_q()
+    expect_no_error(
+        plt <- plot_dotmap(
+            df,
+            x = "col",
+            y = "row",
+            effect = "effect",
+            p = "p",
+            mlog10_transform_pvalue = TRUE,
+            add_combined_pvalue_barplot = TRUE,
+            combine_pvalue_method = "fisher",
+            custom_qvalues = "my_q"
+        )
+    )
+    expect_s3_class(plt, "patchwork")
+})
+
+test_that("barplot uses user custom_qvalues, not internal BH q_combined", {
+    df <- make_dotmap_df_with_combined_q()
+
+    # Plot with user-supplied custom q-values
+    plt_custom <- plot_dotmap(
+        df,
+        x = "col",
+        y = "row",
+        effect = "effect",
+        p = "p",
+        mlog10_transform_pvalue = TRUE,
+        add_combined_pvalue_barplot = TRUE,
+        combine_pvalue_method = "fisher",
+        custom_qvalues = "my_q"
+    )
+    # Plot without custom q-values (falls back to internal BH)
+    plt_bh <- plot_dotmap(
+        df,
+        x = "col",
+        y = "row",
+        effect = "effect",
+        p = "p",
+        mlog10_transform_pvalue = TRUE,
+        add_combined_pvalue_barplot = TRUE,
+        combine_pvalue_method = "fisher"
+    )
+
+    barplot_custom <- plt_custom[[2]]$data
+    barplot_bh <- plt_bh[[2]]$data
+
+    # The custom q column must be present and differ from BH q_combined
+    expect_true(".custom_q_combined" %in% names(barplot_custom))
+    expect_true("q_combined" %in% names(barplot_bh))
+    expect_false(isTRUE(all.equal(
+        barplot_custom$.custom_q_combined,
+        barplot_bh$q_combined[match(barplot_custom$row, barplot_bh$row)]
+    )))
+})
+
+test_that("custom_qvalues in barplot match the values supplied in data", {
+    df <- make_dotmap_df_with_combined_q()
+
+    plt <- plot_dotmap(
+        df,
+        x = "col",
+        y = "row",
+        effect = "effect",
+        p = "p",
+        mlog10_transform_pvalue = TRUE,
+        add_combined_pvalue_barplot = TRUE,
+        combine_pvalue_method = "fisher",
+        custom_qvalues = "my_q"
+    )
+    barplot_data <- plt[[2]]$data
+
+    # Reconstruct expected per-row q-values from df
+    expected <- df |>
+        dplyr::select(row, my_q) |>
+        dplyr::distinct()
+
+    actual_q <- barplot_data$.custom_q_combined[match(
+        expected$row,
+        barplot_data$row
+    )]
+    expect_equal(actual_q, expected$my_q, tolerance = 1e-10)
+})
+
+test_that("NULL custom_qvalues falls back to internal BH q_combined without error", {
+    df <- make_dotmap_df_with_combined_q()
+    expect_no_error(
+        plt <- plot_dotmap(
+            df,
+            x = "col",
+            y = "row",
+            effect = "effect",
+            p = "p",
+            mlog10_transform_pvalue = TRUE,
+            add_combined_pvalue_barplot = TRUE,
+            combine_pvalue_method = "fisher",
+            custom_qvalues = NULL
+        )
+    )
+    barplot_data <- plt[[2]]$data
+    expect_true("q_combined" %in% names(barplot_data))
+    expect_false(".custom_q_combined" %in% names(barplot_data))
+})
+
+test_that("custom_qvalues forwarding works with sort_by_pvalue and only_show_top_sig", {
+    df <- make_dotmap_df_with_combined_q()
+    expect_no_error(
+        plt <- plot_dotmap(
+            df,
+            x = "col",
+            y = "row",
+            effect = "effect",
+            p = "p",
+            mlog10_transform_pvalue = TRUE,
+            add_combined_pvalue_barplot = TRUE,
+            combine_pvalue_method = "fisher",
+            sort_by_pvalue = TRUE,
+            only_show_top_sig = 3L,
+            custom_qvalues = "my_q"
+        )
+    )
+    # Only top 3 rows should appear in the barplot
+    barplot_data <- plt[[2]]$data
+    expect_equal(nrow(barplot_data), 3L)
+})
+
+test_that("custom_qvalues with inconsistent values per y level errors informatively", {
+    df <- make_dotmap_df_with_combined_q()
+    # Introduce inconsistent q-values within the first row level so that
+    # distinct() still returns two rows for that level, which would otherwise
+    # silently duplicate rows in the left_join.
+    df$my_q[df$row == levels(df$row)[1] & df$col == "A"] <- 0.999
+    expect_error(
+        plot_dotmap(
+            df,
+            x = "col",
+            y = "row",
+            effect = "effect",
+            p = "p",
+            mlog10_transform_pvalue = TRUE,
+            add_combined_pvalue_barplot = TRUE,
+            combine_pvalue_method = "fisher",
+            custom_qvalues = "my_q"
+        ),
+        regexp = "inconsistent",
+        fixed = FALSE
+    )
+})
