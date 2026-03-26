@@ -90,9 +90,9 @@ multiple plots combined with \code{patchwork}.  Values outside the range are
 squished to the nearest extreme rather than dropped.  All values must be
 finite and positive.}
 
-\item{legend_color_title}{character(1) Title for the color scale legend
+\item{legend_color_title}{character(1) or expression() Title for the color scale legend
 (default \code{"Effect size"}).  Set to \code{NULL} to show the legend without a
-title.}
+title. Use \code{expression()} to supply plotmath expressions.}
 
 \item{colorkey_breaks}{numeric vector of values at which tick marks and
 labels are drawn on the color legend (default \code{NULL}, automatic).  For

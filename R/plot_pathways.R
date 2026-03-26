@@ -52,9 +52,9 @@
 #'   multiple plots combined with `patchwork`.  Values outside the range are
 #'   squished to the nearest extreme rather than dropped.  All values must be
 #'   finite and positive.
-#' @param legend_color_title character(1) Title for the color scale legend
+#' @param legend_color_title character(1) or expression() Title for the color scale legend
 #'   (default `"Effect size"`).  Set to `NULL` to show the legend without a
-#'   title.
+#'   title. Use `expression()` to supply plotmath expressions.
 #' @param colorkey_breaks numeric vector of values at which tick marks and
 #'   labels are drawn on the color legend (default `NULL`, automatic).  For
 #'   example, `c(-2, -1, 0, 1, 2)` to show five labeled ticks.  When
@@ -269,11 +269,12 @@ plot_pathways <- function(
                 length(legend_fixed_dot_size) >= 1 &&
                 all(is.finite(legend_fixed_dot_size)) &&
                 all(legend_fixed_dot_size > 0)),
-        "legend_color_title must be a single character string or NULL" = is.null(
+        "legend_color_title must be a single character string, an expression, or NULL" = is.null(
             legend_color_title
         ) ||
             (is.character(legend_color_title) &&
-                length(legend_color_title) == 1),
+                length(legend_color_title) == 1) ||
+            is.expression(legend_color_title),
         "colorkey_breaks must be a numeric vector or NULL" = is.null(
             colorkey_breaks
         ) ||

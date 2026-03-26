@@ -53,6 +53,7 @@
 * `plot_pathways`: new `legend_pathway_size_title` (default `"Num. genes"`) and
   `legend_color_title` (default `"Effect size"`) arguments to customise legend
   titles for node size and color, respectively.
+* `plot_pathways`: `legend_color_title` now accepts plotmath expressions via `expression()`; validation and documentation updated.
 * `plot_pathways`: new `colorkey_breaks` and `colorkey_limits` arguments to
   control the tick-mark values and range shown on the color legend.
 * `plot_pathways`: new `color_low`, `color_mid`, and `color_high` arguments to
