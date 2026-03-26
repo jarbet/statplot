@@ -536,6 +536,30 @@ plot_dotmap <- function(
                 dplyr::rename(
                     .custom_q_combined = dplyr::all_of(user_custom_qvalues)
                 )
+
+            # Validate: each y level must map to exactly one q-value.
+            # If not, left_join() would silently duplicate rows in combined_df,
+            # distorting the barplot.
+            dup_y <- q_lookup |>
+                dplyr::count(.data[[y]]) |>
+                dplyr::filter(.data[["n"]] > 1)
+            if (nrow(dup_y) > 0) {
+                bad_levels <- paste(
+                    dplyr::pull(dup_y, dplyr::all_of(y)),
+                    collapse = ", "
+                )
+                stop(
+                    "`custom_qvalues` column '",
+                    user_custom_qvalues,
+                    "' has inconsistent (non-unique) values within the ",
+                    "following `y` levels: ",
+                    bad_levels,
+                    ".\n",
+                    "Each level of `y` must have exactly one unique value ",
+                    "in the `custom_qvalues` column."
+                )
+            }
+
             combined_df <- combined_df |>
                 dplyr::left_join(q_lookup, by = y)
             qvalues_arg <- ".custom_q_combined"

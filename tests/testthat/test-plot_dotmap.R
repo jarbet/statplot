@@ -533,3 +533,26 @@ test_that("custom_qvalues forwarding works with sort_by_pvalue and only_show_top
     barplot_data <- plt[[2]]$data
     expect_equal(nrow(barplot_data), 3L)
 })
+
+test_that("custom_qvalues with inconsistent values per y level errors informatively", {
+    df <- make_dotmap_df_with_combined_q()
+    # Introduce inconsistent q-values within the first row level so that
+    # distinct() still returns two rows for that level, which would otherwise
+    # silently duplicate rows in the left_join.
+    df$my_q[df$row == levels(df$row)[1] & df$col == "A"] <- 0.999
+    expect_error(
+        plot_dotmap(
+            df,
+            x = "col",
+            y = "row",
+            effect = "effect",
+            p = "p",
+            mlog10_transform_pvalue = TRUE,
+            add_combined_pvalue_barplot = TRUE,
+            combine_pvalue_method = "fisher",
+            custom_qvalues = "my_q"
+        ),
+        regexp = "inconsistent",
+        fixed = FALSE
+    )
+})
