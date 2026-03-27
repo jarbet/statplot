@@ -71,7 +71,7 @@ tile is drawn with the fill scale's \code{na.value} (grey95 by default), exactly
 
 \item{add_combined_pvalue_barplot}{Logical; when TRUE adds a combined p-value barplot to the right of the dotmap (requires \pkg{patchwork})}
 
-\item{combine_pvalue_method}{Character; method for combining p-values in the barplot. One of: "CMC", "fisher", "MCM", "cauchy", "minp_bonferroni". Defaults to "CMC".}
+\item{combine_pvalue_method}{Character; method for combining p-values in the barplot. One of: "CMC", "fisher", "MCM", "cauchy", "minp_bonferroni". Defaults to "CMC". See \code{\link{combine_pvalues}} for details.}
 
 \item{sort_by_pvalue}{Logical; when TRUE (default) rows (levels of \code{y}) are sorted by the combined p-value (ascending). Requires p-values present per group.}
 
@@ -140,6 +140,22 @@ plot_dotmap(
 # A common use case is when you pre-compute qvalues for tons of tests (too many to plot visually)
 # and you want to use the dotmap just for a small subset of those tests but still have the barplot reflect the same q-values that you have already computed for all tests.
 # In that case you can pass the pre-computed q-values via a column in your original data frame and specify that column name in custom_qvalues
+#
+# --- show only top N significant rows in combined barplot ---
+# Use `only_show_top_sig` to restrict the combined p-value barplot to the
+# top-most significant `y` levels (by combined p-value). Here we show the
+# top 3 rows when adding the combined barplot.
+plot_dotmap(
+  df,
+  x = "col",
+  y = "row",
+  effect = "effect",
+  p = "p",
+  mlog10_transform_pvalue = TRUE,
+  add_combined_pvalue_barplot = TRUE,
+  combine_pvalue_method = "CMC",
+  only_show_top_sig = 3
+)
 #
 ### Simulate example dataset:
 set.seed(1)
