@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">statplot</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,13 +36,28 @@
 <h2 class="pkg-version" data-toc-text="development version" id="statplot-development-version">statplot (development version)<a class="anchor" aria-label="anchor" href="#statplot-development-version"></a></h2>
 <div class="section level3">
 <h3 id="added-development-version">Added<a class="anchor" aria-label="anchor" href="#added-development-version"></a></h3>
+<p>…</p>
+</div>
+<div class="section level3">
+<h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
+<p>…</p>
+</div>
+<div class="section level3">
+<h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
+<p>…</p>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.0" id="statplot-040---2026-03-26">statplot 0.4.0 - 2026-03-26<a class="anchor" aria-label="anchor" href="#statplot-040---2026-03-26"></a></h2>
+<div class="section level3">
+<h3 id="added-0-4-0">Added<a class="anchor" aria-label="anchor" href="#added-0-4-0"></a></h3>
 <ul><li>
 <code>plot_data_avail_by_group</code>: tile plot showing availability (0/1) of data types across groups, with a black border, no whitespace padding, and optional bold axis labels.</li>
 <li>
 <code>plot_pathways</code>: new <code>legend_fixed_dot_size</code> argument (numeric vector) fixes the size-legend breaks and limits to user-supplied gene-count values so that multiple plots composed with <code>patchwork</code> share an identical visual size scale. Values outside the specified range are squished to the nearest extreme rather than dropped.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
+<h3 id="changed-0-4-0">Changed<a class="anchor" aria-label="anchor" href="#changed-0-4-0"></a></h3>
 <ul><li>
 <code>plot_pathways</code>: the <code>fold_change</code> argument has been renamed to <code>effect_size</code>. Code using <code>fold_change = ...</code> must be updated.</li>
 <li>
@@ -56,6 +71,11 @@
 <ul><li>deduplicates annotation legends whose color mappings are semantically equivalent (named vectors are compared after sorting by name; <code><a href="https://rdrr.io/pkg/circlize/man/colorRamp2.html" class="external-link">circlize::colorRamp2</a></code> functions are compared by their breakpoints and colours), combining their titles (e.g. <code>"pvalue\nqvalue"</code>) and suppressing redundant legends;</li>
 <li>forwards the flag to <code>ComplexHeatmap::draw(..., merge_legends = TRUE)</code> so heatmap and annotation legends are packed together. Unit tests covering the deduplication and semantic comparison behaviour were added.</li>
 </ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="fixed-0-4-0">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-4-0"></a></h3>
+<ul><li>
+<code>plot_dotmap</code>: <code>custom_qvalues</code> passed via <code>...</code> now correctly drives the q-value bars in the combined p-value barplot. Previously the argument was stripped before being forwarded to <code><a href="../reference/plot_pvalue_barplot.html">plot_pvalue_barplot()</a></code>, causing the barplot to always display internally computed BH-adjusted q-values instead of the user-supplied ones. The supplied column is now joined from the input data into the combined-p data frame and forwarded as <code>custom_qvalues</code>; when not supplied, the BH fallback is used as before.</li>
 </ul></div>
 </div>
     <div class="section level2">
@@ -123,10 +143,6 @@
 <li>
 <code>plot_pvalue_barplot</code>: <code>NA</code> p-values are now handled gracefully — rows with missing p-values are silently dropped rather than causing an error, and BH correction for q-values is applied only to the non-missing subset so adjusted values are not distorted.</li>
 <li>Use <code><a href="https://rdrr.io/r/stats/delete.response.html" class="external-link">stats::reformulate()</a></code> with backticks when building formulas in numeric-by-group plotting functions to support non-syntactic column names (fixes issue with spaces/hyphens).</li>
-</ul></div>
-<div class="section level3">
-<h3 id="fixed-0-3-0">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-3-0"></a></h3>
-<ul><li>…</li>
 </ul></div>
 </div>
     <div class="section level2">

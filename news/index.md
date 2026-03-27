@@ -4,6 +4,20 @@
 
 ### Added
 
+…
+
+### Changed
+
+…
+
+### Fixed
+
+…
+
+## statplot 0.4.0 - 2026-03-26
+
+### Added
+
 - `plot_data_avail_by_group`: tile plot showing availability (0/1) of
   data types across groups, with a black border, no whitespace padding,
   and optional bold axis labels.
@@ -43,6 +57,18 @@
     `ComplexHeatmap::draw(..., merge_legends = TRUE)` so heatmap and
     annotation legends are packed together. Unit tests covering the
     deduplication and semantic comparison behaviour were added.
+
+### Fixed
+
+- `plot_dotmap`: `custom_qvalues` passed via `...` now correctly drives
+  the q-value bars in the combined p-value barplot. Previously the
+  argument was stripped before being forwarded to
+  [`plot_pvalue_barplot()`](https://github.com/jarbet/statplot/reference/plot_pvalue_barplot.md),
+  causing the barplot to always display internally computed BH-adjusted
+  q-values instead of the user-supplied ones. The supplied column is now
+  joined from the input data into the combined-p data frame and
+  forwarded as `custom_qvalues`; when not supplied, the BH fallback is
+  used as before.
 
 ## statplot 0.3.0 - 2026-03-20
 
@@ -133,10 +159,6 @@
   with backticks when building formulas in numeric-by-group plotting
   functions to support non-syntactic column names (fixes issue with
   spaces/hyphens).
-
-### Fixed
-
-- …
 
 ## statplot 0.2.0 - 2026-03-06
 

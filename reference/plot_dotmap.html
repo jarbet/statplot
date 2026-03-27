@@ -11,7 +11,7 @@ or a patchwork composition when a combined p-value barplot is requested.'></head
 
     <a class="navbar-brand me-2" href="../index.html">statplot</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -164,9 +164,12 @@ tile is drawn with the fill scale's <code>na.value</code> (grey95 by default), e
 <dd><p>Additional arguments passed on to <code><a href="plot_pvalue_barplot.html">plot_pvalue_barplot()</a></code> when
 <code>add_combined_pvalue_barplot = TRUE</code>. The following arguments are set internally
 and will be ignored if supplied here: <code>data</code>, <code>x</code>, <code>y</code>, <code>fill</code>,
-<code>show_y_labels</code>, <code>custom_qvalues</code> (the combined p-value barplot always uses
-<code>p</code> to compute Fisher/CMC combined p-values via <code><a href="combine_pvalues.html">combine_pvalues()</a></code>;
-the <code>q</code> argument only affects cell fill, not the barplot).</p></dd>
+<code>show_y_labels</code>. <code>custom_qvalues</code> receives special handling: if supplied, it
+must be a column name present in <code>data</code> containing one pre-computed combined
+q-value per <code>y</code> level (repeated across rows is fine); those values are joined into
+the internal combined-p data frame and forwarded to <code><a href="plot_pvalue_barplot.html">plot_pvalue_barplot()</a></code>.
+When not supplied, BH-adjusted q-values are computed from the internally combined
+p-values and used for the barplot.</p></dd>
 
 
 <dt id="arg-patchwork-widths">patchwork_widths<a class="anchor" aria-label="anchor" href="#arg-patchwork-widths"></a></dt>
@@ -232,6 +235,45 @@ vertically with the main dotmap.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> data's <span style="color: #00BB00;">shape</span> values.</span>
 <span class="r-plt img"><img src="plot_dotmap-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># --- custom_qvalues: supply your own combined q-values to the barplot ---</span></span></span>
+<span class="r-in"><span><span class="co"># By default the right-side barplot computes combined p-values internally</span></span></span>
+<span class="r-in"><span><span class="co"># (via combine_pvalue_method) and then BH-adjusts them for the q-value bars.</span></span></span>
+<span class="r-in"><span><span class="co"># Use custom_qvalues when you have already computed combined q-values outside</span></span></span>
+<span class="r-in"><span><span class="co"># plot_dotmap (e.g. using a different multiple-testing method, or sharing a</span></span></span>
+<span class="r-in"><span><span class="co"># consistent correction across several plots) and want the barplot to display</span></span></span>
+<span class="r-in"><span><span class="co"># those exact values rather than re-deriving them.</span></span></span>
+<span class="r-in"><span><span class="co">#</span></span></span>
+<span class="r-in"><span><span class="co"># A common use case is when you pre-compute qvalues for tons of tests (too many to plot visually)</span></span></span>
+<span class="r-in"><span><span class="co"># and you want to use the dotmap just for a small subset of those tests but still have the barplot reflect the same q-values that you have already computed for all tests.</span></span></span>
+<span class="r-in"><span><span class="co"># In that case you can pass the pre-computed q-values via a column in your original data frame and specify that column name in custom_qvalues</span></span></span>
+<span class="r-in"><span><span class="co">#</span></span></span>
+<span class="r-in"><span><span class="co">### Simulate example dataset:</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">genes2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"gene"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span>col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span>, row <span class="op">=</span> <span class="va">genes2</span>, stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">df2</span><span class="op">$</span><span class="va">effect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">df2</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">df2</span><span class="op">$</span><span class="va">p</span>      <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">df2</span><span class="op">)</span>, <span class="fl">0.05</span>, <span class="fl">0.5</span><span class="op">)</span>   <span class="co"># all p-values moderate on purpose</span></span></span>
+<span class="r-in"><span><span class="va">df2</span><span class="op">$</span><span class="va">row</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">df2</span><span class="op">$</span><span class="va">row</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">genes2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Example Pre-computed combined q-values: one value per row category</span></span></span>
+<span class="r-in"><span><span class="va">my_combined_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>gene1 <span class="op">=</span> <span class="fl">0.05</span>, gene2 <span class="op">=</span> <span class="fl">0.1</span>, gene3 <span class="op">=</span> <span class="fl">0.2</span>, gene4 <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">df2</span><span class="op">$</span><span class="va">my_q</span> <span class="op">&lt;-</span> <span class="va">my_combined_q</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">df2</span><span class="op">$</span><span class="va">row</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="fu">plot_dotmap</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">df2</span>,</span></span>
+<span class="r-in"><span>  x <span class="op">=</span> <span class="st">"col"</span>, y <span class="op">=</span> <span class="st">"row"</span>, effect <span class="op">=</span> <span class="st">"effect"</span>, p <span class="op">=</span> <span class="st">"p"</span>,</span></span>
+<span class="r-in"><span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  add_combined_pvalue_barplot <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  combine_pvalue_method <span class="op">=</span> <span class="st">"fisher"</span>,</span></span>
+<span class="r-in"><span>  custom_qvalues <span class="op">=</span> <span class="st">"my_q"</span>   <span class="co"># &lt;-- barplot q-bars reflect my_q, not internal BH</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">size</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">size</span>, which will replace the existing scale.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">y</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">y</span>, which will replace the existing scale.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">y</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">y</span>, which will replace the existing scale.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>No shared levels found between `names(values)` of the manual scale and the</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> data's <span style="color: #00BB00;">shape</span> values.</span>
+<span class="r-plt img"><img src="plot_dotmap-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
