@@ -66,6 +66,7 @@ append a p-value barplot to the right via patchwork.</p>
 <span>  point_shapes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">21</span>, <span class="fl">24</span>, <span class="fl">22</span>, <span class="fl">25</span>, <span class="fl">23</span><span class="op">)</span>,</span>
 <span>  pvalue_col <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  pvalue_plot_width <span class="op">=</span> <span class="fl">0.3</span>,</span>
+<span>  pvalue_plot_margin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.5</span>, <span class="fl">12</span>, <span class="fl">5.5</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -158,6 +159,13 @@ package.</p></dd>
 <dt id="arg-pvalue-plot-width">pvalue_plot_width<a class="anchor" aria-label="anchor" href="#arg-pvalue-plot-width"></a></dt>
 <dd><p>Relative width of the p-value panel passed to
 <code><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">patchwork::wrap_plots()</a></code> <code>widths</code>. Default <code>0.3</code>.</p></dd>
+
+
+<dt id="arg-pvalue-plot-margin">pvalue_plot_margin<a class="anchor" aria-label="anchor" href="#arg-pvalue-plot-margin"></a></dt>
+<dd><p>Numeric vector of length 4 giving the p-value
+panel plot margin in points: <code>c(top, right, bottom, left)</code>. Default
+<code>c(5.5, 12, 5.5, 0)</code> which increases right margin so x-axis labels are
+not clipped when the panel is appended to the right.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

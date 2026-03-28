@@ -26,6 +26,7 @@ plot_dot_whiskers(
   point_shapes = c(21, 24, 22, 25, 23),
   pvalue_col = NULL,
   pvalue_plot_width = 0.3,
+  pvalue_plot_margin = c(5.5, 12, 5.5, 0),
   ...
 )
 ```
@@ -123,6 +124,13 @@ plot_dot_whiskers(
   Relative width of the p-value panel passed to
   [`patchwork::wrap_plots()`](https://patchwork.data-imaginist.com/reference/wrap_plots.html)
   `widths`. Default `0.3`.
+
+- pvalue_plot_margin:
+
+  Numeric vector of length 4 giving the p-value panel plot margin in
+  points: `c(top, right, bottom, left)`. Default `c(5.5, 12, 5.5, 0)`
+  which increases right margin so x-axis labels are not clipped when the
+  panel is appended to the right.
 
 - ...:
 
