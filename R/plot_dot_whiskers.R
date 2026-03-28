@@ -40,6 +40,10 @@
 #'   package.
 #' @param pvalue_plot_width Relative width of the p-value panel passed to
 #'   `patchwork::wrap_plots()` `widths`. Default `0.3`.
+#' @param pvalue_plot_margin Numeric vector of length 4 giving the p-value
+#'   panel plot margin in points: `c(top, right, bottom, left)`. Default
+#'   `c(5.5, 12, 5.5, 0)` which increases right margin so x-axis labels are
+#'   not clipped when the panel is appended to the right.
 #' @param ... Additional arguments passed to [plot_pvalue_barplot()] when
 #'   `pvalue_col` is supplied.
 #'
@@ -104,6 +108,7 @@ plot_dot_whiskers <- function(
     point_shapes = c(21, 24, 22, 25, 23),
     pvalue_col = NULL,
     pvalue_plot_width = 0.3,
+    pvalue_plot_margin = c(5.5, 12, 5.5, 0),
     ...
 ) {
     style <- match.arg(style)
@@ -164,6 +169,12 @@ plot_dot_whiskers <- function(
         ) &&
             length(pvalue_plot_width) == 1 &&
             pvalue_plot_width > 0,
+        "pvalue_plot_margin must be a numeric vector of length 4" = is.numeric(
+            pvalue_plot_margin
+        ) &&
+            length(pvalue_plot_margin) == 4 &&
+            all(is.finite(pvalue_plot_margin)) &&
+            all(pvalue_plot_margin >= 0),
         "point_shapes must be a numeric or integer vector" = is.numeric(
             point_shapes
         ) &&
@@ -388,7 +399,16 @@ plot_dot_whiskers <- function(
                 expand = c(0, 0)
             ) +
             ggplot2::coord_cartesian(ylim = c(0.5, n_units + 0.5)) +
-            ggplot2::theme(plot.margin = ggplot2::margin(5.5, 5.5, 5.5, 0))
+            # p-value panel margin (top, right, bottom, left) in points
+            ggplot2::theme(
+                plot.margin = ggplot2::margin(
+                    t = pvalue_plot_margin[1],
+                    r = pvalue_plot_margin[2],
+                    b = pvalue_plot_margin[3],
+                    l = pvalue_plot_margin[4],
+                    unit = "pt"
+                )
+            )
 
         return(
             patchwork::wrap_plots(

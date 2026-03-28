@@ -22,6 +22,7 @@ plot_dot_whiskers(
   point_shapes = c(21, 24, 22, 25, 23),
   pvalue_col = NULL,
   pvalue_plot_width = 0.3,
+  pvalue_plot_margin = c(5.5, 12, 5.5, 0),
   ...
 )
 }
@@ -77,6 +78,11 @@ package.}
 
 \item{pvalue_plot_width}{Relative width of the p-value panel passed to
 \code{patchwork::wrap_plots()} \code{widths}. Default \code{0.3}.}
+
+\item{pvalue_plot_margin}{Numeric vector of length 4 giving the p-value
+panel plot margin in points: \code{c(top, right, bottom, left)}. Default
+\code{c(5.5, 12, 5.5, 0)} which increases right margin so x-axis labels are
+not clipped when the panel is appended to the right.}
 
 \item{...}{Additional arguments passed to \code{\link[=plot_pvalue_barplot]{plot_pvalue_barplot()}} when
 \code{pvalue_col} is supplied.}
