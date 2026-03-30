@@ -14,6 +14,8 @@
 
 * `plot_dotmap`: added a short example demonstrating `only_show_top_sig` (shows top N rows in the combined p-value barplot) and updated the `combine_pvalue_method` parameter documentation to reference `combine_pvalues` for method details.
 
+* `combine_pvalues`: default `methods` changed from `'all'` to `'CMC'`; documentation and tests updated to reflect the new default.
+
 ## Fixed
 
 ...
