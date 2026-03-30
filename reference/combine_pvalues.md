@@ -6,7 +6,7 @@ variety of methods. Note CMC or MCM are recommended by Chen 2022.
 ## Usage
 
 ``` r
-combine_pvalues(p)
+combine_pvalues(p, methods = "CMC")
 ```
 
 ## Arguments
@@ -15,9 +15,17 @@ combine_pvalues(p)
 
   Numeric vector of p-values.
 
+- methods:
+
+  Character, either 'CMC' (default) to return the CMC combined p-value,
+  `'all'` to return all combined p-values, or the name of one or more
+  methods (fisher, CMC, MCM, cauchy, minp_bonferroni; note CMC or MCM
+  are recommended by Chen 2022) to return only those p-values.
+
 ## Value
 
-A named vector of combined p-values for each method
+A named vector of combined p-values for each method, or a single numeric
+value when `methods` names one method
 
 ## References
 
@@ -29,7 +37,12 @@ https://doi.org/10.1038/s41598-022-07094-7
 
 ``` r
 pvals <- c(0.001, 0.005, 0.2)
+# default returns CMC
 combine_pvalues(pvals)
+#>         CMC 
+#> 0.002721917 
+# get all methods
+combine_pvalues(pvals, methods = "all")
 #>          fisher             CMC             MCM          cauchy minp_bonferroni 
 #>    0.0001102497    0.0027219175    0.0049820278    0.0024910139    0.0030000000 
 ```

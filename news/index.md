@@ -19,6 +19,9 @@
   `combine_pvalue_method` parameter documentation to reference
   `combine_pvalues` for method details.
 
+- `combine_pvalues`: default `methods` changed from `'all'` to `'CMC'`;
+  documentation and tests updated to reflect the new default.
+
 ### Fixed
 
 …
