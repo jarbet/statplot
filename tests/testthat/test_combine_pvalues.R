@@ -8,7 +8,7 @@ test_that("input validation errors", {
 
 test_that("output structure", {
     p <- c(0.001, 0.005, 0.2)
-    out <- combine_pvalues(p)
+    out <- combine_pvalues(p, methods = "all")
     expect_true(is.numeric(out))
     expect_named(out, c("fisher", "CMC", "MCM", "cauchy", "minp_bonferroni"))
     expect_length(out, 5)
@@ -17,7 +17,7 @@ test_that("output structure", {
 
 test_that("values match known formulas", {
     p <- c(0.001, 0.005, 0.2)
-    out <- combine_pvalues(p)
+    out <- combine_pvalues(p, methods = "all")
 
     expected_fisher <- as.numeric(poolr::fisher(p = p)$p)
     expect_equal(as.numeric(out["fisher"]), expected_fisher, tolerance = 1e-12)
@@ -38,14 +38,14 @@ test_that("values match known formulas", {
 
 test_that("NA values are removed before computation", {
     p_with_na <- c(0.01, NA_real_)
-    out_with_na <- combine_pvalues(p_with_na)
-    out_no_na <- combine_pvalues(0.01)
+    out_with_na <- combine_pvalues(p_with_na, methods = "all")
+    out_no_na <- combine_pvalues(0.01, methods = "all")
     expect_equal(out_with_na, out_no_na)
 })
 
 test_that("single p-value behaves as expected", {
     p <- 0.05
-    out <- combine_pvalues(p)
+    out <- combine_pvalues(p, methods = "all")
     # Bonferroni with n = 1 should equal the p itself (or capped at 1)
     expect_equal(as.numeric(out["minp_bonferroni"]), 0.05, tolerance = 1e-12)
     # MCM should follow its definition
@@ -81,7 +81,7 @@ test_that("matches original authors' function outputs", {
     }
 
     p <- c(0.001, 0.005, 0.2)
-    ours <- combine_pvalues(p)
+    ours <- combine_pvalues(p, methods = "all")
     mapped_ours <- c(
         cauchy = as.numeric(ours["cauchy"]),
         minp = as.numeric(ours["minp_bonferroni"]),
