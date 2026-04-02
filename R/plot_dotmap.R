@@ -257,7 +257,7 @@ plot_dotmap <- function(
                     if (length(pv) == 0) {
                         NA_real_
                     } else {
-                        combine_pvalues(pv)[combine_pvalue_method]
+                        combine_pvalues(pv, methods = combine_pvalue_method)
                     }
                 },
                 .groups = "drop"
@@ -495,7 +495,7 @@ plot_dotmap <- function(
                         if (length(pv) == 0) {
                             NA_real_
                         } else {
-                            combine_pvalues(pv)[combine_pvalue_method]
+                            combine_pvalues(pv, methods = combine_pvalue_method)
                         }
                     },
                     .groups = "drop"
