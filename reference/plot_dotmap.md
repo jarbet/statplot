@@ -282,7 +282,5 @@ plot_dotmap(
 #> Adding another scale for y, which will replace the existing scale.
 #> Warning: No shared levels found between `names(values)` of the manual scale and the
 #> data's shape values.
-#> Warning: Removed 4 rows containing missing values or values outside the scale range
-#> (`geom_col()`).
 
 ```

@@ -12,8 +12,6 @@
 
 ### Changed
 
-…
-
 - `plot_dotmap`: added a short example demonstrating `only_show_top_sig`
   (shows top N rows in the combined p-value barplot) and updated the
   `combine_pvalue_method` parameter documentation to reference
@@ -24,7 +22,14 @@
 
 ### Fixed
 
-…
+- `plot_dotmap`:
+  [`combine_pvalues()`](https://github.com/jarbet/statplot/reference/combine_pvalues.md)
+  is now called with `methods = combine_pvalue_method` instead of
+  subsetting the result by name. Previously,
+  [`combine_pvalues()`](https://github.com/jarbet/statplot/reference/combine_pvalues.md)
+  defaulted to computing only `"CMC"`, so requesting any other method
+  (e.g. `"fisher"`) returned `NA`, causing the combined p-value barplot
+  to draw no bars.
 
 ## statplot 0.4.0 - 2026-03-26
 

@@ -41,14 +41,14 @@
 </ul></div>
 <div class="section level3">
 <h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
-<p>…</p>
 <ul><li><p><code>plot_dotmap</code>: added a short example demonstrating <code>only_show_top_sig</code> (shows top N rows in the combined p-value barplot) and updated the <code>combine_pvalue_method</code> parameter documentation to reference <code>combine_pvalues</code> for method details.</p></li>
 <li><p><code>combine_pvalues</code>: default <code>methods</code> changed from <code>'all'</code> to <code>'CMC'</code>; documentation and tests updated to reflect the new default.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
-<p>…</p>
-</div>
+<ul><li>
+<code>plot_dotmap</code>: <code><a href="../reference/combine_pvalues.html">combine_pvalues()</a></code> is now called with <code>methods = combine_pvalue_method</code> instead of subsetting the result by name. Previously, <code><a href="../reference/combine_pvalues.html">combine_pvalues()</a></code> defaulted to computing only <code>"CMC"</code>, so requesting any other method (e.g. <code>"fisher"</code>) returned <code>NA</code>, causing the combined p-value barplot to draw no bars.</li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.0" id="statplot-040---2026-03-26">statplot 0.4.0 - 2026-03-26<a class="anchor" aria-label="anchor" href="#statplot-040---2026-03-26"></a></h2>
