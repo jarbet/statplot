@@ -84,9 +84,21 @@ if (length(missing) > 0) {
     )
 }
 
+# Capitalize first letter of each process category (e.g. "development" -> "Development")
+hallmark_pathway_categories$process_category <- paste0(
+    toupper(substring(hallmark_pathway_categories$process_category, 1, 1)),
+    substring(hallmark_pathway_categories$process_category, 2)
+)
 
+# remove _ from process categories
+hallmark_pathway_categories$process_category <- gsub(
+    "_",
+    " ",
+    hallmark_pathway_categories$process_category
+)
+
+# Save with updated categories
 usethis::use_data(
     hallmark_pathway_categories,
-    internal = TRUE,
     overwrite = TRUE
 )
