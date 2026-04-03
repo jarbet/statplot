@@ -13,6 +13,11 @@ biological process categories as defined in Table 1 of Liberzon et al.
 (2015). The dataset includes a runtime validation step against the bundled
 `hallmark_t2g` data to ensure pathway names align with MSigDB.
 
+* `plot_covariate_heatmap`: new function to draw vertical covariate strips
+  (one strip per covariate). Supports categorical covariates (named color
+  vectors) and continuous covariates (`circlize::colorRamp2`), optional row
+  splitting and clustering
+
 
 ## Changed
 
