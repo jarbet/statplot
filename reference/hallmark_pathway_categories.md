@@ -1,0 +1,40 @@
+# Hallmark pathway process categories
+
+A two-column data frame mapping each MSigDB Hallmark gene-set name to
+its biological process category, as defined in Table 1 of Liberzon et
+al. (2015). Categories are: `"cellular_component"`, `"development"`,
+`"DNA_damage"`, `"immune"`, `"metabolic"`, `"pathway"`,
+`"proliferation"`, and `"signaling"`.
+
+## Usage
+
+``` r
+hallmark_pathway_categories
+```
+
+## Format
+
+A data frame with 50 rows and 2 columns:
+
+- term:
+
+  Character. Hallmark gene-set name, with the `"HALLMARK_"` prefix
+  removed to match the `term` column of
+  [`hallmark_t2g`](https://github.com/jarbet/statplot/reference/hallmark_t2g.md).
+
+- process_category:
+
+  Character. Biological process category assigned in Liberzon et al.
+  (2015), Table 1.
+
+## Source
+
+Process categories taken from Table 1 of Liberzon et al. (2015). Data
+prepared by `inst/prepare_data/hallmark_pathway_categories.R`.
+
+## References
+
+Liberzon, A., Birger, C., Thorvaldsdóttir, H., Ghandi, M., Mesirov, J.
+P., & Tamayo, P. (2015). The Molecular Signatures Database hallmark gene
+set collection. *Cell Systems*, **1**(6), 417–425.
+[doi:10.1016/j.cels.2015.12.004](https://doi.org/10.1016/j.cels.2015.12.004)

@@ -15,6 +15,8 @@
   plots
 - [`format_pvalue()`](https://github.com/jarbet/statplot/reference/format_pvalue.md)
   : Format p-values for display
+- [`hallmark_pathway_categories`](https://github.com/jarbet/statplot/reference/hallmark_pathway_categories.md)
+  : Hallmark pathway process categories
 - [`hallmark_t2g`](https://github.com/jarbet/statplot/reference/hallmark_t2g.md)
   : Hallmark gene sets (Human) from MSigDB
 - [`plot_2_categorical_vars()`](https://github.com/jarbet/statplot/reference/plot_2_categorical_vars.md)

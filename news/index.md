@@ -10,6 +10,12 @@
   p-value barplot from being clipped when the panel is composed to the
   right using `patchwork`.
 
+- `hallmark_pathway_categories`: new internal dataset mapping Hallmark
+  pathway names (the `term` column, with the `HALLMARK_` prefix removed)
+  to biological process categories as defined in Table 1 of Liberzon et
+  al. (2015). The dataset includes a runtime validation step against the
+  bundled `hallmark_t2g` data to ensure pathway names align with MSigDB.
+
 ### Changed
 
 - `plot_dotmap`: added a short example demonstrating `only_show_top_sig`
