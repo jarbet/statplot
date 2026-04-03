@@ -55,13 +55,13 @@ on the first strip when \code{"left"} and the last strip when
 \item{ht_gap}{A \code{\link[grid]{unit}} object controlling the gap between
 adjacent covariate strips. Passed as \code{ht_gap} to
 \code{\link[ComplexHeatmap]{draw}}. Default
-\code{grid::unit(1, "mm")}. Set to \code{grid::unit(0, "mm")} to remove
+\code{grid::unit(0.2, "mm")}. Set to \code{grid::unit(0, "mm")} to remove
 all gaps.}
 
 \item{row_gap}{A \code{\link[grid]{unit}} object controlling the gap between
 row-split groups. Passed as \code{row_gap} to each
 \code{\link[ComplexHeatmap]{Heatmap}} call. Default
-\code{grid::unit(2, "mm")}. Set to \code{grid::unit(0, "mm")} to remove
+\code{grid::unit(0.2, "mm")}. Set to \code{grid::unit(0, "mm")} to remove
 row gaps entirely.}
 
 \item{legend_side}{Character. Position of the legends. One of
