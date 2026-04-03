@@ -263,7 +263,7 @@ plot_covariate_heatmap <- function(
         nm <- cov_names[i]
 
         df_i <- data.frame(
-            y = row_labels,
+            y = factor(row_labels, levels = row_labels),
             fill_val = factor(
                 as.character(dataset[[nm]]),
                 levels = names(final_colors[[nm]])
