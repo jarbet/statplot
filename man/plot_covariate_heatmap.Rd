@@ -8,133 +8,122 @@ plot_covariate_heatmap(
   dataset,
   color_map,
   row_id_var = NULL,
-  row_split_var = NULL,
-  cluster_rows = FALSE,
-  show_row_names = TRUE,
+  show_row_names = FALSE,
   row_names_side = "left",
-  ht_gap = grid::unit(0.2, "mm"),
-  row_gap = grid::unit(0.2, "mm"),
+  plot_spacing = 0.5,
   legend_side = "left",
+  column_labels_side = "bottom",
+  horizontal = FALSE,
   merge_legends = FALSE,
-  return_details = FALSE,
-  ...
+  return_details = FALSE
 )
 }
 \arguments{
 \item{dataset}{A data frame. Must contain all columns named in
-\code{color_map} and, if supplied, \code{row_id_var} and
-\code{row_split_var}.}
+\code{color_map} and, if supplied, \code{row_id_var}.}
 
 \item{color_map}{A named list specifying which covariates to plot and their
 color mappings. Each name must be a column in \code{dataset}. Each element
-is either:
-\itemize{
-\item A \strong{named character vector} mapping factor levels to hex colors
-(for categorical/character/factor columns). Any levels present in the
-data but absent from the vector receive auto-generated colors.
-\item A \strong{colorRamp2 function} (for continuous/numeric columns), e.g.
-one created by \code{\link[circlize]{colorRamp2}}.
-}}
+must be a \strong{named character vector} mapping factor levels to hex colors.
+Any levels present in the data but absent from the vector receive
+auto-generated colors.}
 
 \item{row_id_var}{Character. Column in \code{dataset} used as row labels
-(matrix rownames). Default \code{NULL} uses \code{1:nrow(dataset)}.}
+(y-axis). Default \code{NULL} uses \code{1:nrow(dataset)}.}
 
-\item{row_split_var}{Character. Column in \code{dataset} used to split rows
-into groups. Must have \eqn{\geq 2} distinct levels. Default \code{NULL}.}
+\item{show_row_names}{Logical. Whether to display sample labels. Default
+\code{FALSE}.}
 
-\item{cluster_rows}{Logical. Whether to cluster rows. When \code{TRUE},
-clustering is performed on the first covariate strip and the resulting
-row order is shared across all strips. Default \code{FALSE}.}
+\item{row_names_side}{\code{"left"} or \code{"right"}. When
+\code{horizontal = FALSE}, row names are shown on the first strip
+(\code{"left"}) or the last strip (\code{"right"}). Ignored when
+\code{horizontal = TRUE} (sample labels always appear on the bottom
+strip). Default \code{"left"}.}
 
-\item{show_row_names}{Logical. Default \code{TRUE}.}
-
-\item{row_names_side}{\code{"left"} or \code{"right"}. Row names are shown
-on the first strip when \code{"left"} and the last strip when
-\code{"right"}. Default \code{"left"}.}
-
-\item{ht_gap}{A \code{\link[grid]{unit}} object controlling the gap between
-adjacent covariate strips. Passed as \code{ht_gap} to
-\code{\link[ComplexHeatmap]{draw}}. Default
-\code{grid::unit(0.2, "mm")}. Set to \code{grid::unit(0, "mm")} to remove
-all gaps.}
-
-\item{row_gap}{A \code{\link[grid]{unit}} object controlling the gap between
-row-split groups. Passed as \code{row_gap} to each
-\code{\link[ComplexHeatmap]{Heatmap}} call. Default
-\code{grid::unit(0.2, "mm")}. Set to \code{grid::unit(0, "mm")} to remove
-row gaps entirely.}
+\item{plot_spacing}{Numeric (mm). Gap between adjacent covariate strips.
+Default \code{0.5}.}
 
 \item{legend_side}{Character. Position of the legends. One of
 \code{"left"}, \code{"right"}, \code{"top"}, or \code{"bottom"}.
-Passed as both \code{heatmap_legend_side} and
-\code{annotation_legend_side} to \code{\link[ComplexHeatmap]{draw}}.
 Default \code{"left"}.}
 
-\item{merge_legends}{Logical. When \code{TRUE}: (1) strips sharing the exact
-same color mapping are collapsed into one legend whose title joins the
-covariate names with \code{"\\n"}; (2) the value is forwarded as
-\code{merge_legends} to \code{\link[ComplexHeatmap]{draw}}. Default
+\item{column_labels_side}{Character. Where to show the covariate name
+labels. When \code{horizontal = FALSE}: \code{"top"} or \code{"bottom"}
+(default). When \code{horizontal = TRUE}: \code{"left"} (default) or
+\code{"right"}.}
+
+\item{horizontal}{Logical. When \code{TRUE} the layout is transposed:
+samples appear on the x-axis and strips are stacked vertically so the
+plot can be combined below a main ggplot. Default \code{FALSE}.}
+
+\item{merge_legends}{Logical. When \code{TRUE}, strips sharing the exact
+same color mapping show a legend only on the first occurrence; that
+legend's title joins the covariate names with \code{"\\n"}. Default
 \code{FALSE}.}
 
 \item{return_details}{Logical. If \code{TRUE}, returns a named list with
-elements \code{ht} (the drawn \code{HeatmapList}) and \code{final_colors}
+elements \code{ht} (the \code{patchwork} object) and \code{final_colors}
 (the resolved color map). Default \code{FALSE}.}
-
-\item{...}{Additional arguments passed to every
-\code{\link[ComplexHeatmap]{Heatmap}} call (e.g. \code{column_names_rot},
-\code{width}, \code{column_title_gp}).}
 }
 \value{
-Invisibly returns the drawn \code{\link[ComplexHeatmap]{HeatmapList}}
-object, or a named list with elements \code{ht} and \code{final_colors}
-when \code{return_details = TRUE}.
+Invisibly returns a \code{\link[patchwork]{wrap_plots}}
+(\code{patchwork}) object, or a named list with elements \code{ht} and
+\code{final_colors} when \code{return_details = TRUE}.
 }
 \description{
-Displays one vertical strip per covariate, where each strip is an
-independent \code{\link[ComplexHeatmap]{Heatmap}} combined into a
-\code{\link[ComplexHeatmap]{HeatmapList}}. Both categorical (named-vector
-colors) and continuous (\code{\link[circlize]{colorRamp2}} function) variables
-are supported.
+Displays one vertical strip per covariate using
+\code{\link[ggplot2]{geom_tile}}, with all strips combined via
+\code{\link[patchwork]{wrap_plots}}. Because the output is a standard
+\pkg{ggplot2}/\pkg{patchwork} object it aligns naturally with other ggplots
+(e.g. when combined with \code{|} or \code{/} from \pkg{patchwork}).
+Only categorical (named-vector colors) covariates are supported.
 }
 \examples{
 data(ex_data_heatmap)
 
 # Build a one-row-per-sample metadata frame
 sample_meta <- ex_data_heatmap |>
-  dplyr::select(sample, group, condition, sample_type, qc_score) |>
+  dplyr::select(sample, group, condition, sample_type) |>
   dplyr::distinct()
 
-rng_qc <- range(sample_meta$qc_score, na.rm = TRUE)
-col_fun_qc <- circlize::colorRamp2(
-  c(rng_qc[1], mean(rng_qc), rng_qc[2]),
-  c("#ffffcc", "#41b6c4", "#0c2c84")
-)
-
-# Multiple covariates (categorical + continuous)
+# Multiple categorical covariates
 plot_covariate_heatmap(
   dataset = sample_meta,
   color_map = list(
     group       = c(G1 = "#1b9e77", G2 = "#d95f02"),
     condition   = c(healthy = "#b3de69", EAE = "#fccde5"),
-    sample_type = c(input = "#8dd3c7", IP = "#80b1d3"),
-    qc_score    = col_fun_qc
+    sample_type = c(input = "#8dd3c7", IP = "#80b1d3")
   ),
-  row_id_var    = "sample",
-  row_split_var = NULL,
-  cluster_rows  = FALSE
+  row_id_var = "sample"
 )
 
-# Single categorical covariate bar
+# Single vertical covariate bar - useful for placing to left/right of the main ggplot
 plot_covariate_heatmap(
   dataset    = sample_meta,
   color_map  = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
   row_id_var = "sample"
 )
 
-# Single continuous covariate bar
+# Single horizontal covariate bar — useful for placing below a main ggplot
 plot_covariate_heatmap(
   dataset    = sample_meta,
-  color_map  = list(qc_score = col_fun_qc),
-  row_id_var = "sample"
+  color_map  = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
+  row_id_var = "sample",
+  horizontal = TRUE
+)
+
+
+# merge_legends: two strips sharing the same color mapping → one legend
+# whose title combines both covariate names.
+grp_colors <- c(G1 = "#1b9e77", G2 = "#d95f02")
+sample_meta2 <- dplyr::mutate(sample_meta, group_rep = group)
+plot_covariate_heatmap(
+  dataset = sample_meta2,
+  color_map = list(
+    group     = grp_colors,
+    group_rep = grp_colors
+  ),
+  row_id_var    = "sample",
+  merge_legends = TRUE
 )
 }

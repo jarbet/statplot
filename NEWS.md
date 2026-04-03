@@ -15,8 +15,7 @@ biological process categories as defined in Table 1 of Liberzon et al.
 
 * `plot_covariate_heatmap`: new function to draw vertical covariate strips
   (one strip per covariate). Supports categorical covariates (named color
-  vectors) and continuous covariates (`circlize::colorRamp2`), optional row
-  splitting and clustering
+  vectors) only.
 
 
 ## Changed
