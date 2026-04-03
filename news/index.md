@@ -16,6 +16,12 @@
   al. (2015). The dataset includes a runtime validation step against the
   bundled `hallmark_t2g` data to ensure pathway names align with MSigDB.
 
+- `plot_covariate_heatmap`: new function to draw vertical covariate
+  strips (one strip per covariate). Supports categorical covariates
+  (named color vectors) and continuous covariates
+  ([`circlize::colorRamp2`](https://rdrr.io/pkg/circlize/man/colorRamp2.html)),
+  optional row splitting and clustering
+
 ### Changed
 
 - `plot_dotmap`: added a short example demonstrating `only_show_top_sig`

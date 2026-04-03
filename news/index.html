@@ -38,6 +38,7 @@
 <h3 id="added-development-version">Added<a class="anchor" aria-label="anchor" href="#added-development-version"></a></h3>
 <ul><li><p><code>plot_dot_whiskers</code>: added <code>pvalue_plot_margin</code> argument to parameterize the p-value panel plot margin (points), default <code>c(5.5, 12, 5.5, 0)</code>. This prevents x-axis labels on the appended p-value barplot from being clipped when the panel is composed to the right using <code>patchwork</code>.</p></li>
 <li><p><code>hallmark_pathway_categories</code>: new internal dataset mapping Hallmark pathway names (the <code>term</code> column, with the <code>HALLMARK_</code> prefix removed) to biological process categories as defined in Table 1 of Liberzon et al. (2015). The dataset includes a runtime validation step against the bundled <code>hallmark_t2g</code> data to ensure pathway names align with MSigDB.</p></li>
+<li><p><code>plot_covariate_heatmap</code>: new function to draw vertical covariate strips (one strip per covariate). Supports categorical covariates (named color vectors) and continuous covariates (<code><a href="https://rdrr.io/pkg/circlize/man/colorRamp2.html" class="external-link">circlize::colorRamp2</a></code>), optional row splitting and clustering</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>

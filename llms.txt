@@ -48,6 +48,8 @@ pak::pak("jarbet/statplot")
   : Stacked percent bar chart for two categorical variables
 - [`plot_bars()`](https://github.com/jarbet/statplot/reference/plot_bars.md)
   : Bar plot by group
+- [`plot_covariate_heatmap()`](https://github.com/jarbet/statplot/reference/plot_covariate_heatmap.md)
+  : Plot a covariate heatmap
 - [`plot_data_avail_by_group()`](https://github.com/jarbet/statplot/reference/plot_data_avail_by_group.md)
   : Plot data availability by group
 - [`plot_dot_whiskers()`](https://github.com/jarbet/statplot/reference/plot_dot_whiskers.md)
