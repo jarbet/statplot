@@ -24,6 +24,7 @@ plot_dotmap(
   combine_pvalue_method = c("CMC", "fisher", "MCM", "cauchy", "minp_bonferroni"),
   sort_by_pvalue = TRUE,
   only_show_top_sig = NULL,
+  also_show_qvalue = TRUE,
   ...,
   patchwork_widths = c(3, 1)
 )

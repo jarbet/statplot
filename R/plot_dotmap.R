@@ -156,6 +156,7 @@ plot_dotmap <- function(
     ),
     sort_by_pvalue = TRUE, # NEW: whether to sort rows by combined p-value
     only_show_top_sig = NULL, # NULL (show all) or positive integer: show top X by combined p-value (only used when add_combined_pvalue_barplot = TRUE)
+    also_show_qvalue = TRUE, # when TRUE, show both p- and q-value bars in the combined barplot
     ...,
     patchwork_widths = c(3, 1) # NEW: widths for patchwork layout when combined plot is requested
 ) {
@@ -220,6 +221,7 @@ plot_dotmap <- function(
         is.logical(add_combined_pvalue_barplot),
         length(add_combined_pvalue_barplot) == 1
     )
+    stopifnot(is.logical(also_show_qvalue), length(also_show_qvalue) == 1)
     stopifnot(is.logical(sort_by_pvalue), length(sort_by_pvalue) == 1)
     stopifnot(
         is.null(only_show_top_sig) ||
@@ -541,7 +543,8 @@ plot_dotmap <- function(
             "y",
             "fill",
             "show_y_labels",
-            "custom_qvalues"
+            "custom_qvalues",
+            "also_show_qvalue"
         )] <- NULL
 
         if (!is.null(user_custom_qvalues)) {
@@ -593,6 +596,7 @@ plot_dotmap <- function(
                     fill = NULL,
                     mlog10_transform_pvalue = mlog10_transform_pvalue,
                     show_y_labels = FALSE, # <- hide labels on the right plot
+                    also_show_qvalue = also_show_qvalue,
                     custom_qvalues = qvalues_arg
                 ),
                 barplot_dots
@@ -605,12 +609,18 @@ plot_dotmap <- function(
         p_obj <- p_obj +
             ggplot2::scale_y_discrete(limits = y_levels, expand = c(0, 0)) +
             ggplot2::coord_cartesian(ylim = c(0.5, n_levels + 0.5)) +
-            ggplot2::theme(legend.position = "left") # move legend to left when combined
+            ggplot2::theme(
+                legend.position = "right",
+                legend.direction = "vertical"
+            )
 
         p_comb <- p_comb +
             ggplot2::scale_y_discrete(limits = y_levels, expand = c(0, 0)) +
             ggplot2::coord_cartesian(ylim = c(0.5, n_levels + 0.5)) +
+            ggplot2::guides(fill = ggplot2::guide_legend(title = "Bar type")) +
             ggplot2::theme(
+                legend.position = "right",
+                legend.direction = "vertical",
                 axis.text.y = ggplot2::element_blank(),
                 axis.ticks.y = ggplot2::element_blank()
             )
@@ -618,7 +628,8 @@ plot_dotmap <- function(
             p_obj,
             p_comb,
             ncol = 2,
-            widths = patchwork_widths
+            widths = patchwork_widths,
+            guides = "collect"
         )
         return(combined)
     } else {
