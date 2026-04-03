@@ -8,7 +8,7 @@ plot_covariate_heatmap(
   dataset,
   color_map,
   row_id_var = NULL,
-  show_row_names = FALSE,
+  show_row_names = TRUE,
   row_names_side = "left",
   plot_spacing = 0.5,
   legend_side = "left",
@@ -31,14 +31,13 @@ auto-generated colors.}
 \item{row_id_var}{Character. Column in \code{dataset} used as row labels
 (y-axis). Default \code{NULL} uses \code{1:nrow(dataset)}.}
 
-\item{show_row_names}{Logical. Whether to display sample labels. Default
-\code{FALSE}.}
+\item{show_row_names}{Logical. Whether to display sample labels.}
 
 \item{row_names_side}{\code{"left"} or \code{"right"}. When
 \code{horizontal = FALSE}, row names are shown on the first strip
 (\code{"left"}) or the last strip (\code{"right"}). Ignored when
-\code{horizontal = TRUE} (sample labels always appear on the bottom
-strip). Default \code{"left"}.}
+\code{horizontal = TRUE}; in that case, when \code{show_row_names = TRUE},
+labels appear on the bottom (last) strip. Default \code{"left"}.}
 
 \item{plot_spacing}{Numeric (mm). Gap between adjacent covariate strips.
 Default \code{0.5}.}

@@ -16,13 +16,12 @@
 #'   auto-generated colors.
 #' @param row_id_var Character. Column in \code{dataset} used as row labels
 #'   (y-axis). Default \code{NULL} uses \code{1:nrow(dataset)}.
-#' @param show_row_names Logical. Whether to display sample labels. Default
-#'   \code{FALSE}.
+#' @param show_row_names Logical. Whether to display sample labels.
 #' @param row_names_side \code{"left"} or \code{"right"}. When
 #'   \code{horizontal = FALSE}, row names are shown on the first strip
 #'   (\code{"left"}) or the last strip (\code{"right"}). Ignored when
-#'   \code{horizontal = TRUE} (sample labels always appear on the bottom
-#'   strip). Default \code{"left"}.
+#'   \code{horizontal = TRUE}; in that case, when \code{show_row_names = TRUE},
+#'   labels appear on the bottom (last) strip. Default \code{"left"}.
 #' @param plot_spacing Numeric (mm). Gap between adjacent covariate strips.
 #'   Default \code{0.5}.
 #' @param legend_side Character. Position of the legends. One of
@@ -100,7 +99,7 @@ plot_covariate_heatmap <- function(
     dataset,
     color_map,
     row_id_var = NULL,
-    show_row_names = FALSE,
+    show_row_names = TRUE,
     row_names_side = "left",
     plot_spacing = 0.5,
     legend_side = "left",
@@ -196,6 +195,7 @@ plot_covariate_heatmap <- function(
     for (i in seq_along(cov_names)) {
         nm <- cov_names[i]
         data_lvls <- unique(as.character(dataset[[nm]]))
+        data_lvls <- data_lvls[!is.na(data_lvls)] # exclude NA before color resolution
         user_map <- color_map[[nm]]
         all_lvls <- union(data_lvls, names(user_map))
         missing_lvls <- setdiff(all_lvls, names(user_map))
@@ -247,9 +247,11 @@ plot_covariate_heatmap <- function(
     }
 
     n_covs <- length(cov_names)
-    # y-factor: levels in original order; scale_y_discrete(limits = rev)
-    # will reverse them so the first row appears at the top of the plot.
-    y_factor <- factor(row_labels, levels = row_labels)
+    # Use a unique integer index for tile positioning so that duplicate
+    # row_labels do not collapse onto the same discrete axis position.
+    # row_label_map maps each index string back to the display label.
+    y_idx <- as.character(seq_len(nrow(dataset)))
+    row_label_map <- stats::setNames(row_labels, y_idx)
 
     # ---- build one ggplot per covariate strip -------------------------------
     plots <- vector("list", n_covs)
@@ -257,8 +259,11 @@ plot_covariate_heatmap <- function(
         nm <- cov_names[i]
 
         df_i <- data.frame(
-            y = y_factor,
-            fill_val = as.character(dataset[[nm]]),
+            y = y_idx,
+            fill_val = factor(
+                as.character(dataset[[nm]]),
+                levels = names(final_colors[[nm]])
+            ),
             stringsAsFactors = FALSE
         )
 
@@ -281,7 +286,7 @@ plot_covariate_heatmap <- function(
                     name = leg_title,
                     drop = FALSE
                 ) +
-                ggplot2::scale_x_discrete() +
+                ggplot2::scale_x_discrete(labels = row_label_map) +
                 ggplot2::scale_y_continuous(
                     limits = c(0, 1),
                     expand = ggplot2::expansion(0)
@@ -335,7 +340,10 @@ plot_covariate_heatmap <- function(
                     limits = c(0, 1),
                     expand = ggplot2::expansion(0)
                 ) +
-                ggplot2::scale_y_discrete(limits = rev) +
+                ggplot2::scale_y_discrete(
+                    limits = rev,
+                    labels = row_label_map
+                ) +
                 ggplot2::labs(
                     x = NULL,
                     y = NULL,
