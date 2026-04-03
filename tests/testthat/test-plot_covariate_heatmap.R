@@ -24,7 +24,7 @@ make_col_fun <- function(x) {
 test_that("returns a HeatmapList invisibly (categorical)", {
     df <- make_cov_df()
     result <- plot_covariate_heatmap(
-        dataset   = df,
+        dataset = df,
         color_map = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
         row_id_var = "sample"
     )
@@ -34,7 +34,7 @@ test_that("returns a HeatmapList invisibly (categorical)", {
 test_that("returns a HeatmapList invisibly (continuous)", {
     df <- make_cov_df()
     result <- plot_covariate_heatmap(
-        dataset   = df,
+        dataset = df,
         color_map = list(qc_score = make_col_fun(df$qc_score)),
         row_id_var = "sample"
     )
@@ -46,7 +46,7 @@ test_that("returns a HeatmapList with multiple mixed covariates", {
     result <- plot_covariate_heatmap(
         dataset = df,
         color_map = list(
-            group    = c(G1 = "#1b9e77", G2 = "#d95f02"),
+            group = c(G1 = "#1b9e77", G2 = "#d95f02"),
             qc_score = make_col_fun(df$qc_score)
         ),
         row_id_var = "sample"
@@ -61,9 +61,9 @@ test_that("returns a HeatmapList with multiple mixed covariates", {
 test_that("return_details = TRUE gives list with ht and final_colors", {
     df <- make_cov_df()
     out <- plot_covariate_heatmap(
-        dataset        = df,
-        color_map      = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
-        row_id_var     = "sample",
+        dataset = df,
+        color_map = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
+        row_id_var = "sample",
         return_details = TRUE
     )
     expect_type(out, "list")
@@ -78,9 +78,9 @@ test_that("return_details = TRUE gives list with ht and final_colors", {
 test_that("user-specified categorical colors are preserved in final_colors", {
     df <- make_cov_df()
     out <- plot_covariate_heatmap(
-        dataset        = df,
-        color_map      = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
-        row_id_var     = "sample",
+        dataset = df,
+        color_map = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
+        row_id_var = "sample",
         return_details = TRUE
     )
     expect_equal(unname(out$final_colors$group["G1"]), "#1b9e77")
@@ -91,9 +91,9 @@ test_that("data levels missing from color_map receive auto-generated colors", {
     df <- make_cov_df()
     # Only supply G1; G2 must be auto-filled
     out <- plot_covariate_heatmap(
-        dataset        = df,
-        color_map      = list(group = c(G1 = "#1b9e77")),
-        row_id_var     = "sample",
+        dataset = df,
+        color_map = list(group = c(G1 = "#1b9e77")),
+        row_id_var = "sample",
         return_details = TRUE
     )
     expect_true("G2" %in% names(out$final_colors$group))
@@ -101,12 +101,12 @@ test_that("data levels missing from color_map receive auto-generated colors", {
 })
 
 test_that("continuous covariate passes colorRamp2 function through unchanged", {
-    df  <- make_cov_df()
+    df <- make_cov_df()
     fun <- make_col_fun(df$qc_score)
     out <- plot_covariate_heatmap(
-        dataset        = df,
-        color_map      = list(qc_score = fun),
-        row_id_var     = "sample",
+        dataset = df,
+        color_map = list(qc_score = fun),
+        row_id_var = "sample",
         return_details = TRUE
     )
     expect_true(is.function(out$final_colors$qc_score))
@@ -120,8 +120,8 @@ test_that("row_id_var = NULL falls back to sequential integer row labels", {
     df <- make_cov_df()
     expect_no_error(
         plot_covariate_heatmap(
-            dataset    = df,
-            color_map  = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
+            dataset = df,
+            color_map = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
             row_id_var = NULL
         )
     )
@@ -135,9 +135,11 @@ test_that("row_split_var with 2+ levels does not error", {
     df <- make_cov_df()
     expect_no_error(
         plot_covariate_heatmap(
-            dataset       = df,
-            color_map     = list(condition = c(healthy = "#b3de69", EAE = "#fccde5")),
-            row_id_var    = "sample",
+            dataset = df,
+            color_map = list(
+                condition = c(healthy = "#b3de69", EAE = "#fccde5")
+            ),
+            row_id_var = "sample",
             row_split_var = "group"
         )
     )
@@ -147,9 +149,11 @@ test_that("row_split_var with only 1 level errors", {
     df <- make_cov_df() |> dplyr::filter(group == "G1")
     expect_error(
         plot_covariate_heatmap(
-            dataset       = df,
-            color_map     = list(condition = c(healthy = "#b3de69", EAE = "#fccde5")),
-            row_id_var    = "sample",
+            dataset = df,
+            color_map = list(
+                condition = c(healthy = "#b3de69", EAE = "#fccde5")
+            ),
+            row_id_var = "sample",
             row_split_var = "group"
         ),
         "at least 2 levels"
@@ -164,7 +168,7 @@ test_that("color_map column absent from dataset errors", {
     df <- make_cov_df()
     expect_error(
         plot_covariate_heatmap(
-            dataset   = df,
+            dataset = df,
             color_map = list(nonexistent = c(a = "#ff0000")),
             row_id_var = "sample"
         ),
@@ -176,8 +180,8 @@ test_that("unnamed color_map errors", {
     df <- make_cov_df()
     expect_error(
         plot_covariate_heatmap(
-            dataset   = df,
-            color_map = list(c(G1 = "#1b9e77")),  # no name on the list element
+            dataset = df,
+            color_map = list(c(G1 = "#1b9e77")), # no name on the list element
             row_id_var = "sample"
         ),
         "named"
@@ -188,8 +192,8 @@ test_that("unnamed character vector inside color_map errors", {
     df <- make_cov_df()
     expect_error(
         plot_covariate_heatmap(
-            dataset   = df,
-            color_map = list(group = c("#1b9e77", "#d95f02")),  # no names
+            dataset = df,
+            color_map = list(group = c("#1b9e77", "#d95f02")), # no names
             row_id_var = "sample"
         ),
         "named"
@@ -200,8 +204,8 @@ test_that("row_id_var not in dataset errors", {
     df <- make_cov_df()
     expect_error(
         plot_covariate_heatmap(
-            dataset    = df,
-            color_map  = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
+            dataset = df,
+            color_map = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
             row_id_var = "no_such_col"
         ),
         "not found in `dataset`"
@@ -211,7 +215,7 @@ test_that("row_id_var not in dataset errors", {
 test_that("non-data-frame dataset errors", {
     expect_error(
         plot_covariate_heatmap(
-            dataset   = matrix(1:4, 2, 2),
+            dataset = matrix(1:4, 2, 2),
             color_map = list(V1 = c(a = "#ff0000"))
         )
     )
@@ -222,29 +226,29 @@ test_that("non-data-frame dataset errors", {
 # ---------------------------------------------------------------------------
 
 test_that("merge_legends = TRUE with identical color maps does not error", {
-    df  <- make_cov_df()
+    df <- make_cov_df()
     fun <- make_col_fun(df$qc_score)
     # Add a second numeric column with same range to reuse the same color fn
     df$qc_score2 <- df$qc_score
     expect_no_error(
         plot_covariate_heatmap(
-            dataset       = df,
-            color_map     = list(qc_score = fun, qc_score2 = fun),
-            row_id_var    = "sample",
+            dataset = df,
+            color_map = list(qc_score = fun, qc_score2 = fun),
+            row_id_var = "sample",
             merge_legends = TRUE
         )
     )
 })
 
 test_that("merge_legends = FALSE (default) with duplicate color maps does not error", {
-    df  <- make_cov_df()
+    df <- make_cov_df()
     fun <- make_col_fun(df$qc_score)
     df$qc_score2 <- df$qc_score
     expect_no_error(
         plot_covariate_heatmap(
-            dataset       = df,
-            color_map     = list(qc_score = fun, qc_score2 = fun),
-            row_id_var    = "sample",
+            dataset = df,
+            color_map = list(qc_score = fun, qc_score2 = fun),
+            row_id_var = "sample",
             merge_legends = FALSE
         )
     )
