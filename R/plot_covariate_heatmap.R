@@ -29,8 +29,9 @@
 #'   Default \code{"left"}.
 #' @param column_labels_side Character. Where to show the covariate name
 #'   labels. When \code{horizontal = FALSE}: \code{"top"} or \code{"bottom"}
-#'   (default). When \code{horizontal = TRUE}: \code{"left"} (default) or
-#'   \code{"right"}.
+#'   (default). When \code{horizontal = TRUE}: \code{"left"} (default) places
+#'   the label on the left y-axis; \code{"right"} places it on the right
+#'   y-axis by setting \code{position = "right"} on the continuous y scale.
 #' @param horizontal Logical. When \code{TRUE} the layout is transposed:
 #'   samples appear on the x-axis and strips are stacked vertically so the
 #'   plot can be combined below a main ggplot. Default \code{FALSE}.
@@ -158,6 +159,14 @@ plot_covariate_heatmap <- function(
     } else {
         as.character(seq_len(nrow(dataset)))
     }
+    if (anyDuplicated(row_labels) > 0L) {
+        stop(
+            "`row_id_var` '",
+            row_id_var,
+            "' contains duplicate values. ",
+            "Each row must have a unique label."
+        )
+    }
 
     # ---- auto-generate missing categorical colors ---------------------------
     brewer_quals <- c(
@@ -247,11 +256,6 @@ plot_covariate_heatmap <- function(
     }
 
     n_covs <- length(cov_names)
-    # Use a unique integer index for tile positioning so that duplicate
-    # row_labels do not collapse onto the same discrete axis position.
-    # row_label_map maps each index string back to the display label.
-    y_idx <- as.character(seq_len(nrow(dataset)))
-    row_label_map <- stats::setNames(row_labels, y_idx)
 
     # ---- build one ggplot per covariate strip -------------------------------
     plots <- vector("list", n_covs)
@@ -259,7 +263,7 @@ plot_covariate_heatmap <- function(
         nm <- cov_names[i]
 
         df_i <- data.frame(
-            y = y_idx,
+            y = row_labels,
             fill_val = factor(
                 as.character(dataset[[nm]]),
                 levels = names(final_colors[[nm]])
@@ -286,8 +290,13 @@ plot_covariate_heatmap <- function(
                     name = leg_title,
                     drop = FALSE
                 ) +
-                ggplot2::scale_x_discrete(labels = row_label_map) +
+                ggplot2::scale_x_discrete() +
                 ggplot2::scale_y_continuous(
+                    position = if (column_labels_side == "right") {
+                        "right"
+                    } else {
+                        "left"
+                    },
                     limits = c(0, 1),
                     expand = ggplot2::expansion(0)
                 ) +
@@ -299,7 +308,11 @@ plot_covariate_heatmap <- function(
                         vjust = 0.5,
                         hjust = if (column_labels_side == "right") 0 else 1,
                         size = 10,
-                        margin = ggplot2::margin(r = 4)
+                        margin = if (column_labels_side == "right") {
+                            ggplot2::margin(l = 4)
+                        } else {
+                            ggplot2::margin(r = 4)
+                        }
                     ),
                     plot.margin = ggplot2::margin(
                         half_gap_mm,
@@ -340,10 +353,7 @@ plot_covariate_heatmap <- function(
                     limits = c(0, 1),
                     expand = ggplot2::expansion(0)
                 ) +
-                ggplot2::scale_y_discrete(
-                    limits = rev,
-                    labels = row_label_map
-                ) +
+                ggplot2::scale_y_discrete(limits = rev) +
                 ggplot2::labs(
                     x = NULL,
                     y = NULL,

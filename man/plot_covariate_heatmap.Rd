@@ -48,8 +48,9 @@ Default \code{"left"}.}
 
 \item{column_labels_side}{Character. Where to show the covariate name
 labels. When \code{horizontal = FALSE}: \code{"top"} or \code{"bottom"}
-(default). When \code{horizontal = TRUE}: \code{"left"} (default) or
-\code{"right"}.}
+(default). When \code{horizontal = TRUE}: \code{"left"} (default) places
+the label on the left y-axis; \code{"right"} places it on the right
+y-axis by setting \code{position = "right"} on the continuous y scale.}
 
 \item{horizontal}{Logical. When \code{TRUE} the layout is transposed:
 samples appear on the x-axis and strips are stacked vertically so the
