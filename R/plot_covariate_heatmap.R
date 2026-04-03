@@ -27,6 +27,12 @@
 #' @param legend_side Character. Position of the legends. One of
 #'   \code{"left"}, \code{"right"}, \code{"top"}, or \code{"bottom"}.
 #'   Default \code{"left"}.
+#' @param legend_title NULL, a single character string, or a named character
+#'   vector. When NULL (default) the legend title is the covariate name
+#'   (or combined covariate names when \code{merge_legends = TRUE}). If a
+#'   single string is supplied it is used for all legends. If a named vector is
+#'   supplied, entries matching covariate names override titles for those
+#'   covariates.
 #' @param column_labels_side Character. Where to show the covariate name
 #'   labels. When \code{horizontal = FALSE}: \code{"top"} or \code{"bottom"}
 #'   (default). When \code{horizontal = TRUE}: \code{"left"} (default) places
@@ -104,6 +110,7 @@ plot_covariate_heatmap <- function(
     row_names_side = "left",
     plot_spacing = 0.5,
     legend_side = "left",
+    legend_title = NULL,
     column_labels_side = "bottom",
     horizontal = FALSE,
     merge_legends = FALSE,
@@ -112,6 +119,10 @@ plot_covariate_heatmap <- function(
     # ---- input checks -------------------------------------------------------
     stopifnot(is.data.frame(dataset))
     stopifnot(is.list(color_map), length(color_map) >= 1L)
+
+    if (!is.null(legend_title)) {
+        stopifnot(is.character(legend_title), length(legend_title) >= 1L)
+    }
 
     cov_names <- names(color_map)
     if (is.null(cov_names) || any(!nzchar(cov_names))) {
@@ -272,7 +283,27 @@ plot_covariate_heatmap <- function(
         )
 
         show_leg <- if (!is.null(legend_info)) legend_info$show[[nm]] else TRUE
-        leg_title <- if (!is.null(legend_info)) legend_info$titles[[nm]] else nm
+        if (!is.null(legend_title)) {
+            if (length(legend_title) == 1L) {
+                leg_title <- as.character(legend_title)
+            } else if (
+                !is.null(names(legend_title)) && nm %in% names(legend_title)
+            ) {
+                leg_title <- as.character(legend_title[[nm]])
+            } else {
+                leg_title <- if (!is.null(legend_info)) {
+                    legend_info$titles[[nm]]
+                } else {
+                    nm
+                }
+            }
+        } else {
+            leg_title <- if (!is.null(legend_info)) {
+                legend_info$titles[[nm]]
+            } else {
+                nm
+            }
+        }
 
         half_gap_mm <- plot_spacing / 2
 
@@ -301,7 +332,6 @@ plot_covariate_heatmap <- function(
                     expand = ggplot2::expansion(0)
                 ) +
                 ggplot2::labs(x = NULL, y = nm) +
-                ggplot2::theme_minimal(base_size = 11) +
                 ggplot2::theme(
                     axis.title.y = ggplot2::element_text(
                         angle = 0,
@@ -360,7 +390,6 @@ plot_covariate_heatmap <- function(
                     title = if (column_labels_side == "top") nm else NULL,
                     caption = if (column_labels_side == "bottom") nm else NULL
                 ) +
-                ggplot2::theme_minimal(base_size = 11) +
                 ggplot2::theme(
                     plot.title = ggplot2::element_text(
                         hjust = 0.5,

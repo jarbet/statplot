@@ -12,6 +12,7 @@ plot_covariate_heatmap(
   row_names_side = "left",
   plot_spacing = 0.5,
   legend_side = "left",
+  legend_title = NULL,
   column_labels_side = "bottom",
   horizontal = FALSE,
   merge_legends = FALSE,
@@ -45,6 +46,13 @@ Default \code{0.5}.}
 \item{legend_side}{Character. Position of the legends. One of
 \code{"left"}, \code{"right"}, \code{"top"}, or \code{"bottom"}.
 Default \code{"left"}.}
+
+\item{legend_title}{NULL, a single character string, or a named character
+vector. When NULL (default) the legend title is the covariate name
+(or combined covariate names when \code{merge_legends = TRUE}). If a
+single string is supplied it is used for all legends. If a named vector is
+supplied, entries matching covariate names override titles for those
+covariates.}
 
 \item{column_labels_side}{Character. Where to show the covariate name
 labels. When \code{horizontal = FALSE}: \code{"top"} or \code{"bottom"}
