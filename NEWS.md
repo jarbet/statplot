@@ -15,8 +15,7 @@ biological process categories as defined in Table 1 of Liberzon et al.
 
 * `plot_covariate_heatmap`: new function to draw vertical covariate strips
   (one strip per covariate). Supports categorical covariates (named color
-  vectors) and continuous covariates (`circlize::colorRamp2`), optional row
-  splitting and clustering
+  vectors) only.
 
 
 ## Changed
@@ -24,6 +23,10 @@ biological process categories as defined in Table 1 of Liberzon et al.
 * `plot_dotmap`: added a short example demonstrating `only_show_top_sig` (shows top N rows in the combined p-value barplot) and updated the `combine_pvalue_method` parameter documentation to reference `combine_pvalues` for method details.
 
 * `combine_pvalues`: default `methods` changed from `'all'` to `'CMC'`; documentation and tests updated to reflect the new default.
+
+* `plot_dotmap`: the default `combine_pvalue_method` is now `"fisher"` (was previously `"CMC"` when not supplied via `match.arg()`); documentation and examples updated to reflect the new default choice.
+
+* `plot_pvalue_barplot`: improved legend behaviour — when a vertical significance line legend is requested (`vline = TRUE, vline_legend = TRUE`) the colour scale now stores an explicit named `values` vector so code and tests can programmatically find the named alpha entry; also the fill legend uses `override.aes` to remove line linetype in legend keys when showing p/q bars so legend keys render as solid/filled swatches.
 
 ## Fixed
 

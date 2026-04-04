@@ -1,126 +1,137 @@
 #' Plot a covariate heatmap
 #'
-#' Displays one vertical strip per covariate, where each strip is an
-#' independent \code{\link[ComplexHeatmap]{Heatmap}} combined into a
-#' \code{\link[ComplexHeatmap]{HeatmapList}}. Both categorical (named-vector
-#' colors) and continuous (\code{\link[circlize]{colorRamp2}} function) variables
-#' are supported.
+#' Displays one vertical strip per covariate using
+#' \code{\link[ggplot2]{geom_tile}}, with all strips combined via
+#' \code{\link[patchwork]{wrap_plots}}. Because the output is a standard
+#' \pkg{ggplot2}/\pkg{patchwork} object it aligns naturally with other ggplots
+#' (e.g. when combined with \code{|} or \code{/} from \pkg{patchwork}).
+#' Only categorical (named-vector colors) covariates are supported.
 #'
 #' @param dataset A data frame. Must contain all columns named in
-#'   \code{color_map} and, if supplied, \code{row_id_var} and
-#'   \code{row_split_var}.
+#'   \code{color_map} and, if supplied, \code{row_id_var}.
 #' @param color_map A named list specifying which covariates to plot and their
 #'   color mappings. Each name must be a column in \code{dataset}. Each element
-#'   is either:
-#'   \itemize{
-#'     \item A **named character vector** mapping factor levels to hex colors
-#'       (for categorical/character/factor columns). Any levels present in the
-#'       data but absent from the vector receive auto-generated colors.
-#'     \item A **colorRamp2 function** (for continuous/numeric columns), e.g.
-#'       one created by \code{\link[circlize]{colorRamp2}}.
-#'   }
+#'   must be a **named character vector** mapping factor levels to hex colors.
+#'   Any levels present in the data but absent from the vector receive
+#'   auto-generated colors.
 #' @param row_id_var Character. Column in \code{dataset} used as row labels
-#'   (matrix rownames). Default \code{NULL} uses \code{1:nrow(dataset)}.
-#' @param row_split_var Character. Column in \code{dataset} used to split rows
-#'   into groups. Must have \eqn{\geq 2} distinct levels. Default \code{NULL}.
-#' @param cluster_rows Logical. Whether to cluster rows. When \code{TRUE},
-#'   clustering is performed on the first covariate strip and the resulting
-#'   row order is shared across all strips. Default \code{FALSE}.
-#' @param show_row_names Logical. Default \code{TRUE}.
-#' @param row_names_side \code{"left"} or \code{"right"}. Row names are shown
-#'   on the first strip when \code{"left"} and the last strip when
-#'   \code{"right"}. Default \code{"left"}.
-#' @param ht_gap A \code{\link[grid]{unit}} object controlling the gap between
-#'   adjacent covariate strips. Passed as \code{ht_gap} to
-#'   \code{\link[ComplexHeatmap]{draw}}. Default
-#'   \code{grid::unit(0.2, "mm")}. Set to \code{grid::unit(0, "mm")} to remove
-#'   all gaps.
-#' @param row_gap A \code{\link[grid]{unit}} object controlling the gap between
-#'   row-split groups. Passed as \code{row_gap} to each
-#'   \code{\link[ComplexHeatmap]{Heatmap}} call. Default
-#'   \code{grid::unit(0.2, "mm")}. Set to \code{grid::unit(0, "mm")} to remove
-#'   row gaps entirely.
+#'   (y-axis). Default \code{NULL} uses \code{1:nrow(dataset)}.
+#' @param show_row_names Logical. Whether to display sample labels.
+#' @param show_column_names Logical. Whether to display covariate name labels
+#'   (column labels). When \code{horizontal = FALSE}: labels appear as plot
+#'   titles (\code{column_labels_side = "top"}) or captions
+#'   (\code{column_labels_side = "bottom"}). When \code{horizontal = TRUE}:
+#'   the covariate name appears on the y-axis; \code{column_labels_side}
+#'   controls left/right placement. Ignored when \code{show_column_names = FALSE}.
+#'   Default \code{TRUE}.
+#' @param row_names_side \code{"left"} or \code{"right"}. When
+#' @param row_names_side \code{"left"} or \code{"right"}. When
+#'   \code{horizontal = FALSE}, row names are shown on the first strip
+#'   (\code{"left"}) or the last strip (\code{"right"}). Ignored when
+#'   \code{horizontal = TRUE}; in that case, when \code{show_row_names = TRUE},
+#'   labels appear on the bottom (last) strip. Default \code{"left"}.
+#' @param plot_spacing Numeric (mm). Gap between adjacent covariate strips.
+#'   Default \code{0.5}.
 #' @param legend_side Character. Position of the legends. One of
 #'   \code{"left"}, \code{"right"}, \code{"top"}, or \code{"bottom"}.
-#'   Passed as both \code{heatmap_legend_side} and
-#'   \code{annotation_legend_side} to \code{\link[ComplexHeatmap]{draw}}.
 #'   Default \code{"left"}.
-#' @param merge_legends Logical. When \code{TRUE}: (1) strips sharing the exact
-#'   same color mapping are collapsed into one legend whose title joins the
-#'   covariate names with \code{"\\n"}; (2) the value is forwarded as
-#'   \code{merge_legends} to \code{\link[ComplexHeatmap]{draw}}. Default
+#' @param legend_title NULL, a single character string, or a named character
+#'   vector. When NULL (default) the legend title is the covariate name
+#'   (or combined covariate names when \code{merge_legends = TRUE}). If a
+#'   single string is supplied it is used for all legends. If a named vector is
+#'   supplied, entries matching covariate names override titles for those
+#'   covariates.
+#' @param column_labels_side Character. Where to show the covariate name
+#'   labels. When \code{horizontal = FALSE}: \code{"top"} or \code{"bottom"}
+#'   (default). When \code{horizontal = TRUE}: \code{"left"} (default) places
+#'   the label on the left y-axis; \code{"right"} places it on the right
+#'   y-axis by setting \code{position = "right"} on the continuous y scale.
+#' @param horizontal Logical. When \code{TRUE} the layout is transposed:
+#'   samples appear on the x-axis and strips are stacked vertically so the
+#'   plot can be combined below a main ggplot. Default \code{FALSE}.
+#' @param merge_legends Logical. When \code{TRUE}, strips sharing the exact
+#'   same color mapping show a legend only on the first occurrence; that
+#'   legend's title joins the covariate names with \code{"\\n"}. Default
 #'   \code{FALSE}.
 #' @param return_details Logical. If \code{TRUE}, returns a named list with
-#'   elements \code{ht} (the drawn \code{HeatmapList}) and \code{final_colors}
+#'   elements \code{ht} (the \code{patchwork} object) and \code{final_colors}
 #'   (the resolved color map). Default \code{FALSE}.
-#' @param ... Additional arguments passed to every
-#'   \code{\link[ComplexHeatmap]{Heatmap}} call (e.g. \code{column_names_rot},
-#'   \code{width}, \code{column_title_gp}).
 #'
-#' @return Invisibly returns the drawn \code{\link[ComplexHeatmap]{HeatmapList}}
-#'   object, or a named list with elements \code{ht} and \code{final_colors}
-#'   when \code{return_details = TRUE}.
+#' @return Invisibly returns a \code{\link[patchwork]{wrap_plots}}
+#'   (\code{patchwork}) object, or a named list with elements \code{ht} and
+#'   \code{final_colors} when \code{return_details = TRUE}.
 #'
 #' @examples
 #' data(ex_data_heatmap)
 #'
 #' # Build a one-row-per-sample metadata frame
 #' sample_meta <- ex_data_heatmap |>
-#'   dplyr::select(sample, group, condition, sample_type, qc_score) |>
+#'   dplyr::select(sample, group, condition, sample_type) |>
 #'   dplyr::distinct()
 #'
-#' rng_qc <- range(sample_meta$qc_score, na.rm = TRUE)
-#' col_fun_qc <- circlize::colorRamp2(
-#'   c(rng_qc[1], mean(rng_qc), rng_qc[2]),
-#'   c("#ffffcc", "#41b6c4", "#0c2c84")
-#' )
-#'
-#' # Multiple covariates (categorical + continuous)
+#' # Multiple categorical covariates
 #' plot_covariate_heatmap(
 #'   dataset = sample_meta,
 #'   color_map = list(
 #'     group       = c(G1 = "#1b9e77", G2 = "#d95f02"),
 #'     condition   = c(healthy = "#b3de69", EAE = "#fccde5"),
-#'     sample_type = c(input = "#8dd3c7", IP = "#80b1d3"),
-#'     qc_score    = col_fun_qc
+#'     sample_type = c(input = "#8dd3c7", IP = "#80b1d3")
 #'   ),
-#'   row_id_var    = "sample",
-#'   row_split_var = NULL,
-#'   cluster_rows  = FALSE
+#'   row_id_var = "sample"
 #' )
 #'
-#' # Single categorical covariate bar
+#' # Single vertical covariate bar - useful for placing to left/right of the main ggplot
 #' plot_covariate_heatmap(
 #'   dataset    = sample_meta,
 #'   color_map  = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
 #'   row_id_var = "sample"
 #' )
 #'
-#' # Single continuous covariate bar
+#' # Single horizontal covariate bar — useful for placing below a main ggplot
 #' plot_covariate_heatmap(
 #'   dataset    = sample_meta,
-#'   color_map  = list(qc_score = col_fun_qc),
-#'   row_id_var = "sample"
+#'   color_map  = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
+#'   row_id_var = "sample",
+#'   horizontal = TRUE
+#' )
+#'
+#'
+#' # merge_legends: two strips sharing the same color mapping → one legend
+#' # whose title combines both covariate names.
+#' grp_colors <- c(G1 = "#1b9e77", G2 = "#d95f02")
+#' sample_meta2 <- dplyr::mutate(sample_meta, group_rep = group)
+#' plot_covariate_heatmap(
+#'   dataset = sample_meta2,
+#'   color_map = list(
+#'     group     = grp_colors,
+#'     group_rep = grp_colors
+#'   ),
+#'   row_id_var    = "sample",
+#'   merge_legends = TRUE
 #' )
 #' @export
 plot_covariate_heatmap <- function(
     dataset,
     color_map,
     row_id_var = NULL,
-    row_split_var = NULL,
-    cluster_rows = FALSE,
     show_row_names = TRUE,
+    show_column_names = TRUE,
     row_names_side = "left",
-    ht_gap = grid::unit(0.2, "mm"),
-    row_gap = grid::unit(0.2, "mm"),
+    plot_spacing = 0.5,
     legend_side = "left",
+    legend_title = NULL,
+    column_labels_side = "bottom",
+    horizontal = FALSE,
     merge_legends = FALSE,
-    return_details = FALSE,
-    ...
+    return_details = FALSE
 ) {
     # ---- input checks -------------------------------------------------------
     stopifnot(is.data.frame(dataset))
     stopifnot(is.list(color_map), length(color_map) >= 1L)
+
+    if (!is.null(legend_title)) {
+        stopifnot(is.character(legend_title), length(legend_title) >= 1L)
+    }
 
     cov_names <- names(color_map)
     if (is.null(cov_names) || any(!nzchar(cov_names))) {
@@ -139,62 +150,45 @@ plot_covariate_heatmap <- function(
             stop("`row_id_var` '", row_id_var, "' not found in `dataset`.")
         }
     }
-    if (!is.null(row_split_var)) {
-        stopifnot(is.character(row_split_var), length(row_split_var) == 1L)
-        if (!row_split_var %in% names(dataset)) {
-            stop(
-                "`row_split_var` '",
-                row_split_var,
-                "' not found in `dataset`."
-            )
-        }
-    }
-    if (isTRUE(cluster_rows) && nrow(dataset) < 2L) {
-        stop("`cluster_rows = TRUE` requires at least 2 rows.")
-    }
-
-    # ---- validate color_map entries -----------------------------------------
+    # ---- validate color_map entries: categorical only -----------------------
     for (nm in cov_names) {
         entry <- color_map[[nm]]
-        if (!is.function(entry)) {
-            if (!is.character(entry)) {
-                stop(
-                    "`color_map$",
-                    nm,
-                    "` must be a named character vector or a colorRamp2 function."
-                )
-            }
-            if (is.null(names(entry)) || any(!nzchar(names(entry)))) {
-                stop("`color_map$", nm, "` must be a *named* character vector.")
-            }
+        if (is.function(entry)) {
+            stop(
+                "`color_map$",
+                nm,
+                "`: continuous (colorRamp2) covariates are ",
+                "not supported. Supply a named character vector instead."
+            )
+        }
+        if (!is.character(entry)) {
+            stop(
+                "`color_map$",
+                nm,
+                "` must be a named character vector."
+            )
+        }
+        if (is.null(names(entry)) || any(!nzchar(names(entry)))) {
+            stop("`color_map$", nm, "` must be a *named* character vector.")
         }
     }
 
-    # ---- row labels & split -------------------------------------------------
+    # ---- row labels ---------------------------------------------------------
     row_labels <- if (!is.null(row_id_var)) {
         as.character(dataset[[row_id_var]])
     } else {
         as.character(seq_len(nrow(dataset)))
     }
-
-    row_split <- if (!is.null(row_split_var)) {
-        sv <- factor(dataset[[row_split_var]])
-        if (nlevels(sv) < 2L) {
-            stop(
-                "`row_split_var` must have at least 2 levels; found ",
-                nlevels(sv),
-                "."
-            )
-        }
-        sv
-    } else {
-        NULL
+    if (anyDuplicated(row_labels) > 0L) {
+        stop(
+            "`row_id_var` '",
+            row_id_var,
+            "' contains duplicate values. ",
+            "Each row must have a unique label."
+        )
     }
 
-    # ---- helper: is this covariate continuous? -------------------------------
-    is_continuous <- function(nm) is.function(color_map[[nm]])
-
-    # ---- fill final_colors: auto-generate missing categorical colors --------
+    # ---- auto-generate missing categorical colors ---------------------------
     brewer_quals <- c(
         "Set1",
         "Set2",
@@ -229,147 +223,252 @@ plot_covariate_heatmap <- function(
     names(final_colors) <- cov_names
     for (i in seq_along(cov_names)) {
         nm <- cov_names[i]
-        if (is_continuous(nm)) {
-            final_colors[[nm]] <- color_map[[nm]]
-        } else {
-            data_lvls <- unique(as.character(dataset[[nm]]))
-            user_map <- color_map[[nm]]
-            all_lvls <- union(data_lvls, names(user_map))
-            missing_lvls <- setdiff(all_lvls, names(user_map))
-            if (length(missing_lvls)) {
-                user_map <- c(user_map, auto_colors_for(missing_lvls, i))
-            }
-            final_colors[[nm]] <- user_map
+        data_lvls <- unique(as.character(dataset[[nm]]))
+        data_lvls <- data_lvls[!is.na(data_lvls)] # exclude NA before color resolution
+        user_map <- color_map[[nm]]
+        all_lvls <- union(data_lvls, names(user_map))
+        missing_lvls <- setdiff(all_lvls, names(user_map))
+        if (length(missing_lvls)) {
+            user_map <- c(user_map, auto_colors_for(missing_lvls, i))
         }
+        final_colors[[nm]] <- user_map
     }
 
-    # ---- merge-legend deduplication (mirrors plot_heatmap logic) ------------
+    # ---- merge-legend deduplication -----------------------------------------
+    # When merge_legends = TRUE, duplicate-color strips suppress their legend;
+    # the first occurrence gets a combined title.
     color_key <- function(col) {
-        if (is.function(col)) {
-            env <- environment(col)
-            env_names <- ls(env)
-            if (all(c("breaks", "colors") %in% env_names)) {
-                list(
-                    type = "colorRamp2",
-                    breaks = env$breaks,
-                    colors = env$colors
-                )
-            } else {
-                list(type = "unknown_fn", fn = col)
-            }
-        } else if (is.character(col) && !is.null(names(col))) {
-            list(type = "named_vector", sorted = col[order(names(col))])
-        } else {
-            list(type = "other", val = col)
-        }
+        list(type = "named_vector", sorted = col[order(names(col))])
     }
 
-    dedup_legend <- function(covs, colors) {
-        show <- stats::setNames(rep(TRUE, length(covs)), covs)
-        params <- stats::setNames(vector("list", length(covs)), covs)
-        group_rep <- character(length(covs))
+    legend_info <- if (isTRUE(merge_legends)) {
+        show <- stats::setNames(rep(TRUE, length(cov_names)), cov_names)
+        titles <- stats::setNames(cov_names, cov_names)
         seen_keys <- list()
         seen_reps <- character()
-        for (v in covs) {
-            key <- color_key(colors[[v]])
+        group_rep <- stats::setNames(character(length(cov_names)), cov_names)
+
+        for (v in cov_names) {
+            key <- color_key(final_colors[[v]])
             match_idx <- which(vapply(
                 seen_keys,
                 function(s) identical(s, key),
                 logical(1)
             ))
             if (length(match_idx)) {
-                group_rep[[which(covs == v)]] <- seen_reps[[match_idx]]
                 show[[v]] <- FALSE
+                group_rep[[v]] <- seen_reps[[match_idx]]
             } else {
                 seen_keys <- c(seen_keys, list(key))
                 seen_reps <- c(seen_reps, v)
-                group_rep[[which(covs == v)]] <- v
+                group_rep[[v]] <- v
             }
         }
         for (rep_v in unique(group_rep)) {
-            members <- covs[group_rep == rep_v]
+            members <- cov_names[group_rep == rep_v]
             if (length(members) > 1L) {
-                params[[rep_v]] <- list(title = paste(members, collapse = "\n"))
+                titles[[rep_v]] <- paste(members, collapse = "\n")
             }
         }
-        list(
-            show_legend = show,
-            legend_params = Filter(Negate(is.null), params)
-        )
-    }
-
-    legend_info <- if (isTRUE(merge_legends)) {
-        dedup_legend(cov_names, final_colors)
+        list(show = show, titles = titles)
     } else {
         NULL
     }
 
     n_covs <- length(cov_names)
 
-    # ---- build HeatmapList: one Heatmap per covariate -----------------------
-    ht_list <- NULL
+    # ---- build one ggplot per covariate strip -------------------------------
+    plots <- vector("list", n_covs)
     for (i in seq_along(cov_names)) {
         nm <- cov_names[i]
-        vals <- dataset[[nm]]
 
-        mat1 <- matrix(
-            if (is_continuous(nm)) as.numeric(vals) else as.character(vals),
-            ncol = 1L,
-            dimnames = list(row_labels, nm)
+        df_i <- data.frame(
+            y = factor(row_labels, levels = row_labels),
+            fill_val = factor(
+                as.character(dataset[[nm]]),
+                levels = names(final_colors[[nm]])
+            ),
+            stringsAsFactors = FALSE
         )
 
-        # Only the first strip clusters; the rest follow its row order
-        cluster_this <- if (i == 1L) cluster_rows else FALSE
-
-        # Show row names only on the appropriate edge strip
-        show_rn <- show_row_names &&
-            ((row_names_side == "left" && i == 1L) ||
-                (row_names_side == "right" && i == n_covs))
-
-        show_leg <- if (!is.null(legend_info)) {
-            legend_info$show_legend[[nm]]
+        show_leg <- if (!is.null(legend_info)) legend_info$show[[nm]] else TRUE
+        if (!is.null(legend_title)) {
+            if (length(legend_title) == 1L) {
+                leg_title <- as.character(legend_title)
+            } else if (
+                !is.null(names(legend_title)) && nm %in% names(legend_title)
+            ) {
+                leg_title <- as.character(legend_title[[nm]])
+            } else {
+                leg_title <- if (!is.null(legend_info)) {
+                    legend_info$titles[[nm]]
+                } else {
+                    nm
+                }
+            }
         } else {
-            TRUE
+            leg_title <- if (!is.null(legend_info)) {
+                legend_info$titles[[nm]]
+            } else {
+                nm
+            }
         }
-        leg_param <- if (
-            !is.null(legend_info) && !is.null(legend_info$legend_params[[nm]])
-        ) {
-            legend_info$legend_params[[nm]]
+
+        half_gap_mm <- plot_spacing / 2
+
+        if (isTRUE(horizontal)) {
+            # horizontal strip: samples on x-axis, strips stack vertically
+            show_rn <- show_row_names && (i == n_covs)
+
+            p <- ggplot2::ggplot(
+                df_i,
+                ggplot2::aes(x = y, y = 0.5, fill = fill_val)
+            ) +
+                ggplot2::geom_tile(color = "white", linewidth = 0.5) +
+                ggplot2::scale_fill_manual(
+                    values = final_colors[[nm]],
+                    name = leg_title,
+                    drop = FALSE
+                ) +
+                ggplot2::scale_x_discrete() +
+                ggplot2::scale_y_continuous(
+                    position = if (column_labels_side == "right") {
+                        "right"
+                    } else {
+                        "left"
+                    },
+                    limits = c(0, 1),
+                    expand = ggplot2::expansion(0)
+                ) +
+                ggplot2::labs(
+                    x = NULL,
+                    y = if (isTRUE(show_column_names)) nm else NULL
+                ) +
+                ggplot2::theme(
+                    axis.title.y = ggplot2::element_text(
+                        angle = 0,
+                        vjust = 0.5,
+                        hjust = if (column_labels_side == "right") 0 else 1,
+                        size = 10,
+                        margin = if (column_labels_side == "right") {
+                            ggplot2::margin(l = 4)
+                        } else {
+                            ggplot2::margin(r = 4)
+                        }
+                    ),
+                    plot.margin = ggplot2::margin(
+                        half_gap_mm,
+                        0,
+                        half_gap_mm,
+                        0,
+                        unit = "mm"
+                    ),
+                    axis.text.y = ggplot2::element_blank(),
+                    axis.ticks.y = ggplot2::element_blank(),
+                    panel.grid = ggplot2::element_blank()
+                )
+
+            if (!show_rn) {
+                p <- p +
+                    ggplot2::theme(
+                        axis.text.x = ggplot2::element_blank(),
+                        axis.ticks.x = ggplot2::element_blank()
+                    )
+            }
         } else {
-            list(title = nm)
+            # vertical strip: samples on y-axis, strips sit side by side
+            show_rn <- show_row_names &&
+                ((row_names_side == "left" && i == 1L) ||
+                    (row_names_side == "right" && i == n_covs))
+
+            p <- ggplot2::ggplot(
+                df_i,
+                ggplot2::aes(x = 0.5, y = y, fill = fill_val)
+            ) +
+                ggplot2::geom_tile(color = "white", linewidth = 0.5) +
+                ggplot2::scale_fill_manual(
+                    values = final_colors[[nm]],
+                    name = leg_title,
+                    drop = FALSE
+                ) +
+                ggplot2::scale_x_continuous(
+                    limits = c(0, 1),
+                    expand = ggplot2::expansion(0)
+                ) +
+                ggplot2::scale_y_discrete(limits = rev) +
+                ggplot2::labs(
+                    x = NULL,
+                    y = NULL,
+                    title = if (
+                        isTRUE(show_column_names) && column_labels_side == "top"
+                    ) {
+                        nm
+                    } else {
+                        NULL
+                    },
+                    caption = if (
+                        isTRUE(show_column_names) &&
+                            column_labels_side == "bottom"
+                    ) {
+                        nm
+                    } else {
+                        NULL
+                    }
+                ) +
+                ggplot2::theme(
+                    plot.title = ggplot2::element_text(
+                        hjust = 0.5,
+                        size = 10,
+                        margin = ggplot2::margin(b = 2)
+                    ),
+                    plot.caption = ggplot2::element_text(
+                        hjust = 0.5,
+                        size = 10,
+                        margin = ggplot2::margin(t = 2)
+                    ),
+                    plot.margin = ggplot2::margin(
+                        0,
+                        half_gap_mm,
+                        0,
+                        half_gap_mm,
+                        unit = "mm"
+                    ),
+                    axis.text.x = ggplot2::element_blank(),
+                    axis.ticks.x = ggplot2::element_blank(),
+                    panel.grid = ggplot2::element_blank()
+                )
+
+            if (!show_rn) {
+                p <- p +
+                    ggplot2::theme(
+                        axis.text.y = ggplot2::element_blank(),
+                        axis.ticks.y = ggplot2::element_blank()
+                    )
+            }
         }
 
-        ht_i <- ComplexHeatmap::Heatmap(
-            mat1,
-            name = nm,
-            col = final_colors[[nm]],
-            cluster_rows = cluster_this,
-            cluster_columns = FALSE,
-            show_row_names = show_rn,
-            row_names_side = row_names_side,
-            row_split = row_split,
-            row_gap = row_gap,
-            show_heatmap_legend = show_leg,
-            heatmap_legend_param = leg_param,
-            column_names_rot = 0,
-            rect_gp = grid::gpar(col = "white", lwd = 0.5),
-            ...
-        )
+        if (!show_leg) {
+            p <- p + ggplot2::guides(fill = "none")
+        }
 
-        ht_list <- if (is.null(ht_list)) ht_i else ht_list + ht_i
+        plots[[i]] <- p
     }
 
-    ht_drawn <- ComplexHeatmap::draw(
-        ht_list,
-        heatmap_legend_side = legend_side,
-        annotation_legend_side = legend_side,
-        merge_legends = merge_legends,
-        ht_gap = ht_gap
-    )
+    # ---- combine strips with patchwork --------------------------------------
+    base <- if (isTRUE(horizontal)) {
+        patchwork::wrap_plots(plots, ncol = 1L)
+    } else {
+        patchwork::wrap_plots(plots, nrow = 1L)
+    }
+    combined <- base +
+        patchwork::plot_layout(guides = "collect") &
+        ggplot2::theme(legend.position = legend_side)
+
+    print(combined)
 
     if (isTRUE(return_details)) {
-        return(invisible(list(ht = ht_drawn, final_colors = final_colors)))
+        return(invisible(list(ht = combined, final_colors = final_colors)))
     } else {
-        return(invisible(ht_drawn))
+        return(invisible(combined))
     }
 }

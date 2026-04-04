@@ -17,12 +17,14 @@ plot_pvalue_barplot(
   vline = TRUE,
   vline_linetype = "dashed",
   vline_color = "red",
+  vline_legend = TRUE,
   show_y_labels = FALSE,
   mlog10_transform_pvalue = FALSE,
   also_show_qvalue = TRUE,
   custom_qvalues = NULL,
   color_qvalue = "grey",
-  color_pvalue = "black"
+  color_pvalue = "black",
+  legend_title = "Bar type"
 )
 }
 \arguments{
@@ -77,9 +79,12 @@ q-value bar for that row.}
 \item{color_qvalue}{Character, color for q-value bars when also_show_qvalue = TRUE.}
 
 \item{color_pvalue}{Character, color for p-value bars when also_show_qvalue = TRUE.}
+
+\item{legend_title}{Character, title for the legend when also_show_qvalue = TRUE.
+Default is 'Bar type'.}
 }
 \value{
-A ggplot2 object (invisible plot object returned).
+A \code{ggplot2} plot object.
 }
 \description{
 Create a horizontal barplot of p-values (optionally -log10 transformed) with an

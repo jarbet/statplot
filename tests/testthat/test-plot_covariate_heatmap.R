@@ -9,49 +9,48 @@ make_cov_df <- function() {
         dplyr::distinct()
 }
 
-make_col_fun <- function(x) {
-    rng <- range(x, na.rm = TRUE)
-    circlize::colorRamp2(
-        c(rng[1], mean(rng), rng[2]),
-        c("#ffffcc", "#41b6c4", "#0c2c84")
-    )
-}
-
 # ---------------------------------------------------------------------------
 # Smoke tests
 # ---------------------------------------------------------------------------
 
-test_that("returns a HeatmapList invisibly (categorical)", {
+test_that("returns a patchwork object invisibly (single categorical)", {
     df <- make_cov_df()
     result <- plot_covariate_heatmap(
         dataset = df,
         color_map = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
         row_id_var = "sample"
     )
-    expect_s4_class(result, "HeatmapList")
+    expect_s3_class(result, "patchwork")
 })
 
-test_that("returns a HeatmapList invisibly (continuous)", {
-    df <- make_cov_df()
-    result <- plot_covariate_heatmap(
-        dataset = df,
-        color_map = list(qc_score = make_col_fun(df$qc_score)),
-        row_id_var = "sample"
-    )
-    expect_s4_class(result, "HeatmapList")
-})
-
-test_that("returns a HeatmapList with multiple mixed covariates", {
+test_that("returns a patchwork object with multiple categorical covariates", {
     df <- make_cov_df()
     result <- plot_covariate_heatmap(
         dataset = df,
         color_map = list(
             group = c(G1 = "#1b9e77", G2 = "#d95f02"),
-            qc_score = make_col_fun(df$qc_score)
+            condition = c(healthy = "#b3de69", EAE = "#fccde5")
         ),
         row_id_var = "sample"
     )
-    expect_s4_class(result, "HeatmapList")
+    expect_s3_class(result, "patchwork")
+})
+
+test_that("continuous (colorRamp2) color_map entry errors", {
+    df <- make_cov_df()
+    rng <- range(df$qc_score, na.rm = TRUE)
+    col_fun <- circlize::colorRamp2(
+        c(rng[1], mean(rng), rng[2]),
+        c("#ffffcc", "#41b6c4", "#0c2c84")
+    )
+    expect_error(
+        plot_covariate_heatmap(
+            dataset = df,
+            color_map = list(qc_score = col_fun),
+            row_id_var = "sample"
+        ),
+        "not supported"
+    )
 })
 
 # ---------------------------------------------------------------------------
@@ -68,7 +67,7 @@ test_that("return_details = TRUE gives list with ht and final_colors", {
     )
     expect_type(out, "list")
     expect_named(out, c("ht", "final_colors"))
-    expect_s4_class(out$ht, "HeatmapList")
+    expect_s3_class(out$ht, "patchwork")
 })
 
 # ---------------------------------------------------------------------------
@@ -100,17 +99,6 @@ test_that("data levels missing from color_map receive auto-generated colors", {
     expect_true(nzchar(out$final_colors$group["G2"]))
 })
 
-test_that("continuous covariate passes colorRamp2 function through unchanged", {
-    df <- make_cov_df()
-    fun <- make_col_fun(df$qc_score)
-    out <- plot_covariate_heatmap(
-        dataset = df,
-        color_map = list(qc_score = fun),
-        row_id_var = "sample",
-        return_details = TRUE
-    )
-    expect_true(is.function(out$final_colors$qc_score))
-})
 
 # ---------------------------------------------------------------------------
 # row_id_var
@@ -124,39 +112,6 @@ test_that("row_id_var = NULL falls back to sequential integer row labels", {
             color_map = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
             row_id_var = NULL
         )
-    )
-})
-
-# ---------------------------------------------------------------------------
-# row_split_var
-# ---------------------------------------------------------------------------
-
-test_that("row_split_var with 2+ levels does not error", {
-    df <- make_cov_df()
-    expect_no_error(
-        plot_covariate_heatmap(
-            dataset = df,
-            color_map = list(
-                condition = c(healthy = "#b3de69", EAE = "#fccde5")
-            ),
-            row_id_var = "sample",
-            row_split_var = "group"
-        )
-    )
-})
-
-test_that("row_split_var with only 1 level errors", {
-    df <- make_cov_df() |> dplyr::filter(group == "G1")
-    expect_error(
-        plot_covariate_heatmap(
-            dataset = df,
-            color_map = list(
-                condition = c(healthy = "#b3de69", EAE = "#fccde5")
-            ),
-            row_id_var = "sample",
-            row_split_var = "group"
-        ),
-        "at least 2 levels"
     )
 })
 
@@ -225,29 +180,29 @@ test_that("non-data-frame dataset errors", {
 # merge_legends deduplication
 # ---------------------------------------------------------------------------
 
-test_that("merge_legends = TRUE with identical color maps does not error", {
+test_that("merge_legends = TRUE with identical categorical color maps does not error", {
     df <- make_cov_df()
-    fun <- make_col_fun(df$qc_score)
-    # Add a second numeric column with same range to reuse the same color fn
-    df$qc_score2 <- df$qc_score
+    shared_map <- c(G1 = "#1b9e77", G2 = "#d95f02")
+    # Add a duplicate column that reuses the same color map
+    df$group2 <- df$group
     expect_no_error(
         plot_covariate_heatmap(
             dataset = df,
-            color_map = list(qc_score = fun, qc_score2 = fun),
+            color_map = list(group = shared_map, group2 = shared_map),
             row_id_var = "sample",
             merge_legends = TRUE
         )
     )
 })
 
-test_that("merge_legends = FALSE (default) with duplicate color maps does not error", {
+test_that("merge_legends = FALSE (default) with duplicate categorical color maps does not error", {
     df <- make_cov_df()
-    fun <- make_col_fun(df$qc_score)
-    df$qc_score2 <- df$qc_score
+    shared_map <- c(G1 = "#1b9e77", G2 = "#d95f02")
+    df$group2 <- df$group
     expect_no_error(
         plot_covariate_heatmap(
             dataset = df,
-            color_map = list(qc_score = fun, qc_score2 = fun),
+            color_map = list(group = shared_map, group2 = shared_map),
             row_id_var = "sample",
             merge_legends = FALSE
         )
