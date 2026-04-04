@@ -464,8 +464,6 @@ plot_covariate_heatmap <- function(
         patchwork::plot_layout(guides = "collect") &
         ggplot2::theme(legend.position = legend_side)
 
-    print(combined)
-
     if (isTRUE(return_details)) {
         return(invisible(list(ht = combined, final_colors = final_colors)))
     } else {
