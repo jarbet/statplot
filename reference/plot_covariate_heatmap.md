@@ -1,13 +1,13 @@
 # Plot a covariate heatmap
 
-Displays one vertical strip per covariate, where each strip is an
-independent
-[`Heatmap`](https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html)
-combined into a
-[`HeatmapList`](https://rdrr.io/pkg/ComplexHeatmap/man/HeatmapList.html).
-Both categorical (named-vector colors) and continuous
-([`colorRamp2`](https://rdrr.io/pkg/circlize/man/colorRamp2.html)
-function) variables are supported.
+Displays one vertical strip per covariate using
+[`geom_tile`](https://ggplot2.tidyverse.org/reference/geom_tile.html),
+with all strips combined via
+[`wrap_plots`](https://patchwork.data-imaginist.com/reference/wrap_plots.html).
+Because the output is a standard ggplot2/patchwork object it aligns
+naturally with other ggplots (e.g. when combined with `|` or `/` from
+patchwork). Only categorical (named-vector colors) covariates are
+supported.
 
 ## Usage
 
@@ -16,16 +16,16 @@ plot_covariate_heatmap(
   dataset,
   color_map,
   row_id_var = NULL,
-  row_split_var = NULL,
-  cluster_rows = FALSE,
   show_row_names = TRUE,
+  show_column_names = TRUE,
   row_names_side = "left",
-  ht_gap = grid::unit(0.2, "mm"),
-  row_gap = grid::unit(0.2, "mm"),
+  plot_spacing = 0.5,
   legend_side = "left",
+  legend_title = NULL,
+  column_labels_side = "bottom",
+  horizontal = FALSE,
   merge_legends = FALSE,
-  return_details = FALSE,
-  ...
+  return_details = FALSE
 )
 ```
 
@@ -34,97 +34,91 @@ plot_covariate_heatmap(
 - dataset:
 
   A data frame. Must contain all columns named in `color_map` and, if
-  supplied, `row_id_var` and `row_split_var`.
+  supplied, `row_id_var`.
 
 - color_map:
 
   A named list specifying which covariates to plot and their color
-  mappings. Each name must be a column in `dataset`. Each element is
-  either:
-
-  - A **named character vector** mapping factor levels to hex colors
-    (for categorical/character/factor columns). Any levels present in
-    the data but absent from the vector receive auto-generated colors.
-
-  - A **colorRamp2 function** (for continuous/numeric columns), e.g. one
-    created by
-    [`colorRamp2`](https://rdrr.io/pkg/circlize/man/colorRamp2.html).
+  mappings. Each name must be a column in `dataset`. Each element must
+  be a **named character vector** mapping factor levels to hex colors.
+  Any levels present in the data but absent from the vector receive
+  auto-generated colors.
 
 - row_id_var:
 
-  Character. Column in `dataset` used as row labels (matrix rownames).
-  Default `NULL` uses `1:nrow(dataset)`.
-
-- row_split_var:
-
-  Character. Column in `dataset` used to split rows into groups. Must
-  have \\\geq 2\\ distinct levels. Default `NULL`.
-
-- cluster_rows:
-
-  Logical. Whether to cluster rows. When `TRUE`, clustering is performed
-  on the first covariate strip and the resulting row order is shared
-  across all strips. Default `FALSE`.
+  Character. Column in `dataset` used as row labels (y-axis). Default
+  `NULL` uses `1:nrow(dataset)`.
 
 - show_row_names:
 
-  Logical. Default `TRUE`.
+  Logical. Whether to display sample labels.
+
+- show_column_names:
+
+  Logical. Whether to display covariate name labels (column labels).
+  When `horizontal = FALSE`: labels appear as plot titles
+  (`column_labels_side = "top"`) or captions
+  (`column_labels_side = "bottom"`). When `horizontal = TRUE`: the
+  covariate name appears on the y-axis; `column_labels_side` controls
+  left/right placement. Ignored when `show_column_names = FALSE`.
+  Default `TRUE`.
 
 - row_names_side:
 
-  `"left"` or `"right"`. Row names are shown on the first strip when
-  `"left"` and the last strip when `"right"`. Default `"left"`.
+  `"left"` or `"right"`. When `horizontal = FALSE`, row names are shown
+  on the first strip (`"left"`) or the last strip (`"right"`). Ignored
+  when `horizontal = TRUE`; in that case, when `show_row_names = TRUE`,
+  labels appear on the bottom (last) strip. Default `"left"`.
 
-- ht_gap:
+- plot_spacing:
 
-  A [`unit`](https://rdrr.io/r/grid/unit.html) object controlling the
-  gap between adjacent covariate strips. Passed as `ht_gap` to
-  [`draw`](https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html).
-  Default `grid::unit(0.2, "mm")`. Set to `grid::unit(0, "mm")` to
-  remove all gaps.
-
-- row_gap:
-
-  A [`unit`](https://rdrr.io/r/grid/unit.html) object controlling the
-  gap between row-split groups. Passed as `row_gap` to each
-  [`Heatmap`](https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html) call.
-  Default `grid::unit(0.2, "mm")`. Set to `grid::unit(0, "mm")` to
-  remove row gaps entirely.
+  Numeric (mm). Gap between adjacent covariate strips. Default `0.5`.
 
 - legend_side:
 
   Character. Position of the legends. One of `"left"`, `"right"`,
-  `"top"`, or `"bottom"`. Passed as both `heatmap_legend_side` and
-  `annotation_legend_side` to
-  [`draw`](https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html).
-  Default `"left"`.
+  `"top"`, or `"bottom"`. Default `"left"`.
+
+- legend_title:
+
+  NULL, a single character string, or a named character vector. When
+  NULL (default) the legend title is the covariate name (or combined
+  covariate names when `merge_legends = TRUE`). If a single string is
+  supplied it is used for all legends. If a named vector is supplied,
+  entries matching covariate names override titles for those covariates.
+
+- column_labels_side:
+
+  Character. Where to show the covariate name labels. When
+  `horizontal = FALSE`: `"top"` or `"bottom"` (default). When
+  `horizontal = TRUE`: `"left"` (default) places the label on the left
+  y-axis; `"right"` places it on the right y-axis by setting
+  `position = "right"` on the continuous y scale.
+
+- horizontal:
+
+  Logical. When `TRUE` the layout is transposed: samples appear on the
+  x-axis and strips are stacked vertically so the plot can be combined
+  below a main ggplot. Default `FALSE`.
 
 - merge_legends:
 
-  Logical. When `TRUE`: (1) strips sharing the exact same color mapping
-  are collapsed into one legend whose title joins the covariate names
-  with `"\n"`; (2) the value is forwarded as `merge_legends` to
-  [`draw`](https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html).
-  Default `FALSE`.
+  Logical. When `TRUE`, strips sharing the exact same color mapping show
+  a legend only on the first occurrence; that legend's title joins the
+  covariate names with `"\n"`. Default `FALSE`.
 
 - return_details:
 
-  Logical. If `TRUE`, returns a named list with elements `ht` (the drawn
-  `HeatmapList`) and `final_colors` (the resolved color map). Default
-  `FALSE`.
-
-- ...:
-
-  Additional arguments passed to every
-  [`Heatmap`](https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html) call
-  (e.g. `column_names_rot`, `width`, `column_title_gp`).
+  Logical. If `TRUE`, returns a named list with elements `ht` (the
+  `patchwork` object) and `final_colors` (the resolved color map).
+  Default `FALSE`.
 
 ## Value
 
-Invisibly returns the drawn
-[`HeatmapList`](https://rdrr.io/pkg/ComplexHeatmap/man/HeatmapList.html)
-object, or a named list with elements `ht` and `final_colors` when
-`return_details = TRUE`.
+Invisibly returns a
+[`wrap_plots`](https://patchwork.data-imaginist.com/reference/wrap_plots.html)
+(`patchwork`) object, or a named list with elements `ht` and
+`final_colors` when `return_details = TRUE`.
 
 ## Examples
 
@@ -133,31 +127,22 @@ data(ex_data_heatmap)
 
 # Build a one-row-per-sample metadata frame
 sample_meta <- ex_data_heatmap |>
-  dplyr::select(sample, group, condition, sample_type, qc_score) |>
+  dplyr::select(sample, group, condition, sample_type) |>
   dplyr::distinct()
 
-rng_qc <- range(sample_meta$qc_score, na.rm = TRUE)
-col_fun_qc <- circlize::colorRamp2(
-  c(rng_qc[1], mean(rng_qc), rng_qc[2]),
-  c("#ffffcc", "#41b6c4", "#0c2c84")
-)
-
-# Multiple covariates (categorical + continuous)
+# Multiple categorical covariates
 plot_covariate_heatmap(
   dataset = sample_meta,
   color_map = list(
     group       = c(G1 = "#1b9e77", G2 = "#d95f02"),
     condition   = c(healthy = "#b3de69", EAE = "#fccde5"),
-    sample_type = c(input = "#8dd3c7", IP = "#80b1d3"),
-    qc_score    = col_fun_qc
+    sample_type = c(input = "#8dd3c7", IP = "#80b1d3")
   ),
-  row_id_var    = "sample",
-  row_split_var = NULL,
-  cluster_rows  = FALSE
+  row_id_var = "sample"
 )
 
 
-# Single categorical covariate bar
+# Single vertical covariate bar - useful for placing to left/right of the main ggplot
 plot_covariate_heatmap(
   dataset    = sample_meta,
   color_map  = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
@@ -165,10 +150,27 @@ plot_covariate_heatmap(
 )
 
 
-# Single continuous covariate bar
+# Single horizontal covariate bar — useful for placing below a main ggplot
 plot_covariate_heatmap(
   dataset    = sample_meta,
-  color_map  = list(qc_score = col_fun_qc),
-  row_id_var = "sample"
+  color_map  = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
+  row_id_var = "sample",
+  horizontal = TRUE
+)
+
+
+
+# merge_legends: two strips sharing the same color mapping → one legend
+# whose title combines both covariate names.
+grp_colors <- c(G1 = "#1b9e77", G2 = "#d95f02")
+sample_meta2 <- dplyr::mutate(sample_meta, group_rep = group)
+plot_covariate_heatmap(
+  dataset = sample_meta2,
+  color_map = list(
+    group     = grp_colors,
+    group_rep = grp_colors
+  ),
+  row_id_var    = "sample",
+  merge_legends = TRUE
 )
 ```

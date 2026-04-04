@@ -19,12 +19,14 @@ plot_pvalue_barplot(
   vline = TRUE,
   vline_linetype = "dashed",
   vline_color = "red",
+  vline_legend = TRUE,
   show_y_labels = FALSE,
   mlog10_transform_pvalue = FALSE,
   also_show_qvalue = TRUE,
   custom_qvalues = NULL,
   color_qvalue = "grey",
-  color_pvalue = "black"
+  color_pvalue = "black",
+  legend_title = "Bar type"
 )
 ```
 
@@ -121,9 +123,14 @@ plot_pvalue_barplot(
 
   Character, color for p-value bars when also_show_qvalue = TRUE.
 
+- legend_title:
+
+  Character, title for the legend when also_show_qvalue = TRUE. Default
+  is 'Bar type'.
+
 ## Value
 
-A ggplot2 object (invisible plot object returned).
+A `ggplot2` plot object.
 
 ## Examples
 

@@ -55,12 +55,14 @@ optional significance vertical line and optional fill mapping.</p>
 <span>  vline <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  vline_linetype <span class="op">=</span> <span class="st">"dashed"</span>,</span>
 <span>  vline_color <span class="op">=</span> <span class="st">"red"</span>,</span>
+<span>  vline_legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_y_labels <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  also_show_qvalue <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  custom_qvalues <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  color_qvalue <span class="op">=</span> <span class="st">"grey"</span>,</span>
-<span>  color_pvalue <span class="op">=</span> <span class="st">"black"</span></span>
+<span>  color_pvalue <span class="op">=</span> <span class="st">"black"</span>,</span>
+<span>  legend_title <span class="op">=</span> <span class="st">"Bar type"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -153,10 +155,15 @@ q-value bar for that row.</p></dd>
 <dt id="arg-color-pvalue">color_pvalue<a class="anchor" aria-label="anchor" href="#arg-color-pvalue"></a></dt>
 <dd><p>Character, color for p-value bars when also_show_qvalue = TRUE.</p></dd>
 
+
+<dt id="arg-legend-title">legend_title<a class="anchor" aria-label="anchor" href="#arg-legend-title"></a></dt>
+<dd><p>Character, title for the legend when also_show_qvalue = TRUE.
+Default is 'Bar type'.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A ggplot2 object (invisible plot object returned).</p>
+    <p>A <code>ggplot2</code> plot object.</p>
     </div>
 
     <div class="section level2">

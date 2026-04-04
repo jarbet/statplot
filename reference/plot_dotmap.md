@@ -24,10 +24,12 @@ plot_dotmap(
   fill_limits = NULL,
   legend_pvalue_title = NULL,
   legend_dotsize_title = expression(bold("Effect size")),
+  legend_bar_type = "Bar type",
   add_combined_pvalue_barplot = FALSE,
-  combine_pvalue_method = c("CMC", "fisher", "MCM", "cauchy", "minp_bonferroni"),
+  combine_pvalue_method = c("fisher", "CMC", "MCM", "cauchy", "minp_bonferroni"),
   sort_by_pvalue = TRUE,
   only_show_top_sig = NULL,
+  also_show_qvalue = TRUE,
   ...,
   patchwork_widths = c(3, 1)
 )
@@ -113,16 +115,22 @@ plot_dotmap(
 
   Character or expression; title for the dot-size legend
 
+- legend_bar_type:
+
+  Character or expression; title for the pvalue bar type legend
+
 - add_combined_pvalue_barplot:
 
-  Logical; when TRUE adds a combined p-value barplot to the right of the
-  dotmap (requires patchwork)
+  Logical; when TRUE (default FALSE) add a combined p-value barplot to
+  the right of the dotmap. When TRUE the function uses the per-row
+  combined p-values (grouped by `y`) to build a second panel; the
+  `patchwork` package is required when using this feature.
 
 - combine_pvalue_method:
 
   Character; method for combining p-values in the barplot. One of:
   "CMC", "fisher", "MCM", "cauchy", "minp_bonferroni". Defaults to
-  "CMC". See
+  "fisher". See
   [`combine_pvalues`](https://github.com/jarbet/statplot/reference/combine_pvalues.md)
   for details.
 
@@ -136,6 +144,13 @@ plot_dotmap(
   Numeric(1) or NULL; when adding the combined p-value barplot, if this
   is a positive integer then only the top X most significant rows by
   combined p-value are shown (default NULL, show all)
+
+- also_show_qvalue:
+
+  Logical; when TRUE (default) the combined p-value barplot also
+  displays q-value bars (BH-adjusted combined p-values) in addition to
+  p-value bars. When `custom_qvalues` is supplied via `...`, those
+  values are used instead.
 
 - ...:
 

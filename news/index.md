@@ -18,9 +18,7 @@
 
 - `plot_covariate_heatmap`: new function to draw vertical covariate
   strips (one strip per covariate). Supports categorical covariates
-  (named color vectors) and continuous covariates
-  ([`circlize::colorRamp2`](https://rdrr.io/pkg/circlize/man/colorRamp2.html)),
-  optional row splitting and clustering
+  (named color vectors) only.
 
 ### Changed
 
@@ -31,6 +29,19 @@
 
 - `combine_pvalues`: default `methods` changed from `'all'` to `'CMC'`;
   documentation and tests updated to reflect the new default.
+
+- `plot_dotmap`: the default `combine_pvalue_method` is now `"fisher"`
+  (was previously `"CMC"` when not supplied via
+  [`match.arg()`](https://rdrr.io/r/base/match.arg.html)); documentation
+  and examples updated to reflect the new default choice.
+
+- `plot_pvalue_barplot`: improved legend behaviour — when a vertical
+  significance line legend is requested
+  (`vline = TRUE, vline_legend = TRUE`) the colour scale now stores an
+  explicit named `values` vector so code and tests can programmatically
+  find the named alpha entry; also the fill legend uses `override.aes`
+  to remove line linetype in legend keys when showing p/q bars so legend
+  keys render as solid/filled swatches.
 
 ### Fixed
 
