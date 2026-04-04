@@ -24,6 +24,10 @@ biological process categories as defined in Table 1 of Liberzon et al.
 
 * `combine_pvalues`: default `methods` changed from `'all'` to `'CMC'`; documentation and tests updated to reflect the new default.
 
+* `plot_dotmap`: the default `combine_pvalue_method` is now `"fisher"` (was previously `"CMC"` when not supplied via `match.arg()`); documentation and examples updated to reflect the new default choice.
+
+* `plot_pvalue_barplot`: improved legend behaviour — when a vertical significance line legend is requested (`vline = TRUE, vline_legend = TRUE`) the colour scale now stores an explicit named `values` vector so code and tests can programmatically find the named alpha entry; also the fill legend uses `override.aes` to remove line linetype in legend keys when showing p/q bars so legend keys render as solid/filled swatches.
+
 ## Fixed
 
 * `plot_dotmap`: `combine_pvalues()` is now called with `methods = combine_pvalue_method` instead of subsetting the result by name. Previously, `combine_pvalues()` defaulted to computing only `"CMC"`, so requesting any other method (e.g. `"fisher"`) returned `NA`, causing the combined p-value barplot to draw no bars.
