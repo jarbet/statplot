@@ -20,8 +20,9 @@ plot_dotmap(
   fill_limits = NULL,
   legend_pvalue_title = NULL,
   legend_dotsize_title = expression(bold("Effect size")),
+  legend_bar_type = "Bar type",
   add_combined_pvalue_barplot = FALSE,
-  combine_pvalue_method = c("CMC", "fisher", "MCM", "cauchy", "minp_bonferroni"),
+  combine_pvalue_method = c("fisher", "CMC", "MCM", "cauchy", "minp_bonferroni"),
   sort_by_pvalue = TRUE,
   only_show_top_sig = NULL,
   also_show_qvalue = TRUE,
@@ -70,13 +71,17 @@ tile is drawn with the fill scale's \code{na.value} (grey95 by default), exactly
 
 \item{legend_dotsize_title}{Character or expression; title for the dot-size legend}
 
-\item{add_combined_pvalue_barplot}{Logical; when TRUE adds a combined p-value barplot to the right of the dotmap (requires \pkg{patchwork})}
+\item{legend_bar_type}{Character or expression; title for the pvalue bar type legend}
 
-\item{combine_pvalue_method}{Character; method for combining p-values in the barplot. One of: "CMC", "fisher", "MCM", "cauchy", "minp_bonferroni". Defaults to "CMC". See \code{\link{combine_pvalues}} for details.}
+\item{add_combined_pvalue_barplot}{Logical; when TRUE (default FALSE) add a combined p-value barplot to the right of the dotmap. When TRUE the function uses the per-row combined p-values (grouped by \code{y}) to build a second panel; the \code{patchwork} package is required when using this feature.}
+
+\item{combine_pvalue_method}{Character; method for combining p-values in the barplot. One of: "CMC", "fisher", "MCM", "cauchy", "minp_bonferroni". Defaults to "fisher". See \code{\link{combine_pvalues}} for details.}
 
 \item{sort_by_pvalue}{Logical; when TRUE (default) rows (levels of \code{y}) are sorted by the combined p-value (ascending). Requires p-values present per group.}
 
 \item{only_show_top_sig}{Numeric(1) or NULL; when adding the combined p-value barplot, if this is a positive integer then only the top X most significant rows by combined p-value are shown (default NULL, show all)}
+
+\item{also_show_qvalue}{Logical; when TRUE (default) the combined p-value barplot also displays q-value bars (BH-adjusted combined p-values) in addition to p-value bars. When \code{custom_qvalues} is supplied via \code{...}, those values are used instead.}
 
 \item{...}{Additional arguments passed on to \code{plot_pvalue_barplot()} when
 \code{add_combined_pvalue_barplot = TRUE}. The following arguments are set internally

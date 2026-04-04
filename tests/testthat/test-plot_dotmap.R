@@ -556,3 +556,39 @@ test_that("custom_qvalues with inconsistent values per y level errors informativ
         fixed = FALSE
     )
 })
+
+test_that("vline legend forwarded into combined barplot (colour scale values present)", {
+    df <- make_dotmap_df()
+    alpha <- 0.05
+    plt <- plot_dotmap(
+        df,
+        x = "col",
+        y = "row",
+        effect = "effect",
+        p = "p",
+        add_combined_pvalue_barplot = TRUE,
+        vline = TRUE,
+        vline_legend = TRUE,
+        alpha = alpha
+    )
+    barplot <- plt[[2]]
+    sc <- barplot$scales$get_scales("colour")
+    expect_true(!is.null(sc))
+    expect_true(as.character(signif(alpha, 3)) %in% names(sc$values))
+})
+
+test_that("vline_legend = FALSE produces no colour scale in combined barplot", {
+    df <- make_dotmap_df()
+    plt <- plot_dotmap(
+        df,
+        x = "col",
+        y = "row",
+        effect = "effect",
+        p = "p",
+        add_combined_pvalue_barplot = TRUE,
+        vline = TRUE,
+        vline_legend = FALSE
+    )
+    barplot <- plt[[2]]
+    expect_null(barplot$scales$get_scales("colour"))
+})

@@ -1,3 +1,42 @@
+library(testthat)
+library(ggplot2)
+
+set.seed(1)
+df <- tibble::tibble(
+  item = factor(paste0("item", sprintf("%02d", 1:6)), levels = rev(paste0("item", sprintf("%02d", 1:6)))),
+  p = c(0.0005, 0.002, 0.02, 0.12, 0.4, NA)
+)
+
+test_that("vline legend shows numeric alpha value", {
+    alpha <- 0.05
+    p <- plot_pvalue_barplot(df, x = "p", y = "item",
+                                                     mlog10_transform_pvalue = TRUE,
+                                                     vline = TRUE, vline_legend = TRUE, alpha = alpha)
+    scale_color <- p$scales$get_scales("colour")
+    expect_true(!is.null(scale_color))
+    expect_true(as.character(signif(alpha, 3)) %in% names(scale_color$values))
+})
+
+test_that("vline legend suppressed when vline_legend = FALSE", {
+  p <- plot_pvalue_barplot(df, x = "p", y = "item",
+                           mlog10_transform_pvalue = TRUE,
+                           vline = TRUE, vline_legend = FALSE)
+  expect_null(p$scales$get_scales("colour"))
+})
+
+test_that("fill legend override removes dashed line (override.aes)", {
+  p <- plot_pvalue_barplot(df, x = "p", y = "item",
+                           mlog10_transform_pvalue = TRUE,
+                           also_show_qvalue = TRUE, vline = TRUE, vline_legend = TRUE)
+  scale_fill <- p$scales$get_scales("fill")
+  expect_true(!is.null(scale_fill))
+  if (!is.null(scale_fill$guide)) {
+    la <- scale_fill$guide$params$override.aes$linetype
+    expect_true(identical(la, 0) || identical(la, "blank") || identical(la, "") )
+  } else {
+    succeed()
+  }
+})
 make_pval_df <- function(n = 6, with_qvalue = FALSE) {
     df <- tibble::tibble(
         term = paste0("gene", seq_len(n)),

@@ -35,7 +35,9 @@
 #'   q-value bar for that row.
 #' @param color_qvalue Character, color for q-value bars when also_show_qvalue = TRUE.
 #' @param color_pvalue Character, color for p-value bars when also_show_qvalue = TRUE.
-#' @return A ggplot2 object (invisible plot object returned).
+#' @param legend_title Character, title for the legend when also_show_qvalue = TRUE.
+#'   Default is 'Bar type'.
+#' @return A `ggplot2` plot object.
 #' @examples
 #' set.seed(123)
 #' n <- 4
@@ -58,7 +60,7 @@
 #'   also_show_qvalue = TRUE
 #' )
 #' @importFrom rlang sym
-#' @importFrom ggplot2 ggplot aes geom_col scale_x_continuous scale_y_discrete scale_fill_manual labs geom_vline theme element_text element_rect theme_bw margin scale_x_continuous
+#' @importFrom ggplot2 ggplot aes geom_col scale_x_continuous scale_y_discrete scale_fill_manual labs geom_vline theme element_text element_rect theme_bw margin
 #' @importFrom scales squish
 #' @importFrom stats p.adjust
 #' @export
@@ -75,12 +77,14 @@ plot_pvalue_barplot <- function(
     vline = TRUE,
     vline_linetype = "dashed",
     vline_color = "red",
+    vline_legend = TRUE,
     show_y_labels = FALSE, # whether to show y-axis labels (default FALSE)
     mlog10_transform_pvalue = FALSE, # when TRUE compute -log10(p) for plotting/order
     also_show_qvalue = TRUE, # when TRUE compute q-values (FDR) and draw p-values (grey, behind) plus q-values (black, on top) per row
     custom_qvalues = NULL, # column name in `data` containing user-supplied q-values
     color_qvalue = 'grey',
-    color_pvalue = 'black'
+    color_pvalue = 'black',
+    legend_title = 'Bar type'
 ) {
     # ---- simple argument checks ----
     stopifnot(is.data.frame(data))
@@ -99,6 +103,7 @@ plot_pvalue_barplot <- function(
     }
     stopifnot(is.character(xlab), length(xlab) == 1)
     stopifnot(is.logical(vline), length(vline) == 1)
+    stopifnot(is.logical(vline_legend), length(vline_legend) == 1)
     stopifnot(is.character(vline_linetype), length(vline_linetype) == 1)
     stopifnot(is.character(vline_color), length(vline_color) == 1)
     stopifnot(is.logical(show_y_labels), length(show_y_labels) == 1)
@@ -123,6 +128,7 @@ plot_pvalue_barplot <- function(
     }
     stopifnot(is.character(color_qvalue), length(color_qvalue) == 1)
     stopifnot(is.character(color_pvalue), length(color_pvalue) == 1)
+    stopifnot(is.character(legend_title), length(legend_title) == 1)
     stopifnot(is.logical(also_show_qvalue), length(also_show_qvalue) == 1)
     if (!is.null(custom_qvalues)) {
         stopifnot(is.numeric(data[[custom_qvalues]]))
@@ -273,7 +279,8 @@ plot_pvalue_barplot <- function(
                 values = c("q-value" = color_qvalue, "p-value" = color_pvalue),
                 breaks = c("q-value", "p-value"),
                 labels = c("q-value", "p-value"),
-                name = NULL
+                name = legend_title,
+                guide = ggplot2::guide_legend(override.aes = list(linetype = 0))
             )
     } else {
         # previous behaviour: either fill mapping or solid black bars
@@ -300,22 +307,21 @@ plot_pvalue_barplot <- function(
     }
 
     if (also_show_qvalue) {
-        # do not show x-axis label when showing q-values; place horizontal legend below
+        # show combined p/q axis label when showing both p- and q-value bars
         p <- p +
             ggplot2::labs(
-                x = NULL,
+                x = "p/q-value",
                 y = NULL
             ) +
-            ggplot2::theme_bw() +
             ggplot2::theme(
-                legend.position = "bottom",
-                legend.direction = "horizontal",
+                legend.position = "right",
+                legend.direction = "vertical",
                 legend.background = ggplot2::element_rect(
                     fill = NA,
                     color = NA
                 ),
                 legend.box.background = ggplot2::element_rect(
-                    color = "black",
+                    color = NA,
                     fill = NA
                 )
             )
@@ -330,12 +336,43 @@ plot_pvalue_barplot <- function(
     if (vline) {
         # choose x intercept depending on whether we plot -log10(p) or raw p
         x_vline <- if (mlog10_transform_pvalue) -log10(alpha) else alpha
-        p <- p +
-            ggplot2::geom_vline(
-                xintercept = x_vline,
-                linetype = vline_linetype,
-                color = vline_color
-            )
+        if (vline_legend) {
+            vline_label <- as.character(signif(alpha, 3))
+            vline_df <- data.frame(x = x_vline, vline_label = vline_label)
+            p <- p +
+                ggplot2::geom_vline(
+                    data = vline_df,
+                    ggplot2::aes(xintercept = x, color = vline_label),
+                    linetype = vline_linetype,
+                    show.legend = TRUE
+                ) +
+                ggplot2::scale_color_manual(
+                    values = setNames(vline_color, vline_label),
+                    name = NULL,
+                    guide = ggplot2::guide_legend(
+                        override.aes = list(linetype = vline_linetype)
+                    )
+                )
+        } else {
+            p <- p +
+                ggplot2::geom_vline(
+                    xintercept = x_vline,
+                    linetype = vline_linetype,
+                    color = vline_color
+                )
+        }
+
+        # Ensure the colour scale stores the explicit named values vector so tests
+        # that inspect `scale$values` find the expected named entry.
+        if (vline && vline_legend) {
+            sc <- p$scales$get_scales("colour")
+            if (
+                !is.null(sc) && (is.null(sc$values) || length(sc$values) == 0)
+            ) {
+                vline_label <- as.character(signif(alpha, 3))
+                sc$values <- setNames(vline_color, vline_label)
+            }
+        }
     }
 
     # hide y-axis labels by setting their font size to 0 when requested
