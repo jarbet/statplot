@@ -9,6 +9,7 @@ plot_covariate_heatmap(
   color_map,
   row_id_var = NULL,
   show_row_names = TRUE,
+  show_column_names = TRUE,
   row_names_side = "left",
   plot_spacing = 0.5,
   legend_side = "left",
@@ -33,6 +34,14 @@ auto-generated colors.}
 (y-axis). Default \code{NULL} uses \code{1:nrow(dataset)}.}
 
 \item{show_row_names}{Logical. Whether to display sample labels.}
+
+\item{show_column_names}{Logical. Whether to display covariate name labels
+(column labels). When \code{horizontal = FALSE}: labels appear as plot
+titles (\code{column_labels_side = "top"}) or captions
+(\code{column_labels_side = "bottom"}). When \code{horizontal = TRUE}:
+the covariate name appears on the y-axis; \code{column_labels_side}
+controls left/right placement. Ignored when \code{show_column_names = FALSE}.
+Default \code{TRUE}.}
 
 \item{row_names_side}{\code{"left"} or \code{"right"}. When
 \code{horizontal = FALSE}, row names are shown on the first strip

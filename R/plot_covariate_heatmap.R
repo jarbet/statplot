@@ -17,6 +17,14 @@
 #' @param row_id_var Character. Column in \code{dataset} used as row labels
 #'   (y-axis). Default \code{NULL} uses \code{1:nrow(dataset)}.
 #' @param show_row_names Logical. Whether to display sample labels.
+#' @param show_column_names Logical. Whether to display covariate name labels
+#'   (column labels). When \code{horizontal = FALSE}: labels appear as plot
+#'   titles (\code{column_labels_side = "top"}) or captions
+#'   (\code{column_labels_side = "bottom"}). When \code{horizontal = TRUE}:
+#'   the covariate name appears on the y-axis; \code{column_labels_side}
+#'   controls left/right placement. Ignored when \code{show_column_names = FALSE}.
+#'   Default \code{TRUE}.
+#' @param row_names_side \code{"left"} or \code{"right"}. When
 #' @param row_names_side \code{"left"} or \code{"right"}. When
 #'   \code{horizontal = FALSE}, row names are shown on the first strip
 #'   (\code{"left"}) or the last strip (\code{"right"}). Ignored when
@@ -107,6 +115,7 @@ plot_covariate_heatmap <- function(
     color_map,
     row_id_var = NULL,
     show_row_names = TRUE,
+    show_column_names = TRUE,
     row_names_side = "left",
     plot_spacing = 0.5,
     legend_side = "left",
@@ -331,7 +340,10 @@ plot_covariate_heatmap <- function(
                     limits = c(0, 1),
                     expand = ggplot2::expansion(0)
                 ) +
-                ggplot2::labs(x = NULL, y = nm) +
+                ggplot2::labs(
+                    x = NULL,
+                    y = if (isTRUE(show_column_names)) nm else NULL
+                ) +
                 ggplot2::theme(
                     axis.title.y = ggplot2::element_text(
                         angle = 0,
@@ -387,8 +399,21 @@ plot_covariate_heatmap <- function(
                 ggplot2::labs(
                     x = NULL,
                     y = NULL,
-                    title = if (column_labels_side == "top") nm else NULL,
-                    caption = if (column_labels_side == "bottom") nm else NULL
+                    title = if (
+                        isTRUE(show_column_names) && column_labels_side == "top"
+                    ) {
+                        nm
+                    } else {
+                        NULL
+                    },
+                    caption = if (
+                        isTRUE(show_column_names) &&
+                            column_labels_side == "bottom"
+                    ) {
+                        nm
+                    } else {
+                        NULL
+                    }
                 ) +
                 ggplot2::theme(
                     plot.title = ggplot2::element_text(
