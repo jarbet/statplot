@@ -541,8 +541,9 @@ local({
         ))
         expect_gte(length(idx_fill), 1L)
         sc_fill <- p$scales$scales[[idx_fill[1L]]]
-        # breaks are the unique color values for the displayed categories
-        expect_equal(sc_fill$breaks, unname(cat_colors))
+        # breaks are the unique color values for the displayed categories;
+        # compare as a set to avoid dependence on row-order in p$data
+        expect_true(setequal(sc_fill$breaks, unname(cat_colors)))
         expect_equal(sc_fill$name, "Test category")
     })
 
@@ -569,7 +570,8 @@ local({
         ))
         sc_fill <- p$scales$scales[[idx_fill[1L]]]
         expect_length(sc_fill$breaks, 2L)
-        expect_equal(sc_fill$labels, c("Signaling", "Development"))
+        # sort both to avoid dependence on the order cats_used is built
+        expect_equal(sort(sc_fill$labels), sort(c("Signaling", "Development")))
         expect_equal(sc_fill$name, "Category")
     })
 

@@ -18,6 +18,7 @@ plot_pathways(
   pathway_cats = NULL,
   pathway_cat_colors = NULL,
   legend_pathway_fill_title = "Pathway category",
+  legend_pathway_fill_dot_size = 5,
   gene_color = "grey30",
   gene_label_size = 2.5,
   title = "Effect sizes of genes in selected pathways",
@@ -74,8 +75,11 @@ Must be a single positive value.}
 Must be a single positive value.}
 
 \item{pathway_cats}{named character vector or \code{NULL} (default \code{NULL}).
-Maps each displayed pathway ID to a biological process category name
+Optionally maps pathway IDs to a biological process category name
 (e.g. \code{c(MTORC1_SIGNALING = "Signaling", UV_RESPONSE_DN = "DNA damage")}).
+Partial mappings are allowed: only pathway nodes whose IDs appear in
+\code{names(pathway_cats)} receive a category fill color; any displayed pathway
+not present in \code{names(pathway_cats)} is left unfilled (transparent overlay).
 Must be used together with \code{pathway_cat_colors}.
 \code{data(hallmark_pathway_categories)} provides a ready-to-use
 term-to-category mapping for MSigDB Hallmark gene sets.}
@@ -91,6 +95,11 @@ unaffected.  Must be used together with \code{pathway_cats}.}
 \item{legend_pathway_fill_title}{character(1) or \code{NULL}.  Title for the
 pathway-fill legend when \code{pathway_cats} is non-\code{NULL}
 (default \code{"Pathway category"}).  Set to \code{NULL} for no legend title.}
+
+\item{legend_pathway_fill_dot_size}{numeric(1) Size of the dot/point keys in
+the pathway-category fill legend (default \code{5}).  Increase this value if the
+colored dots in the legend appear too small.  Must be a single positive
+numeric value.  Ignored when \code{pathway_cats} is \code{NULL}.}
 
 \item{gene_color}{character(1) Color of gene label text (default
 \code{"grey30"}).}

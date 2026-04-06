@@ -38,8 +38,11 @@
 #' @param pathway_label_size numeric(1) Font size of pathway labels (default `4`).
 #'   Must be a single positive value.
 #' @param pathway_cats named character vector or `NULL` (default `NULL`).
-#'   Maps each displayed pathway ID to a biological process category name
+#'   Optionally maps pathway IDs to a biological process category name
 #'   (e.g. `c(MTORC1_SIGNALING = "Signaling", UV_RESPONSE_DN = "DNA damage")`).
+#'   Partial mappings are allowed: only pathway nodes whose IDs appear in
+#'   `names(pathway_cats)` receive a category fill color; any displayed pathway
+#'   not present in `names(pathway_cats)` is left unfilled (transparent overlay).
 #'   Must be used together with `pathway_cat_colors`.
 #'   `data(hallmark_pathway_categories)` provides a ready-to-use
 #'   term-to-category mapping for MSigDB Hallmark gene sets.
@@ -53,6 +56,10 @@
 #' @param legend_pathway_fill_title character(1) or `NULL`.  Title for the
 #'   pathway-fill legend when `pathway_cats` is non-`NULL`
 #'   (default `"Pathway category"`).  Set to `NULL` for no legend title.
+#' @param legend_pathway_fill_dot_size numeric(1) Size of the dot/point keys in
+#'   the pathway-category fill legend (default `5`).  Increase this value if the
+#'   colored dots in the legend appear too small.  Must be a single positive
+#'   numeric value.  Ignored when `pathway_cats` is `NULL`.
 #' @param gene_color character(1) Color of gene label text (default
 #'   `"grey30"`).
 #' @param gene_label_size numeric(1) Font size of gene labels (default `2.5`).
@@ -225,6 +232,7 @@ plot_pathways <- function(
     pathway_cats = NULL,
     pathway_cat_colors = NULL,
     legend_pathway_fill_title = "Pathway category",
+    legend_pathway_fill_dot_size = 5,
     gene_color = "grey30",
     gene_label_size = 2.5,
     title = "Effect sizes of genes in selected pathways",
@@ -352,12 +360,36 @@ plot_pathways <- function(
             (is.character(pathway_cats) &&
                 !is.null(names(pathway_cats)) &&
                 length(pathway_cats) >= 1),
+        "names(pathway_cats) must not contain empty strings" = is.null(
+            pathway_cats
+        ) ||
+            all(nzchar(names(pathway_cats))),
+        "names(pathway_cats) must not contain NAs" = is.null(
+            pathway_cats
+        ) ||
+            !anyNA(names(pathway_cats)),
+        "names(pathway_cats) must be unique (no duplicate pathway IDs)" = is.null(
+            pathway_cats
+        ) ||
+            anyDuplicated(names(pathway_cats)) == 0L,
         "pathway_cat_colors must be a named character vector or NULL" = is.null(
             pathway_cat_colors
         ) ||
             (is.character(pathway_cat_colors) &&
                 !is.null(names(pathway_cat_colors)) &&
                 length(pathway_cat_colors) >= 1),
+        "names(pathway_cat_colors) must not contain empty strings" = is.null(
+            pathway_cat_colors
+        ) ||
+            all(nzchar(names(pathway_cat_colors))),
+        "names(pathway_cat_colors) must not contain NAs" = is.null(
+            pathway_cat_colors
+        ) ||
+            !anyNA(names(pathway_cat_colors)),
+        "names(pathway_cat_colors) must be unique (no duplicate category names)" = is.null(
+            pathway_cat_colors
+        ) ||
+            anyDuplicated(names(pathway_cat_colors)) == 0L,
         "pathway_cats and pathway_cat_colors must both be provided or both NULL" = is.null(
             pathway_cats
         ) ==
@@ -370,7 +402,13 @@ plot_pathways <- function(
             legend_pathway_fill_title
         ) ||
             (is.character(legend_pathway_fill_title) &&
-                length(legend_pathway_fill_title) == 1)
+                length(legend_pathway_fill_title) == 1),
+        "legend_pathway_fill_dot_size must be a single positive numeric value" = is.numeric(
+            legend_pathway_fill_dot_size
+        ) &&
+            length(legend_pathway_fill_dot_size) == 1 &&
+            is.finite(legend_pathway_fill_dot_size) &&
+            legend_pathway_fill_dot_size > 0
     )
 
     # Determine genes that could appear in the plot (all genes in the
@@ -593,7 +631,9 @@ plot_pathways <- function(
         p <- p +
             ggplot2::scale_fill_identity(
                 name = legend_pathway_fill_title,
-                guide = ggplot2::guide_legend(),
+                guide = ggplot2::guide_legend(
+                    override.aes = list(size = legend_pathway_fill_dot_size)
+                ),
                 breaks = unname(legend_colors),
                 labels = names(legend_colors)
             )
