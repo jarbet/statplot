@@ -204,8 +204,117 @@ test_that("plot_pathways() errors when legend_fixed_dot_size is invalid", {
     )
 })
 
-# ---------------------------------------------------------------------------
-# Colour-scale integrity: legend must faithfully reflect node colours
+test_that("plot_pathways() errors when pathway_cats is not a named character vector", {
+    fc <- make_fc()
+    # Unnamed character vector
+    expect_error(
+        plot_pathways(
+            make_fake_gsea(),
+            effect_size = fc,
+            pathway_cats = c("Cat1", "Cat2"),
+            pathway_cat_colors = c(Cat1 = "red", Cat2 = "blue")
+        ),
+        "pathway_cats"
+    )
+    # Non-character (numeric)
+    expect_error(
+        plot_pathways(
+            make_fake_gsea(),
+            effect_size = fc,
+            pathway_cats = c(A = 1L, B = 2L),
+            pathway_cat_colors = c(`1` = "red", `2` = "blue")
+        ),
+        "pathway_cats"
+    )
+    # Empty named character vector
+    expect_error(
+        plot_pathways(
+            make_fake_gsea(),
+            effect_size = fc,
+            pathway_cats = stats::setNames(character(0), character(0)),
+            pathway_cat_colors = c(Cat1 = "red")
+        ),
+        "pathway_cats"
+    )
+})
+
+test_that("plot_pathways() errors when pathway_cat_colors is not a named character vector", {
+    fc <- make_fc()
+    # Unnamed character vector
+    expect_error(
+        plot_pathways(
+            make_fake_gsea(),
+            effect_size = fc,
+            pathway_cats = c(A = "Cat1"),
+            pathway_cat_colors = c("red", "blue")
+        ),
+        "pathway_cat_colors"
+    )
+    # Non-character (numeric)
+    expect_error(
+        plot_pathways(
+            make_fake_gsea(),
+            effect_size = fc,
+            pathway_cats = c(A = "Cat1"),
+            pathway_cat_colors = c(Cat1 = 1L)
+        ),
+        "pathway_cat_colors"
+    )
+})
+
+test_that("plot_pathways() errors when only one of pathway_cats / pathway_cat_colors is provided", {
+    fc <- make_fc()
+    expect_error(
+        plot_pathways(
+            make_fake_gsea(),
+            effect_size = fc,
+            pathway_cats = c(A = "Cat1")
+        ),
+        "pathway_cats and pathway_cat_colors"
+    )
+    expect_error(
+        plot_pathways(
+            make_fake_gsea(),
+            effect_size = fc,
+            pathway_cat_colors = c(Cat1 = "red")
+        ),
+        "pathway_cats and pathway_cat_colors"
+    )
+})
+
+test_that("plot_pathways() errors when pathway_cats value not in names(pathway_cat_colors)", {
+    fc <- make_fc()
+    expect_error(
+        plot_pathways(
+            make_fake_gsea(),
+            effect_size = fc,
+            pathway_cats = c(A = "Missing"),
+            pathway_cat_colors = c(Cat1 = "red")
+        ),
+        "pathway_cats"
+    )
+})
+
+test_that("plot_pathways() errors when legend_pathway_fill_title is invalid", {
+    fc <- make_fc()
+    expect_error(
+        plot_pathways(
+            make_fake_gsea(),
+            effect_size = fc,
+            legend_pathway_fill_title = c("A", "B")
+        ),
+        "legend_pathway_fill_title"
+    )
+    expect_error(
+        plot_pathways(
+            make_fake_gsea(),
+            effect_size = fc,
+            legend_pathway_fill_title = 42
+        ),
+        "legend_pathway_fill_title"
+    )
+})
+
 # ---------------------------------------------------------------------------
 # ggplot2 uses a single Scale object for both aesthetic mapping (dot colours)
 # and legend construction, so verifying the scale's properties is equivalent
@@ -401,5 +510,103 @@ local({
         out <- sc_s$oob(c(lims[1] - 100, lims[2] + 100), range = lims)
         expect_false(anyNA(out), label = "squished values must not be NA")
         expect_equal(out, lims)
+    })
+
+    # ------------------------------------------------------------------
+    # 5. pathway_cats / pathway_cat_colors: a fill scale is added to the plot
+    # ------------------------------------------------------------------
+    test_that("pathway_cats: fill identity scale is present with correct breaks", {
+        top_ids <- utils::head(res$gsea_result@result$ID, 3)
+        pathway_cats <- stats::setNames(
+            c("Signaling", "Immune", "Development"),
+            top_ids
+        )
+        cat_colors <- c(
+            Signaling = "#e41a1c",
+            Immune = "#4daf4a",
+            Development = "#377eb8"
+        )
+        p <- plot_pathways(
+            gsea_result = res$gsea_result,
+            effect_size = res$gene_vec,
+            show_pathways = 3,
+            pathway_cats = pathway_cats,
+            pathway_cat_colors = cat_colors,
+            legend_pathway_fill_title = "Test category"
+        )
+        idx_fill <- which(vapply(
+            p$scales$scales,
+            function(s) "fill" %in% s$aesthetics,
+            logical(1)
+        ))
+        expect_gte(length(idx_fill), 1L)
+        sc_fill <- p$scales$scales[[idx_fill[1L]]]
+        # breaks are the unique color values for the displayed categories;
+        # compare as a set to avoid dependence on row-order in p$data
+        expect_true(setequal(sc_fill$breaks, unname(cat_colors)))
+        expect_equal(sc_fill$name, "Test category")
+    })
+
+    test_that("pathway_cats: legend shows deduplicated category labels", {
+        top_ids <- utils::head(res$gsea_result@result$ID, 3)
+        # Two pathways share the same category -> one legend entry
+        pathway_cats <- stats::setNames(
+            c("Signaling", "Signaling", "Development"),
+            top_ids
+        )
+        cat_colors <- c(Signaling = "#e41a1c", Development = "#377eb8")
+        p <- plot_pathways(
+            gsea_result = res$gsea_result,
+            effect_size = res$gene_vec,
+            show_pathways = 3,
+            pathway_cats = pathway_cats,
+            pathway_cat_colors = cat_colors,
+            legend_pathway_fill_title = "Category"
+        )
+        idx_fill <- which(vapply(
+            p$scales$scales,
+            function(s) "fill" %in% s$aesthetics,
+            logical(1)
+        ))
+        sc_fill <- p$scales$scales[[idx_fill[1L]]]
+        expect_length(sc_fill$breaks, 2L)
+        # sort both to avoid dependence on the order cats_used is built
+        expect_equal(sort(sc_fill$labels), sort(c("Signaling", "Development")))
+        expect_equal(sc_fill$name, "Category")
+    })
+
+    test_that("pathway_cats: colour scale (gene fold-change) is unaffected", {
+        top_ids <- utils::head(res$gsea_result@result$ID, 3)
+        pathway_cats <- stats::setNames(
+            c("Signaling", "Immune", "Development"),
+            top_ids
+        )
+        cat_colors <- c(
+            Signaling = "#e41a1c",
+            Immune = "#4daf4a",
+            Development = "#377eb8"
+        )
+        p_plain <- plot_pathways(
+            gsea_result = res$gsea_result,
+            effect_size = res$gene_vec,
+            show_pathways = 3
+        )
+        p_fill <- plot_pathways(
+            gsea_result = res$gsea_result,
+            effect_size = res$gene_vec,
+            show_pathways = 3,
+            pathway_cats = pathway_cats,
+            pathway_cat_colors = cat_colors
+        )
+        # Both plots must have exactly one colour scale
+        get_colour_scales <- function(p) {
+            which(vapply(
+                p$scales$scales,
+                function(s) "colour" %in% s$aesthetics,
+                logical(1)
+            ))
+        }
+        expect_length(get_colour_scales(p_plain), 1L)
+        expect_length(get_colour_scales(p_fill), 1L)
     })
 })

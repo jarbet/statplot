@@ -55,6 +55,10 @@ mlog10_transform_pvalue = TRUE the vertical line is drawn at -log10(alpha).}
 
 \item{vline_color}{Character, color for the vertical line.}
 
+\item{vline_legend}{Logical, whether to include a legend entry for the vertical
+significance line (default \code{TRUE}). When \code{TRUE} a legend key showing the
+\code{alpha} value is added; when \code{FALSE} the line is drawn without a legend.}
+
 \item{show_y_labels}{Logical, whether to show y-axis labels (default FALSE).}
 
 \item{mlog10_transform_pvalue}{Logical; when TRUE compute -log10(p) for plotting/order and

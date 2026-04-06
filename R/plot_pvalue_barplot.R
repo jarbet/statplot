@@ -18,6 +18,9 @@
 #' @param vline Logical, whether to draw a vertical line at alpha (or -log10(alpha)).
 #' @param vline_linetype Character, linetype for the vertical line.
 #' @param vline_color Character, color for the vertical line.
+#' @param vline_legend Logical, whether to include a legend entry for the vertical
+#'   significance line (default `TRUE`). When `TRUE` a legend key showing the
+#'   `alpha` value is added; when `FALSE` the line is drawn without a legend.
 #' @param show_y_labels Logical, whether to show y-axis labels (default FALSE).
 #' @param mlog10_transform_pvalue Logical; when TRUE compute -log10(p) for plotting/order and
 #'   format x-axis tick labels as p-values (10^-x).

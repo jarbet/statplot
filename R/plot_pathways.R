@@ -37,13 +37,36 @@
 #'   `"black"`).
 #' @param pathway_label_size numeric(1) Font size of pathway labels (default `4`).
 #'   Must be a single positive value.
+#' @param pathway_cats named character vector or `NULL` (default `NULL`).
+#'   Optionally maps pathway IDs to a biological process category name
+#'   (e.g. `c(MTORC1_SIGNALING = "Signaling", UV_RESPONSE_DN = "DNA damage")`).
+#'   Partial mappings are allowed: only pathway nodes whose IDs appear in
+#'   `names(pathway_cats)` receive a category fill color; any displayed pathway
+#'   not present in `names(pathway_cats)` is left unfilled (transparent overlay).
+#'   Must be used together with `pathway_cat_colors`.
+#'   `data(hallmark_pathway_categories)` provides a ready-to-use
+#'   term-to-category mapping for MSigDB Hallmark gene sets.
+#' @param pathway_cat_colors named character vector or `NULL` (default `NULL`).
+#'   Maps each category name to a color string (hex or named R color),
+#'   e.g. `c(Signaling = "#e41a1c", "DNA damage" = "#ff7f00")`.  Must cover
+#'   every category value that appears in `pathway_cats`.  Node shape is set
+#'   to `21` (filled circle with border) so `fill` and `colour` remain
+#'   independent aesthetics — the gene fold-change gradient on `colour` is
+#'   unaffected.  Must be used together with `pathway_cats`.
+#' @param legend_pathway_fill_title character(1) or `NULL`.  Title for the
+#'   pathway-fill legend when `pathway_cats` is non-`NULL`
+#'   (default `"Pathway category"`).  Set to `NULL` for no legend title.
+#' @param legend_pathway_fill_dot_size numeric(1) Size of the dot/point keys in
+#'   the pathway-category fill legend (default `5`).  Increase this value if the
+#'   colored dots in the legend appear too small.  Must be a single positive
+#'   numeric value.  Ignored when `pathway_cats` is `NULL`.
 #' @param gene_color character(1) Color of gene label text (default
 #'   `"grey30"`).
 #' @param gene_label_size numeric(1) Font size of gene labels (default `2.5`).
 #'   Must be a single positive value.
 #' @param title character(1) Plot title (default `"Effect sizes of genes in selected pathways"`).
 #' @param legend_pathway_size_title character(1) Title for the node-size legend (default
-#'   `"Num. genes"`).  Set to `NULL` to show the legend without a title.
+#'   `"Num. genes\n in pathway"`).  Set to `NULL` to show the legend without a title.
 #' @param legend_fixed_dot_size numeric vector of gene-count values whose dot
 #'   sizes should appear as keys in the size legend (default `NULL`,
 #'   automatic).  For example, `c(50, 100, 200)` causes exactly those three
@@ -53,7 +76,7 @@
 #'   squished to the nearest extreme rather than dropped.  All values must be
 #'   finite and positive.
 #' @param legend_color_title character(1) or expression() Title for the color scale legend
-#'   (default `"Effect size"`).  Set to `NULL` to show the legend without a
+#'   (default `"Gene effect size"`).  Set to `NULL` to show the legend without a
 #'   title. Use `expression()` to supply plotmath expressions.
 #' @param colorkey_breaks numeric vector of values at which tick marks and
 #'   labels are drawn on the color legend (default `NULL`, automatic).  For
@@ -166,8 +189,34 @@
 #'
 #' patchwork::wrap_plots(p1, p2, guides = "collect")
 #'
+#' # Color pathway nodes by biological process category using hallmark_pathway_categories
+#' data(hallmark_pathway_categories)
+#' top_ids <- utils::head(res$gsea_result@result$ID, 5)
+#' # Look up the process category for each displayed pathway
+#' pathway_cats <- setNames(
+#'     hallmark_pathway_categories$process_category[
+#'         match(top_ids, hallmark_pathway_categories$term)
+#'     ],
+#'     top_ids
+#' )
+#' # One color per category; covers all eight Hallmark categories
+#' cat_palette <- c(
+#'     Signaling = "#e41a1c", Development = "#377eb8", Immune = "#4daf4a",
+#'     Metabolic = "#984ea3", "DNA damage" = "#ff7f00", Proliferation = "#a65628",
+#'     "Cellular component" = "#f781bf", Pathway = "#999999"
+#' )
+#' plot_pathways(
+#'     gsea_result               = res$gsea_result,
+#'     effect_size               = res$gene_vec,
+#'     show_pathways             = 5,
+#'     pathway_cats              = pathway_cats,
+#'     pathway_cat_colors        = cat_palette,
+#'     legend_pathway_fill_title = "Pathway category",
+#'     effect_size_threshold     = 1.5
+#' )
+#'
 #' @importFrom enrichplot cnetplot
-#' @importFrom ggplot2 ggtitle
+#' @importFrom ggplot2 ggtitle geom_point scale_fill_identity
 #' @export
 plot_pathways <- function(
     gsea_result,
@@ -180,12 +229,16 @@ plot_pathways <- function(
     line_size = 0.5,
     pathway_color = "black",
     pathway_label_size = 4,
+    pathway_cats = NULL,
+    pathway_cat_colors = NULL,
+    legend_pathway_fill_title = "Pathway category",
+    legend_pathway_fill_dot_size = 5,
     gene_color = "grey30",
     gene_label_size = 2.5,
     title = "Effect sizes of genes in selected pathways",
-    legend_pathway_size_title = "Num. genes",
+    legend_pathway_size_title = "Num. genes\n in pathway",
     legend_fixed_dot_size = NULL,
-    legend_color_title = "Effect size",
+    legend_color_title = "Gene effect size",
     colorkey_breaks = NULL,
     colorkey_limits = NULL,
     color_low = NULL,
@@ -300,7 +353,62 @@ plot_pathways <- function(
         ) &&
             length(plot_margin) == 4 &&
             all(is.finite(plot_margin)) &&
-            all(plot_margin >= 0)
+            all(plot_margin >= 0),
+        "pathway_cats must be a named character vector or NULL" = is.null(
+            pathway_cats
+        ) ||
+            (is.character(pathway_cats) &&
+                !is.null(names(pathway_cats)) &&
+                length(pathway_cats) >= 1),
+        "names(pathway_cats) must not contain empty strings" = is.null(
+            pathway_cats
+        ) ||
+            all(nzchar(names(pathway_cats))),
+        "names(pathway_cats) must not contain NAs" = is.null(
+            pathway_cats
+        ) ||
+            !anyNA(names(pathway_cats)),
+        "names(pathway_cats) must be unique (no duplicate pathway IDs)" = is.null(
+            pathway_cats
+        ) ||
+            anyDuplicated(names(pathway_cats)) == 0L,
+        "pathway_cat_colors must be a named character vector or NULL" = is.null(
+            pathway_cat_colors
+        ) ||
+            (is.character(pathway_cat_colors) &&
+                !is.null(names(pathway_cat_colors)) &&
+                length(pathway_cat_colors) >= 1),
+        "names(pathway_cat_colors) must not contain empty strings" = is.null(
+            pathway_cat_colors
+        ) ||
+            all(nzchar(names(pathway_cat_colors))),
+        "names(pathway_cat_colors) must not contain NAs" = is.null(
+            pathway_cat_colors
+        ) ||
+            !anyNA(names(pathway_cat_colors)),
+        "names(pathway_cat_colors) must be unique (no duplicate category names)" = is.null(
+            pathway_cat_colors
+        ) ||
+            anyDuplicated(names(pathway_cat_colors)) == 0L,
+        "pathway_cats and pathway_cat_colors must both be provided or both NULL" = is.null(
+            pathway_cats
+        ) ==
+            is.null(pathway_cat_colors),
+        "all values in pathway_cats must appear in names(pathway_cat_colors)" = is.null(
+            pathway_cats
+        ) ||
+            all(pathway_cats %in% names(pathway_cat_colors)),
+        "legend_pathway_fill_title must be a single character string or NULL" = is.null(
+            legend_pathway_fill_title
+        ) ||
+            (is.character(legend_pathway_fill_title) &&
+                length(legend_pathway_fill_title) == 1),
+        "legend_pathway_fill_dot_size must be a single positive numeric value" = is.numeric(
+            legend_pathway_fill_dot_size
+        ) &&
+            length(legend_pathway_fill_dot_size) == 1 &&
+            is.finite(legend_pathway_fill_dot_size) &&
+            legend_pathway_fill_dot_size > 0
     )
 
     # Determine genes that could appear in the plot (all genes in the
@@ -369,13 +477,6 @@ plot_pathways <- function(
             node_label = "item",
             color = gene_color,
             size = gene_label_size
-        ) +
-        # pathway labels: bold, prominent (draw last so they appear on top)
-        ggtangle::geom_cnet_label(
-            node_label = "category",
-            fontface = "bold",
-            color = pathway_color,
-            size = pathway_label_size
         ) +
         ggplot2::guides(
             size = ggplot2::guide_legend(title = legend_pathway_size_title)
@@ -480,6 +581,72 @@ plot_pathways <- function(
             }
         }
     }
+
+    # Pathway-category fill: access the ggraph layout (p$data is the layout
+    # data.frame for ggtangle/ggraph plots, with x, y, name, .isCategory, size)
+    # to get pathway node positions, then add a plain geom_point overlay with
+    # pre-computed fill colors.  Using geom_point with explicit data avoids the
+    # ggraph filter-evaluation issues that prevent environment-variable lookup
+    # in geom_node_point's filter aesthetic.  colour = "transparent" (not NA)
+    # ensures shape 21 renders visibly: NA colour makes shape 21 invisible in
+    # grid because the border defines the shape's rendering boundary.
+    if (!is.null(pathway_cats)) {
+        pathway_ids_fill <- names(pathway_cats)
+
+        node_layout <- as.data.frame(p$data)
+
+        # Identify pathway (category) nodes via .isCategory when available
+        is_pathway <- if (".isCategory" %in% names(node_layout)) {
+            node_layout$.isCategory
+        } else {
+            rep(TRUE, nrow(node_layout))
+        }
+
+        pathway_node_df <- node_layout[
+            is_pathway & (node_layout$name %in% pathway_ids_fill),
+            c("x", "y", "name", "size"),
+            drop = FALSE
+        ]
+        # Color each node by looking up its category then the category's color
+        pathway_node_df$node_fill <- unname(
+            pathway_cat_colors[pathway_cats[pathway_node_df$name]]
+        )
+
+        # Overlay with explicit coordinates; exclude from size legend (which is
+        # already populated by the cnetplot pathway node layer).
+        p <- p +
+            ggplot2::geom_point(
+                data = pathway_node_df,
+                ggplot2::aes(x = x, y = y, size = size, fill = node_fill),
+                shape = 21,
+                colour = "transparent",
+                inherit.aes = FALSE,
+                show.legend = c(size = FALSE, fill = NA)
+            )
+
+        # Legend: one entry per unique category among displayed pathway nodes
+        cats_used <- unique(pathway_cats[pathway_node_df$name])
+        cats_used <- cats_used[!is.na(cats_used)]
+        legend_colors <- pathway_cat_colors[cats_used]
+        p <- p +
+            ggplot2::scale_fill_identity(
+                name = legend_pathway_fill_title,
+                guide = ggplot2::guide_legend(
+                    override.aes = list(size = legend_pathway_fill_dot_size)
+                ),
+                breaks = unname(legend_colors),
+                labels = names(legend_colors)
+            )
+    }
+
+    # Pathway labels drawn last so they always sit on top of any fill overlay.
+    p <- p +
+        ggtangle::geom_cnet_label(
+            node_label = "category",
+            fontface = "bold",
+            color = pathway_color,
+            size = pathway_label_size
+        )
 
     p
 }
