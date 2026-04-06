@@ -59,7 +59,7 @@
 #'   Must be a single positive value.
 #' @param title character(1) Plot title (default `"Effect sizes of genes in selected pathways"`).
 #' @param legend_pathway_size_title character(1) Title for the node-size legend (default
-#'   `"Num. genes"`).  Set to `NULL` to show the legend without a title.
+#'   `"Num. genes\n in pathway"`).  Set to `NULL` to show the legend without a title.
 #' @param legend_fixed_dot_size numeric vector of gene-count values whose dot
 #'   sizes should appear as keys in the size legend (default `NULL`,
 #'   automatic).  For example, `c(50, 100, 200)` causes exactly those three
@@ -69,7 +69,7 @@
 #'   squished to the nearest extreme rather than dropped.  All values must be
 #'   finite and positive.
 #' @param legend_color_title character(1) or expression() Title for the color scale legend
-#'   (default `"Effect size"`).  Set to `NULL` to show the legend without a
+#'   (default `"Gene effect size"`).  Set to `NULL` to show the legend without a
 #'   title. Use `expression()` to supply plotmath expressions.
 #' @param colorkey_breaks numeric vector of values at which tick marks and
 #'   labels are drawn on the color legend (default `NULL`, automatic).  For

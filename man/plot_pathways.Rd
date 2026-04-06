@@ -101,7 +101,7 @@ Must be a single positive value.}
 \item{title}{character(1) Plot title (default \code{"Effect sizes of genes in selected pathways"}).}
 
 \item{legend_pathway_size_title}{character(1) Title for the node-size legend (default
-\code{"Num. genes"}).  Set to \code{NULL} to show the legend without a title.}
+\code{"Num. genes\\n in pathway"}).  Set to \code{NULL} to show the legend without a title.}
 
 \item{legend_fixed_dot_size}{numeric vector of gene-count values whose dot
 sizes should appear as keys in the size legend (default \code{NULL},
@@ -113,7 +113,7 @@ squished to the nearest extreme rather than dropped.  All values must be
 finite and positive.}
 
 \item{legend_color_title}{character(1) or expression() Title for the color scale legend
-(default \code{"Effect size"}).  Set to \code{NULL} to show the legend without a
+(default \code{"Gene effect size"}).  Set to \code{NULL} to show the legend without a
 title. Use \code{expression()} to supply plotmath expressions.}
 
 \item{colorkey_breaks}{numeric vector of values at which tick marks and
