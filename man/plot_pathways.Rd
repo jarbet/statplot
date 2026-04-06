@@ -15,12 +15,15 @@ plot_pathways(
   line_size = 0.5,
   pathway_color = "black",
   pathway_label_size = 4,
+  pathway_cats = NULL,
+  pathway_cat_colors = NULL,
+  legend_pathway_fill_title = "Pathway category",
   gene_color = "grey30",
   gene_label_size = 2.5,
   title = "Effect sizes of genes in selected pathways",
-  legend_pathway_size_title = "Num. genes",
+  legend_pathway_size_title = "Num. genes\\n in pathway",
   legend_fixed_dot_size = NULL,
-  legend_color_title = "Effect size",
+  legend_color_title = "Gene effect size",
   colorkey_breaks = NULL,
   colorkey_limits = NULL,
   color_low = NULL,
@@ -69,6 +72,25 @@ Must be a single positive value.}
 
 \item{pathway_label_size}{numeric(1) Font size of pathway labels (default \code{4}).
 Must be a single positive value.}
+
+\item{pathway_cats}{named character vector or \code{NULL} (default \code{NULL}).
+Maps each displayed pathway ID to a biological process category name
+(e.g. \code{c(MTORC1_SIGNALING = "Signaling", UV_RESPONSE_DN = "DNA damage")}).
+Must be used together with \code{pathway_cat_colors}.
+\code{data(hallmark_pathway_categories)} provides a ready-to-use
+term-to-category mapping for MSigDB Hallmark gene sets.}
+
+\item{pathway_cat_colors}{named character vector or \code{NULL} (default \code{NULL}).
+Maps each category name to a color string (hex or named R color),
+e.g. \code{c(Signaling = "#e41a1c", "DNA damage" = "#ff7f00")}.  Must cover
+every category value that appears in \code{pathway_cats}.  Node shape is set
+to \code{21} (filled circle with border) so \code{fill} and \code{colour} remain
+independent aesthetics — the gene fold-change gradient on \code{colour} is
+unaffected.  Must be used together with \code{pathway_cats}.}
+
+\item{legend_pathway_fill_title}{character(1) or \code{NULL}.  Title for the
+pathway-fill legend when \code{pathway_cats} is non-\code{NULL}
+(default \code{"Pathway category"}).  Set to \code{NULL} for no legend title.}
 
 \item{gene_color}{character(1) Color of gene label text (default
 \code{"grey30"}).}
@@ -218,5 +240,31 @@ p2 <- plot_pathways(
 )
 
 patchwork::wrap_plots(p1, p2, guides = "collect")
+
+# Color pathway nodes by biological process category using hallmark_pathway_categories
+data(hallmark_pathway_categories)
+top_ids <- utils::head(res$gsea_result@result$ID, 5)
+# Look up the process category for each displayed pathway
+pathway_cats <- setNames(
+    hallmark_pathway_categories$process_category[
+        match(top_ids, hallmark_pathway_categories$term)
+    ],
+    top_ids
+)
+# One color per category; covers all eight Hallmark categories
+cat_palette <- c(
+    Signaling = "#e41a1c", Development = "#377eb8", Immune = "#4daf4a",
+    Metabolic = "#984ea3", "DNA damage" = "#ff7f00", Proliferation = "#a65628",
+    "Cellular component" = "#f781bf", Pathway = "#999999"
+)
+plot_pathways(
+    gsea_result               = res$gsea_result,
+    effect_size               = res$gene_vec,
+    show_pathways             = 5,
+    pathway_cats              = pathway_cats,
+    pathway_cat_colors        = cat_palette,
+    legend_pathway_fill_title = "Pathway category",
+    effect_size_threshold     = 1.5
+)
 
 }
