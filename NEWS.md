@@ -17,6 +17,12 @@ biological process categories as defined in Table 1 of Liberzon et al.
   (one strip per covariate). Supports categorical covariates (named color
   vectors) only.
 
+* `plot_pathways`: new `pathway_cats` and `pathway_cat_colors` arguments let
+  users fill pathway nodes by biological process category. The accompanying
+  `legend_pathway_fill_title` and `legend_pathway_fill_dot_size` arguments
+  customise the category fill legend, while the gene effect-size colour scale
+  remains independent.
+
 
 ## Changed
 
@@ -27,6 +33,8 @@ biological process categories as defined in Table 1 of Liberzon et al.
 * `plot_dotmap`: the default `combine_pvalue_method` is now `"fisher"` (was previously `"CMC"` when not supplied via `match.arg()`); documentation and examples updated to reflect the new default choice.
 
 * `plot_pvalue_barplot`: improved legend behaviour — when a vertical significance line legend is requested (`vline = TRUE, vline_legend = TRUE`) the colour scale now stores an explicit named `values` vector so code and tests can programmatically find the named alpha entry; also the fill legend uses `override.aes` to remove line linetype in legend keys when showing p/q bars so legend keys render as solid/filled swatches.
+* `plot_pvalue_barplot`: added `vline_legend` to optionally include or suppress the vertical significance line legend key.
+* `plot_pathways`: default `legend_pathway_size_title` changed to `"Num. genes\n in pathway"` and default `legend_color_title` changed to `"Gene effect size"`.
 
 ## Fixed
 
