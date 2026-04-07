@@ -2,11 +2,11 @@
 #'
 #' Draws a grouped bar chart (one facet per group) comparing a numeric outcome
 #' between exactly two conditions. Bar height = mean (or any effect size); error
-#' bars span ±1 error unit (SE, SD, CI half-width, etc.). A significance
+#' bars span +/- 1 error unit (SE, SD, CI half-width, etc.). A significance
 #' bracket with optional label is drawn above bars when the corresponding
 #' p-value falls below \code{p_cutoff}.
 #'
-#' @param df Data frame in **long format** — one row per group × condition
+#' @param df Data frame in **long format** - one row per group x condition
 #'   combination.
 #' @param group_col Column name for independent groups shown as facets.
 #'   Default \code{"group"}.
@@ -17,7 +17,7 @@
 #' @param error_col Column name for error-bar half-widths (SE, SD, CI
 #'   half-width, etc.). Default \code{"se"}.
 #' @param error_direction Direction of error bars. \code{"both"} draws
-#'   \code{mean ± error}; \code{"up"} draws only the upper whisker
+#'   \code{mean +/- error}; \code{"up"} draws only the upper whisker
 #'   (\code{mean} to \code{mean + error}). Default \code{"up"}.
 #' @param p_col Column name for p-values. The value should be the same for
 #'   both rows belonging to a group (i.e. repeated). Set to \code{NULL} to
@@ -103,7 +103,7 @@ plot_barplot_by_group <- function(
     bracket_text_gap = 0.024,
     strip_position = "top"
 ) {
-    # ── Input validation ──────────────────────────────────────────────────────
+    # -- Input validation --
     stopifnot(is.data.frame(df))
     required <- c(group_col, condition_col, mean_col, error_col)
     missing <- setdiff(required, names(df))
@@ -116,7 +116,7 @@ plot_barplot_by_group <- function(
         c("top", "bottom", "left", "right")
     )
 
-    # ── Condition factor ordering ─────────────────────────────────────────────
+    # -- Condition factor ordering --
     if (!is.null(condition_order)) {
         # Validate condition_order
         if (length(condition_order) != 2L) {
@@ -159,7 +159,7 @@ plot_barplot_by_group <- function(
         )
     }
 
-    # ── Validate long-format: one row per (group, condition) pair ────────────
+    # -- Validate long-format: one row per (group, condition) pair --
     group_condition_counts <- df |>
         dplyr::count(.data[[group_col]], .data[[condition_col]])
 
@@ -173,7 +173,7 @@ plot_barplot_by_group <- function(
             paste(
                 "  ",
                 invalid_pairs[[group_col]],
-                " × ",
+                " x ",
                 invalid_pairs[[condition_col]],
                 " (n=",
                 invalid_pairs$n,
@@ -209,20 +209,20 @@ plot_barplot_by_group <- function(
     stopifnot(length(bar_colors) == 2L)
     error_direction <- match.arg(error_direction, c("both", "up"))
 
-    # ── Bar x positions (continuous axis) ─────────────────────────────────────
+    # -- Bar x positions (continuous axis) --
     x_left <- 1
     x_right <- x_left + bar_width + bar_gap
     x_mid <- (x_left + x_right) / 2
     df$.x_pos <- ifelse(df[[condition_col]] == cond_levels[1], x_left, x_right)
 
-    # ── Y offset used to space brackets above bar tops ────────────────────────
+    # -- Y offset used to space brackets above bar tops --
     bar_tops <- df[[mean_col]] + df[[error_col]]
     ymax <- max(bar_tops, na.rm = TRUE)
     ymin <- min(c(df[[mean_col]], 0), na.rm = TRUE)
     y_offset <- (ymax - ymin) * bracket_offset
     y_gap <- (ymax - ymin) * bracket_gap
 
-    # ── Build significance bracket data ───────────────────────────────────────
+    # -- Build significance bracket data --
     seg_df <- NULL
     text_df <- NULL
 
@@ -239,7 +239,7 @@ plot_barplot_by_group <- function(
     draw_brackets <- !is.null(p_col)
 
     if (draw_brackets) {
-        # Determine label text for each row (NA → suppress bracket)
+        # Determine label text for each row (NA -> suppress bracket)
         if (!is.null(label_col)) {
             df$.lbl <- df[[label_col]]
         } else {
@@ -310,7 +310,7 @@ plot_barplot_by_group <- function(
         }
     }
 
-    # ── Base plot ─────────────────────────────────────────────────────────────
+    # -- Base plot --
     p <- ggplot2::ggplot(
         df,
         ggplot2::aes(
@@ -333,7 +333,7 @@ plot_barplot_by_group <- function(
             legend.position = "none"
         )
 
-    # ── Faceting ──────────────────────────────────────────────────────────────
+    # -- Faceting --
     p <- p +
         ggplot2::facet_wrap(
             reformulate(paste0("`", group_col, "`")),
@@ -348,7 +348,7 @@ plot_barplot_by_group <- function(
             }
         )
 
-    # ── Error bars ────────────────────────────────────────────────────────────
+    # -- Error bars --
     if (error_direction == "both") {
         p <- p +
             ggplot2::geom_errorbar(
@@ -379,7 +379,7 @@ plot_barplot_by_group <- function(
             )
     }
 
-    # ── Overlay significance brackets ─────────────────────────────────────────
+    # -- Overlay significance brackets --
     if (!is.null(seg_df)) {
         p <- p +
             ggplot2::geom_segment(

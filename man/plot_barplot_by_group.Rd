@@ -28,7 +28,7 @@ plot_barplot_by_group(
 )
 }
 \arguments{
-\item{df}{Data frame in \strong{long format} — one row per group × condition
+\item{df}{Data frame in \strong{long format} - one row per group x condition
 combination.}
 
 \item{group_col}{Column name for independent groups shown as facets.
@@ -44,7 +44,7 @@ Default \code{"mean"}.}
 half-width, etc.). Default \code{"se"}.}
 
 \item{error_direction}{Direction of error bars. \code{"both"} draws
-\code{mean ± error}; \code{"up"} draws only the upper whisker
+\code{mean +/- error}; \code{"up"} draws only the upper whisker
 (\code{mean} to \code{mean + error}). Default \code{"up"}.}
 
 \item{p_col}{Column name for p-values. The value should be the same for
@@ -102,7 +102,7 @@ A \code{\link[ggplot2]{ggplot}} object.
 \description{
 Draws a grouped bar chart (one facet per group) comparing a numeric outcome
 between exactly two conditions. Bar height = mean (or any effect size); error
-bars span ±1 error unit (SE, SD, CI half-width, etc.). A significance
+bars span +/- 1 error unit (SE, SD, CI half-width, etc.). A significance
 bracket with optional label is drawn above bars when the corresponding
 p-value falls below \code{p_cutoff}.
 }
