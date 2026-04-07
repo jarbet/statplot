@@ -121,7 +121,7 @@ plot_barplot_by_group(df, y_label = "Performance score")
 # Custom bracket label from a column
 df$label <- ifelse(
     df$p_value < 0.05,
-    paste0("\u0394 = 1.5 [1.1-2.1]\n", format_pvalue(df$p_value)),
+    paste0("d = 1.5 [1.1-2.1]\n", format_pvalue(df$p_value)),
     NA
 )
 plot_barplot_by_group(df, y_label = "Performance score", label_col = "label")
