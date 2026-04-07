@@ -51,27 +51,25 @@
 #' @param bracket_text_gap Fraction of the y range used as white space between
 #'   the horizontal bracket line and the label text above it.
 #'   Default \code{0.024}.
-#' @param facet Logical. When \code{FALSE} (default) the current layout is
-#'   preserved: groups appear as labelled sections along the x-axis (facet
-#'   strips placed below the panel). When \code{TRUE} each group is placed in
-#'   its own facet panel with a labelled strip at the top.
-#' @param strip_position When \code{facet = TRUE}, controls where the facet
-#'   strip label is placed. One of \code{"top"} (default), \code{"bottom"},
-#'   \code{"left"}, or \code{"right"}. Ignored when \code{facet = FALSE}.
+#' @param strip_position Controls where the facet strip label is placed.
+#'   One of \code{"top"} (default), \code{"bottom"}, \code{"left"}, or
+#'   \code{"right"}.
 #'
 #' @return A \code{\link[ggplot2]{ggplot}} object.
 #' @export
 #'
 #' @examples
+#' library(ggplot2)
 #' df <- data.frame(
 #'     group     = rep(c("Group A", "Group B"), each = 2),
-#'     condition = rep(c("Control", "Exercise"), 2),
+#'     condition = rep(c("Exercise", "Control"), 2),
 #'     mean      = c(10.2, 14.8, 12.5, 13.1),
 #'     se        = c(0.9, 1.0, 1.1, 1.0),
 #'     p_value   = c(0.004, 0.004, 0.18, 0.18)
 #' )
+#' df$condition <- factor(df$condition, levels = c("Exercise", "Control"))
 #' # Default: auto-formatted p-value label
-#' plot_barplot_by_group(df, y_label = "Performance score")
+#' plot_barplot_by_group(df, y_label = "Performance score") + ggplot2::theme_bw()
 #'
 #' # Custom bracket label from a column
 #' df$label <- ifelse(
@@ -79,7 +77,9 @@
 #'     paste0("d = 1.5 [1.1-2.1]\n", format_pvalue(df$p_value)),
 #'     NA
 #' )
-#' plot_barplot_by_group(df, y_label = "Performance score", label_col = "label")
+#' plot_barplot_by_group(df, y_label = "Performance score", label_col = "label") +
+#'     ggplot2::coord_cartesian(ylim = c(0, 20)) +
+#'     ggplot2::theme_bw()
 #' @importFrom stats setNames as.formula
 plot_barplot_by_group <- function(
     df,
@@ -101,7 +101,6 @@ plot_barplot_by_group <- function(
     bracket_offset = 0.08,
     bracket_gap = 0.04,
     bracket_text_gap = 0.024,
-    facet = FALSE,
     strip_position = "top"
 ) {
     # ── Input validation ──────────────────────────────────────────────────────
@@ -295,36 +294,23 @@ plot_barplot_by_group <- function(
         )
 
     # ── Faceting ──────────────────────────────────────────────────────────────
-    if (facet) {
-        strip_position <- match.arg(
-            strip_position,
-            c("top", "bottom", "left", "right")
+    strip_position <- match.arg(
+        strip_position,
+        c("top", "bottom", "left", "right")
+    )
+    p <- p +
+        ggplot2::facet_wrap(
+            as.formula(paste("~", group_col)),
+            strip.position = strip_position
+        ) +
+        ggplot2::theme(
+            strip.text = ggplot2::element_text(face = "bold"),
+            strip.placement = if (strip_position == "bottom") {
+                "outside"
+            } else {
+                "inside"
+            }
         )
-        p <- p +
-            ggplot2::facet_wrap(
-                as.formula(paste("~", group_col)),
-                strip.position = strip_position
-            ) +
-            ggplot2::theme(
-                strip.text = ggplot2::element_text(face = "bold"),
-                strip.placement = if (strip_position == "bottom") {
-                    "outside"
-                } else {
-                    "inside"
-                }
-            )
-    } else {
-        p <- p +
-            ggplot2::facet_wrap(
-                as.formula(paste("~", group_col)),
-                strip.position = "bottom"
-            ) +
-            ggplot2::theme(
-                strip.background = ggplot2::element_blank(),
-                strip.text = ggplot2::element_text(face = "bold"),
-                strip.placement = "outside"
-            )
-    }
 
     # ── Error bars ────────────────────────────────────────────────────────────
     if (error_direction == "both") {
