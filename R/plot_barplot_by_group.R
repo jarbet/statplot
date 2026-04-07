@@ -51,9 +51,12 @@
 #' @param bracket_text_gap Fraction of the y range used as white space between
 #'   the horizontal bracket line and the label text above it.
 #'   Default \code{0.024}.
+#' @param facet Whether to use faceting. Default \code{TRUE}. When \code{FALSE},
+#'   \code{strip_position} is forced to \code{"bottom"}.
 #' @param strip_position Controls where the facet strip label is placed.
-#'   One of \code{"top"} (default), \code{"bottom"}, \code{"left"}, or
-#'   \code{"right"}.
+#'   One of \code{"top"} (default when \code{facet = TRUE}), \code{"bottom"},
+#'   \code{"left"}, or \code{"right"}. Ignored when \code{facet = FALSE}
+#'   (always uses \code{"bottom"}).
 #'
 #' @return A \code{\link[ggplot2]{ggplot}} object.
 #' @export
@@ -101,6 +104,7 @@ plot_barplot_by_group <- function(
     bracket_offset = 0.08,
     bracket_gap = 0.04,
     bracket_text_gap = 0.024,
+    facet = TRUE,
     strip_position = "top"
 ) {
     # ── Input validation ──────────────────────────────────────────────────────
@@ -109,6 +113,16 @@ plot_barplot_by_group <- function(
     missing <- setdiff(required, names(df))
     if (length(missing)) {
         stop("Column(s) not found in `df`: ", paste(missing, collapse = ", "))
+    }
+
+    stopifnot(is.logical(facet))
+    strip_position <- match.arg(
+        strip_position,
+        c("top", "bottom", "left", "right")
+    )
+    # When facet = FALSE, override strip_position to "bottom"
+    if (!facet) {
+        strip_position <- "bottom"
     }
 
     # ── Condition factor ordering ─────────────────────────────────────────────
@@ -294,10 +308,6 @@ plot_barplot_by_group <- function(
         )
 
     # ── Faceting ──────────────────────────────────────────────────────────────
-    strip_position <- match.arg(
-        strip_position,
-        c("top", "bottom", "left", "right")
-    )
     p <- p +
         ggplot2::facet_wrap(
             as.formula(paste("~", group_col)),
