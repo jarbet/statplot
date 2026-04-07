@@ -53,9 +53,9 @@
 #' @param bracket_gap Fraction of the y range inserted as white space between
 #'   the top of each error bar and the start of the significance bracket tick.
 #'   Default \code{0.04}.
-#' @param bracket_text_gap Fraction of the y range used as white space between
-#'   the horizontal bracket line and the label text above it.
-#'   Default \code{0.024}.
+#' @param bracket_text_gap Absolute distance (in data units) used as white space
+#'   between the horizontal bracket line and the label text above it.
+#'   Default \code{1.0}.
 #' @param strip_position Controls where the facet strip label is placed.
 #'   One of \code{"top"} (default), \code{"bottom"}, \code{"left"}, or
 #'   \code{"right"}.
@@ -100,6 +100,19 @@
 #'     y_label = "Performance score",
 #'     p_cutoff = 1
 #' ) + ggplot2::theme_bw()
+#'
+#' # Position strip below x-axis labels
+#' plot_barplot_by_group(
+#'     df,
+#'     y_label = "Performance score",
+#'     p_cutoff = 1,
+#'     strip_position = "bottom"
+#' ) +
+#'     ggplot2::theme_bw() +
+#'     ggplot2::theme(
+#'         axis.text.x = ggplot2::element_text(margin = ggplot2::margin(b = 5)),
+#'         strip.placement = "outside"
+#'     )
 #' @importFrom stats setNames as.formula reformulate
 plot_barplot_by_group <- function(
     df,
@@ -121,7 +134,7 @@ plot_barplot_by_group <- function(
     text_size = 3.5,
     bracket_offset = 0.08,
     bracket_gap = 0.04,
-    bracket_text_gap = 0.024,
+    bracket_text_gap = 1,
     strip_position = "top"
 ) {
     # -- Input validation --
@@ -362,7 +375,7 @@ plot_barplot_by_group <- function(
             text_df <- dplyr::mutate(
                 bracket_df,
                 x = x_mid,
-                y = y_top + (ymax - ymin) * bracket_text_gap
+                y = y_top + bracket_text_gap
             )
         }
     }
@@ -397,12 +410,7 @@ plot_barplot_by_group <- function(
             strip.position = strip_position
         ) +
         ggplot2::theme(
-            strip.text = ggplot2::element_text(face = "bold"),
-            strip.placement = if (strip_position == "bottom") {
-                "outside"
-            } else {
-                "inside"
-            }
+            strip.text = ggplot2::element_text(face = "bold")
         )
 
     # -- Error bars --
