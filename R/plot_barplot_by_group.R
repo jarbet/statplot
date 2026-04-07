@@ -110,6 +110,32 @@ plot_barplot_by_group <- function(
 
     # ── Condition factor ordering ─────────────────────────────────────────────
     if (!is.null(condition_order)) {
+        # Validate condition_order
+        if (length(condition_order) != 2L) {
+            stop(
+                "`condition_order` must have exactly 2 elements; found ",
+                length(condition_order)
+            )
+        }
+        if (anyDuplicated(condition_order)) {
+            stop(
+                "`condition_order` contains duplicate values: ",
+                paste(
+                    condition_order[duplicated(condition_order)],
+                    collapse = ", "
+                )
+            )
+        }
+        condition_values <- unique(df[[condition_col]])
+        missing <- setdiff(condition_order, condition_values)
+        if (length(missing)) {
+            stop(
+                "Values in `condition_order` not found in `",
+                condition_col,
+                "`: ",
+                paste(missing, collapse = ", ")
+            )
+        }
         df[[condition_col]] <- factor(
             df[[condition_col]],
             levels = condition_order
@@ -124,6 +150,24 @@ plot_barplot_by_group <- function(
             length(cond_levels)
         )
     }
+
+    # ── Validate long-format: each group must have exactly 2 rows ─────────────
+    group_condition_counts <- df |>
+        dplyr::count(.data[[group_col]], .data[[condition_col]]) |>
+        dplyr::group_by(.data[[group_col]]) |>
+        dplyr::summarize(n_conditions = dplyr::n(), .groups = "drop")
+
+    invalid_groups <- group_condition_counts[
+        group_condition_counts$n_conditions != 2L,
+    ]
+    if (nrow(invalid_groups) > 0L) {
+        stop(
+            "Long-format requirement violated: each group must have exactly ",
+            "one row per condition (2 rows total). Groups with incorrect counts: ",
+            paste(invalid_groups[[group_col]], collapse = ", ")
+        )
+    }
+
     stopifnot(length(bar_colors) == 2L)
     error_direction <- match.arg(error_direction, c("both", "up"))
 
@@ -144,7 +188,12 @@ plot_barplot_by_group <- function(
     seg_df <- NULL
     text_df <- NULL
 
-    draw_brackets <- !is.null(p_col) && p_col %in% names(df)
+    # Validate p_col if provided
+    if (!is.null(p_col) && !(p_col %in% names(df))) {
+        stop("Column `", p_col, "` not found in `df`")
+    }
+
+    draw_brackets <- !is.null(p_col)
 
     if (draw_brackets) {
         # Determine label text for each row (NA → suppress bracket)
@@ -159,13 +208,18 @@ plot_barplot_by_group <- function(
         }
 
         # Summarise to one row per group: bar-top y values for left & right bars
+        # Select by condition name (not position) to be robust against row ordering
         bracket_df <- df |>
             dplyr::mutate(.bar_top = .data[[mean_col]] + .data[[error_col]]) |>
             dplyr::arrange(.data[[group_col]], .data[[condition_col]]) |>
             dplyr::group_by(.data[[group_col]]) |>
+            dplyr::mutate(
+                .cond_is_left = .data[[condition_col]] == cond_levels[1],
+                .cond_is_right = .data[[condition_col]] == cond_levels[2]
+            ) |>
             dplyr::summarize(
-                y_left = .bar_top[1], # first condition (left bar)
-                y_right = .bar_top[2], # second condition (right bar)
+                y_left = .bar_top[.cond_is_left],
+                y_right = .bar_top[.cond_is_right],
                 pval = dplyr::first(.data[[p_col]]),
                 lbl = dplyr::first(.data$.lbl),
                 .groups = "drop"
