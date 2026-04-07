@@ -51,12 +51,9 @@
 #' @param bracket_text_gap Fraction of the y range used as white space between
 #'   the horizontal bracket line and the label text above it.
 #'   Default \code{0.024}.
-#' @param facet Whether to use faceting. Default \code{TRUE}. When \code{FALSE},
-#'   \code{strip_position} is forced to \code{"bottom"}.
 #' @param strip_position Controls where the facet strip label is placed.
-#'   One of \code{"top"} (default when \code{facet = TRUE}), \code{"bottom"},
-#'   \code{"left"}, or \code{"right"}. Ignored when \code{facet = FALSE}
-#'   (always uses \code{"bottom"}).
+#'   One of \code{"top"} (default), \code{"bottom"}, \code{"left"}, or
+#'   \code{"right"}.
 #'
 #' @return A \code{\link[ggplot2]{ggplot}} object.
 #' @export
@@ -83,7 +80,7 @@
 #' plot_barplot_by_group(df, y_label = "Performance score", label_col = "label") +
 #'     ggplot2::coord_cartesian(ylim = c(0, 20)) +
 #'     ggplot2::theme_bw()
-#' @importFrom stats setNames as.formula
+#' @importFrom stats setNames as.formula reformulate
 plot_barplot_by_group <- function(
     df,
     group_col = "group",
@@ -104,7 +101,6 @@ plot_barplot_by_group <- function(
     bracket_offset = 0.08,
     bracket_gap = 0.04,
     bracket_text_gap = 0.024,
-    facet = TRUE,
     strip_position = "top"
 ) {
     # ── Input validation ──────────────────────────────────────────────────────
@@ -115,15 +111,10 @@ plot_barplot_by_group <- function(
         stop("Column(s) not found in `df`: ", paste(missing, collapse = ", "))
     }
 
-    stopifnot(is.logical(facet))
     strip_position <- match.arg(
         strip_position,
         c("top", "bottom", "left", "right")
     )
-    # When facet = FALSE, override strip_position to "bottom"
-    if (!facet) {
-        strip_position <- "bottom"
-    }
 
     # ── Condition factor ordering ─────────────────────────────────────────────
     if (!is.null(condition_order)) {
@@ -168,20 +159,50 @@ plot_barplot_by_group <- function(
         )
     }
 
-    # ── Validate long-format: each group must have exactly 2 rows ─────────────
+    # ── Validate long-format: one row per (group, condition) pair ────────────
     group_condition_counts <- df |>
-        dplyr::count(.data[[group_col]], .data[[condition_col]]) |>
-        dplyr::group_by(.data[[group_col]]) |>
-        dplyr::summarize(n_conditions = dplyr::n(), .groups = "drop")
+        dplyr::count(.data[[group_col]], .data[[condition_col]])
 
-    invalid_groups <- group_condition_counts[
-        group_condition_counts$n_conditions != 2L,
+    invalid_pairs <- group_condition_counts[
+        group_condition_counts$n != 1L,
     ]
-    if (nrow(invalid_groups) > 0L) {
+    if (nrow(invalid_pairs) > 0L) {
+        stop(
+            "Long-format requirement violated: each (group, condition) pair ",
+            "must have exactly one row. Invalid pairs:\n",
+            paste(
+                "  ",
+                invalid_pairs[[group_col]],
+                " × ",
+                invalid_pairs[[condition_col]],
+                " (n=",
+                invalid_pairs$n,
+                ")",
+                collapse = "\n"
+            )
+        )
+    }
+
+    # Also verify each group has exactly 2 rows (one per condition)
+    group_totals <- df |>
+        dplyr::group_by(.data[[group_col]]) |>
+        dplyr::summarize(n_rows = dplyr::n(), .groups = "drop")
+
+    invalid_group_totals <- group_totals[
+        group_totals$n_rows != 2L,
+    ]
+    if (nrow(invalid_group_totals) > 0L) {
         stop(
             "Long-format requirement violated: each group must have exactly ",
-            "one row per condition (2 rows total). Groups with incorrect counts: ",
-            paste(invalid_groups[[group_col]], collapse = ", ")
+            "2 rows total (one per condition). Invalid groups:\n",
+            paste(
+                "  ",
+                invalid_group_totals[[group_col]],
+                " (n=",
+                invalid_group_totals$n_rows,
+                ")",
+                collapse = "\n"
+            )
         )
     }
 
@@ -310,7 +331,7 @@ plot_barplot_by_group <- function(
     # ── Faceting ──────────────────────────────────────────────────────────────
     p <- p +
         ggplot2::facet_wrap(
-            as.formula(paste("~", group_col)),
+            reformulate(paste0("`", group_col, "`")),
             strip.position = strip_position
         ) +
         ggplot2::theme(

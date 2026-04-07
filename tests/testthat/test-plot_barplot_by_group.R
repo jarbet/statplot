@@ -22,15 +22,9 @@ test_that("returns a ggplot with error_direction = 'up'", {
     expect_s3_class(p, "ggplot")
 })
 
-test_that("returns a ggplot with facet = TRUE", {
-    p <- plot_barplot_by_group(make_df(), facet = TRUE)
-    expect_s3_class(p, "ggplot")
-})
-
-test_that("returns a ggplot with facet = TRUE and strip_position = 'bottom'", {
+test_that("returns a ggplot with strip_position = 'bottom'", {
     p <- plot_barplot_by_group(
         make_df(),
-        facet = TRUE,
         strip_position = "bottom"
     )
     expect_s3_class(p, "ggplot")
@@ -87,7 +81,6 @@ test_that("errors when strip_position is invalid", {
     expect_error(
         plot_barplot_by_group(
             make_df(),
-            facet = TRUE,
             strip_position = "diagonal"
         )
     )
@@ -152,27 +145,15 @@ test_that("custom label_col is used in bracket text", {
 })
 
 # ── Faceting ───────────────────────────────────────────────────────────────────
-test_that("facet = FALSE uses FacetWrap", {
-    p <- plot_barplot_by_group(make_df(), facet = FALSE)
+test_that("uses FacetWrap", {
+    p <- plot_barplot_by_group(make_df())
     expect_s3_class(p$facet, "FacetWrap")
 })
 
-test_that("facet = TRUE uses FacetWrap", {
-    p <- plot_barplot_by_group(make_df(), facet = TRUE)
-    expect_s3_class(p$facet, "FacetWrap")
-})
-
-test_that("facet = FALSE places strip at bottom", {
-    p <- plot_barplot_by_group(make_df(), facet = FALSE)
-    params <- p$facet$params
-    expect_equal(params$strip.position, "bottom")
-})
-
-test_that("facet = TRUE respects strip_position argument", {
+test_that("respects strip_position argument", {
     for (pos in c("top", "bottom", "left", "right")) {
         p <- plot_barplot_by_group(
             make_df(),
-            facet = TRUE,
             strip_position = pos
         )
         expect_equal(p$facet$params$strip.position, pos)
@@ -207,5 +188,20 @@ test_that("custom mean_col and error_col are respected", {
         mean_col = "estimate",
         error_col = "std_err"
     )
+    expect_s3_class(p, "ggplot")
+})
+
+# ── Non-syntactic column names ─────────────────────────────────────────────────
+test_that("non-syntactic group_col names with spaces are handled", {
+    df <- make_df()
+    names(df)[names(df) == "group"] <- "study group"
+    p <- plot_barplot_by_group(df, group_col = "study group")
+    expect_s3_class(p, "ggplot")
+})
+
+test_that("non-syntactic group_col names with hyphens are handled", {
+    df <- make_df()
+    names(df)[names(df) == "group"] <- "study-group"
+    p <- plot_barplot_by_group(df, group_col = "study-group")
     expect_s3_class(p, "ggplot")
 })
