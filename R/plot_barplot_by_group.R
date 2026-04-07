@@ -30,6 +30,11 @@
 #'   order or alphabetical.
 #' @param p_cutoff Significance threshold; brackets appear only when
 #'   \code{p < p_cutoff}. Default \code{0.05}.
+#' @param show_text_groups Optional character vector of group names for which
+#'   text should be displayed above brackets. When specified, this argument
+#'   overrides \code{p_cutoff}: only groups listed in \code{show_text_groups}
+#'   will display text labels. When \code{NULL} (default), text display is
+#'   determined solely by \code{p_cutoff}.
 #' @param y_label Y-axis label. Default \code{"Outcome"}.
 #' @param bar_colors Length-2 fill colour vector applied to the two conditions
 #'   in the order given by \code{condition_order}. Default
@@ -68,8 +73,9 @@
 #'     p_value   = c(0.004, 0.004, 0.18, 0.18)
 #' )
 #' df$condition <- factor(df$condition, levels = c("Exercise", "Control"))
-#' # Default: auto-formatted p-value label
-#' plot_barplot_by_group(df, y_label = "Performance score") + ggplot2::theme_bw()
+#' # Default: auto-formatted p-value label (text shown if p < 0.05)
+#' plot_barplot_by_group(df, y_label = "Performance score", p_cutoff = 0.05) +
+#'     ggplot2::theme_bw()
 #'
 #' # Custom bracket label from a column
 #' df$label <- ifelse(
@@ -77,9 +83,23 @@
 #'     paste0("d = 1.5 [1.1-2.1]\n", format_pvalue(df$p_value)),
 #'     NA
 #' )
-#' plot_barplot_by_group(df, y_label = "Performance score", label_col = "label") +
+#' plot_barplot_by_group(df, y_label = "Performance score", label_col = "label", p_cutoff = 0.05) +
 #'     ggplot2::coord_cartesian(ylim = c(0, 20)) +
 #'     ggplot2::theme_bw()
+#'
+#' # Show text for specific groups only (Group B shown even though p = 0.18)
+#' plot_barplot_by_group(
+#'     df,
+#'     y_label = "Performance score",
+#'     show_text_groups = "Group B"
+#' ) + ggplot2::theme_bw()
+#'
+#' # Show text for all groups by setting p_cutoff = 1
+#' plot_barplot_by_group(
+#'     df,
+#'     y_label = "Performance score",
+#'     p_cutoff = 1
+#' ) + ggplot2::theme_bw()
 #' @importFrom stats setNames as.formula reformulate
 plot_barplot_by_group <- function(
     df,
@@ -92,6 +112,7 @@ plot_barplot_by_group <- function(
     label_col = NULL,
     condition_order = NULL,
     p_cutoff = 0.05,
+    show_text_groups = NULL,
     y_label = "Outcome",
     bar_colors = c("black", "grey70"),
     bar_width = 0.4,
@@ -239,15 +260,40 @@ plot_barplot_by_group <- function(
     draw_brackets <- !is.null(p_col)
 
     if (draw_brackets) {
+        # Validate show_text_groups if provided
+        if (!is.null(show_text_groups)) {
+            group_values <- unique(df[[group_col]])
+            invalid_groups <- setdiff(show_text_groups, group_values)
+            if (length(invalid_groups)) {
+                stop(
+                    "Values in `show_text_groups` not found in `",
+                    group_col,
+                    "`: ",
+                    paste(invalid_groups, collapse = ", ")
+                )
+            }
+        }
+
         # Determine label text for each row (NA -> suppress bracket)
         if (!is.null(label_col)) {
             df$.lbl <- df[[label_col]]
         } else {
-            df$.lbl <- ifelse(
-                !is.na(df[[p_col]]) & df[[p_col]] < p_cutoff,
-                paste0("p = ", signif(df[[p_col]], 2)),
-                NA_character_
-            )
+            # If show_text_groups is specified, use only that for label generation
+            # Otherwise, use p_cutoff logic
+            if (!is.null(show_text_groups)) {
+                df$.show_group <- df[[group_col]] %in% show_text_groups
+                df$.lbl <- ifelse(
+                    !is.na(df[[p_col]]) & df$.show_group,
+                    paste0("p = ", signif(df[[p_col]], 2)),
+                    NA_character_
+                )
+            } else {
+                df$.lbl <- ifelse(
+                    !is.na(df[[p_col]]) & df[[p_col]] < p_cutoff,
+                    paste0("p = ", signif(df[[p_col]], 2)),
+                    NA_character_
+                )
+            }
         }
 
         # Summarise to one row per group: bar-top y values for left & right bars
@@ -267,11 +313,22 @@ plot_barplot_by_group <- function(
                 lbl = dplyr::first(.data$.lbl),
                 .groups = "drop"
             ) |>
+            dplyr::mutate(
+                .in_show_text_groups = if (!is.null(show_text_groups)) {
+                    .data[[group_col]] %in% show_text_groups
+                } else {
+                    FALSE
+                },
+                .meets_p_cutoff = !is.na(pval) & pval < p_cutoff
+            ) |>
             dplyr::filter(
                 !is.na(pval),
-                pval < p_cutoff,
+                (.meets_p_cutoff | .in_show_text_groups),
                 !is.na(lbl),
                 lbl != ""
+            ) |>
+            dplyr::select(
+                -dplyr::all_of(c(".in_show_text_groups", ".meets_p_cutoff"))
             ) |>
             dplyr::mutate(
                 y_top = pmax(y_left, y_right) + y_gap + y_offset * 0.5

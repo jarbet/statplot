@@ -15,6 +15,7 @@ plot_barplot_by_group(
   label_col = NULL,
   condition_order = NULL,
   p_cutoff = 0.05,
+  show_text_groups = NULL,
   y_label = "Outcome",
   bar_colors = c("black", "grey70"),
   bar_width = 0.4,
@@ -61,6 +62,12 @@ order or alphabetical.}
 
 \item{p_cutoff}{Significance threshold; brackets appear only when
 \code{p < p_cutoff}. Default \code{0.05}.}
+
+\item{show_text_groups}{Optional character vector of group names for which
+text should be displayed above brackets. When specified, this argument
+overrides \code{p_cutoff}: only groups listed in \code{show_text_groups}
+will display text labels. When \code{NULL} (default), text display is
+determined solely by \code{p_cutoff}.}
 
 \item{y_label}{Y-axis label. Default \code{"Outcome"}.}
 
@@ -116,8 +123,9 @@ df <- data.frame(
     p_value   = c(0.004, 0.004, 0.18, 0.18)
 )
 df$condition <- factor(df$condition, levels = c("Exercise", "Control"))
-# Default: auto-formatted p-value label
-plot_barplot_by_group(df, y_label = "Performance score") + ggplot2::theme_bw()
+# Default: auto-formatted p-value label (text shown if p < 0.05)
+plot_barplot_by_group(df, y_label = "Performance score", p_cutoff = 0.05) +
+    ggplot2::theme_bw()
 
 # Custom bracket label from a column
 df$label <- ifelse(
@@ -125,7 +133,21 @@ df$label <- ifelse(
     paste0("d = 1.5 [1.1-2.1]\n", format_pvalue(df$p_value)),
     NA
 )
-plot_barplot_by_group(df, y_label = "Performance score", label_col = "label") +
+plot_barplot_by_group(df, y_label = "Performance score", label_col = "label", p_cutoff = 0.05) +
     ggplot2::coord_cartesian(ylim = c(0, 20)) +
     ggplot2::theme_bw()
+
+# Show text for specific groups only (Group B shown even though p = 0.18)
+plot_barplot_by_group(
+    df,
+    y_label = "Performance score",
+    show_text_groups = "Group B"
+) + ggplot2::theme_bw()
+
+# Show text for all groups by setting p_cutoff = 1
+plot_barplot_by_group(
+    df,
+    y_label = "Performance score",
+    p_cutoff = 1
+) + ggplot2::theme_bw()
 }

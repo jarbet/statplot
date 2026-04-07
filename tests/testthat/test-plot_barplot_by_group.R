@@ -212,3 +212,66 @@ test_that("non-syntactic group_col names with hyphens are handled", {
     p <- plot_barplot_by_group(df, group_col = "study-group")
     expect_s3_class(p, "ggplot")
 })
+
+# ── show_text_groups parameter ────────────────────────────────────────────────
+test_that("show_text_groups displays text for specified groups regardless of p_cutoff", {
+    df <- make_df()
+    # Group B has p_value = 0.18, which doesn't meet p_cutoff = 0.05
+    # But should show text when included in show_text_groups
+    p <- plot_barplot_by_group(
+        df,
+        p_cutoff = 0.05,
+        show_text_groups = "Group B"
+    )
+    expect_s3_class(p, "ggplot")
+    layer_classes <- vapply(p$layers, \(l) class(l$geom)[1], character(1))
+    expect_true("GeomText" %in% layer_classes)
+})
+
+test_that("show_text_groups works with multiple groups", {
+    df <- data.frame(
+        group = rep(c("A", "B", "C"), each = 2),
+        condition = rep(c("X", "Y"), 3),
+        mean = c(1, 2, 3, 4, 5, 6),
+        se = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
+        p_value = c(0.5, 0.5, 0.5, 0.5, 0.5, 0.5),
+        label = c(
+            "significant",
+            "significant",
+            "significant",
+            "significant",
+            "significant",
+            "significant"
+        )
+    )
+    p <- plot_barplot_by_group(
+        df,
+        p_cutoff = 0.05,
+        show_text_groups = c("A", "C"),
+        label_col = "label"
+    )
+    expect_s3_class(p, "ggplot")
+    layer_classes <- vapply(p$layers, \(l) class(l$geom)[1], character(1))
+    expect_true("GeomText" %in% layer_classes)
+})
+
+test_that("show_text_groups errors on invalid group names", {
+    df <- make_df()
+    expect_error(
+        plot_barplot_by_group(
+            df,
+            show_text_groups = "NonexistentGroup"
+        ),
+        "Values in `show_text_groups` not found"
+    )
+})
+
+test_that("show_text_groups = NULL uses only p_cutoff (default behavior)", {
+    df <- make_df()
+    p <- plot_barplot_by_group(
+        df,
+        p_cutoff = 0.05,
+        show_text_groups = NULL
+    )
+    expect_s3_class(p, "ggplot")
+})
