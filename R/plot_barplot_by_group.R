@@ -48,8 +48,8 @@
 #'   \code{ggplot2::expansion(add = bar_padding)}. Default \code{0.5}.
 #' @param text_size Size of bracket label text (ggplot2 \code{size} units).
 #'   Default \code{3.5}.
-#' @param bracket_offset Fraction of the y range used as vertical spacing
-#'   above bar tops for bracket placement. Default \code{0.08}.
+#' @param bracket_offset Absolute distance (in data units) used as vertical
+#'   spacing above bar tops for bracket placement. Default \code{1.0}.
 #' @param bracket_gap Fraction of the y range inserted as white space between
 #'   the top of each error bar and the start of the significance bracket tick.
 #'   Default \code{0.04}.
@@ -132,7 +132,7 @@ plot_barplot_by_group <- function(
     bar_gap = 0.6,
     bar_padding = 0.5,
     text_size = 3.5,
-    bracket_offset = 0.08,
+    bracket_offset = 1.0,
     bracket_gap = 0.04,
     bracket_text_gap = 1,
     strip_position = "top"
@@ -253,7 +253,6 @@ plot_barplot_by_group <- function(
     bar_tops <- df[[mean_col]] + df[[error_col]]
     ymax <- max(bar_tops, na.rm = TRUE)
     ymin <- min(c(df[[mean_col]], 0), na.rm = TRUE)
-    y_offset <- (ymax - ymin) * bracket_offset
     y_gap <- (ymax - ymin) * bracket_gap
 
     # -- Build significance bracket data --
@@ -344,7 +343,7 @@ plot_barplot_by_group <- function(
                 -dplyr::all_of(c(".in_show_text_groups", ".meets_p_cutoff"))
             ) |>
             dplyr::mutate(
-                y_top = pmax(y_left, y_right) + y_gap + y_offset * 0.5
+                y_top = pmax(y_left, y_right) + y_gap + bracket_offset
             )
 
         if (nrow(bracket_df) > 0L) {
