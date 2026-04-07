@@ -39,6 +39,7 @@
 <ul><li><p><code>plot_dot_whiskers</code>: added <code>pvalue_plot_margin</code> argument to parameterize the p-value panel plot margin (points), default <code>c(5.5, 12, 5.5, 0)</code>. This prevents x-axis labels on the appended p-value barplot from being clipped when the panel is composed to the right using <code>patchwork</code>.</p></li>
 <li><p><code>hallmark_pathway_categories</code>: new internal dataset mapping Hallmark pathway names (the <code>term</code> column, with the <code>HALLMARK_</code> prefix removed) to biological process categories as defined in Table 1 of Liberzon et al. (2015). The dataset includes a runtime validation step against the bundled <code>hallmark_t2g</code> data to ensure pathway names align with MSigDB.</p></li>
 <li><p><code>plot_covariate_heatmap</code>: new function to draw vertical covariate strips (one strip per covariate). Supports categorical covariates (named color vectors) only.</p></li>
+<li><p><code>plot_pathways</code>: new <code>pathway_cats</code> and <code>pathway_cat_colors</code> arguments let users fill pathway nodes by biological process category. The accompanying <code>legend_pathway_fill_title</code> and <code>legend_pathway_fill_dot_size</code> arguments customise the category fill legend, while the gene effect-size colour scale remains independent.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
@@ -46,6 +47,8 @@
 <li><p><code>combine_pvalues</code>: default <code>methods</code> changed from <code>'all'</code> to <code>'CMC'</code>; documentation and tests updated to reflect the new default.</p></li>
 <li><p><code>plot_dotmap</code>: the default <code>combine_pvalue_method</code> is now <code>"fisher"</code> (was previously <code>"CMC"</code> when not supplied via <code><a href="https://rdrr.io/r/base/match.arg.html" class="external-link">match.arg()</a></code>); documentation and examples updated to reflect the new default choice.</p></li>
 <li><p><code>plot_pvalue_barplot</code>: improved legend behaviour — when a vertical significance line legend is requested (<code>vline = TRUE, vline_legend = TRUE</code>) the colour scale now stores an explicit named <code>values</code> vector so code and tests can programmatically find the named alpha entry; also the fill legend uses <code>override.aes</code> to remove line linetype in legend keys when showing p/q bars so legend keys render as solid/filled swatches.</p></li>
+<li><p><code>plot_pvalue_barplot</code>: added <code>vline_legend</code> to optionally include or suppress the vertical significance line legend key.</p></li>
+<li><p><code>plot_pathways</code>: default <code>legend_pathway_size_title</code> changed to <code>"Num. genes\n in pathway"</code> and default <code>legend_color_title</code> changed to <code>"Gene effect size"</code>.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>

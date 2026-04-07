@@ -65,12 +65,16 @@ co-expression structure.</p>
 <span>  line_size <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  pathway_color <span class="op">=</span> <span class="st">"black"</span>,</span>
 <span>  pathway_label_size <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  pathway_cats <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  pathway_cat_colors <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  legend_pathway_fill_title <span class="op">=</span> <span class="st">"Pathway category"</span>,</span>
+<span>  legend_pathway_fill_dot_size <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  gene_color <span class="op">=</span> <span class="st">"grey30"</span>,</span>
 <span>  gene_label_size <span class="op">=</span> <span class="fl">2.5</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Effect sizes of genes in selected pathways"</span>,</span>
-<span>  legend_pathway_size_title <span class="op">=</span> <span class="st">"Num. genes"</span>,</span>
+<span>  legend_pathway_size_title <span class="op">=</span> <span class="st">"Num. genes\n in pathway"</span>,</span>
 <span>  legend_fixed_dot_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  legend_color_title <span class="op">=</span> <span class="st">"Effect size"</span>,</span>
+<span>  legend_color_title <span class="op">=</span> <span class="st">"Gene effect size"</span>,</span>
 <span>  colorkey_breaks <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  colorkey_limits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  color_low <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -144,6 +148,41 @@ Must be a single positive value.</p></dd>
 Must be a single positive value.</p></dd>
 
 
+<dt id="arg-pathway-cats">pathway_cats<a class="anchor" aria-label="anchor" href="#arg-pathway-cats"></a></dt>
+<dd><p>named character vector or <code>NULL</code> (default <code>NULL</code>).
+Optionally maps pathway IDs to a biological process category name
+(e.g. <code>c(MTORC1_SIGNALING = "Signaling", UV_RESPONSE_DN = "DNA damage")</code>).
+Partial mappings are allowed: only pathway nodes whose IDs appear in
+<code>names(pathway_cats)</code> receive a category fill color; any displayed pathway
+not present in <code>names(pathway_cats)</code> is left unfilled (transparent overlay).
+Must be used together with <code>pathway_cat_colors</code>.
+<code>data(hallmark_pathway_categories)</code> provides a ready-to-use
+term-to-category mapping for MSigDB Hallmark gene sets.</p></dd>
+
+
+<dt id="arg-pathway-cat-colors">pathway_cat_colors<a class="anchor" aria-label="anchor" href="#arg-pathway-cat-colors"></a></dt>
+<dd><p>named character vector or <code>NULL</code> (default <code>NULL</code>).
+Maps each category name to a color string (hex or named R color),
+e.g. <code>c(Signaling = "#e41a1c", "DNA damage" = "#ff7f00")</code>.  Must cover
+every category value that appears in <code>pathway_cats</code>.  Node shape is set
+to <code>21</code> (filled circle with border) so <code>fill</code> and <code>colour</code> remain
+independent aesthetics — the gene fold-change gradient on <code>colour</code> is
+unaffected.  Must be used together with <code>pathway_cats</code>.</p></dd>
+
+
+<dt id="arg-legend-pathway-fill-title">legend_pathway_fill_title<a class="anchor" aria-label="anchor" href="#arg-legend-pathway-fill-title"></a></dt>
+<dd><p>character(1) or <code>NULL</code>.  Title for the
+pathway-fill legend when <code>pathway_cats</code> is non-<code>NULL</code>
+(default <code>"Pathway category"</code>).  Set to <code>NULL</code> for no legend title.</p></dd>
+
+
+<dt id="arg-legend-pathway-fill-dot-size">legend_pathway_fill_dot_size<a class="anchor" aria-label="anchor" href="#arg-legend-pathway-fill-dot-size"></a></dt>
+<dd><p>numeric(1) Size of the dot/point keys in
+the pathway-category fill legend (default <code>5</code>).  Increase this value if the
+colored dots in the legend appear too small.  Must be a single positive
+numeric value.  Ignored when <code>pathway_cats</code> is <code>NULL</code>.</p></dd>
+
+
 <dt id="arg-gene-color">gene_color<a class="anchor" aria-label="anchor" href="#arg-gene-color"></a></dt>
 <dd><p>character(1) Color of gene label text (default
 <code>"grey30"</code>).</p></dd>
@@ -160,7 +199,7 @@ Must be a single positive value.</p></dd>
 
 <dt id="arg-legend-pathway-size-title">legend_pathway_size_title<a class="anchor" aria-label="anchor" href="#arg-legend-pathway-size-title"></a></dt>
 <dd><p>character(1) Title for the node-size legend (default
-<code>"Num. genes"</code>).  Set to <code>NULL</code> to show the legend without a title.</p></dd>
+<code>"Num. genes\n in pathway"</code>).  Set to <code>NULL</code> to show the legend without a title.</p></dd>
 
 
 <dt id="arg-legend-fixed-dot-size">legend_fixed_dot_size<a class="anchor" aria-label="anchor" href="#arg-legend-fixed-dot-size"></a></dt>
@@ -176,7 +215,7 @@ finite and positive.</p></dd>
 
 <dt id="arg-legend-color-title">legend_color_title<a class="anchor" aria-label="anchor" href="#arg-legend-color-title"></a></dt>
 <dd><p>character(1) or expression() Title for the color scale legend
-(default <code>"Effect size"</code>).  Set to <code>NULL</code> to show the legend without a
+(default <code>"Gene effect size"</code>).  Set to <code>NULL</code> to show the legend without a
 title. Use <code><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression()</a></code> to supply plotmath expressions.</p></dd>
 
 
@@ -323,6 +362,33 @@ the left/right values if node labels are being clipped at the edges.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">patchwork</span><span class="fu">::</span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, guides <span class="op">=</span> <span class="st">"collect"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot_pathways-6.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Color pathway nodes by biological process category using hallmark_pathway_categories</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">hallmark_pathway_categories</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">top_ids</span> <span class="op">&lt;-</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span><span class="op">@</span><span class="va">result</span><span class="op">$</span><span class="va">ID</span>, <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Look up the process category for each displayed pathway</span></span></span>
+<span class="r-in"><span><span class="va">pathway_cats</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">hallmark_pathway_categories</span><span class="op">$</span><span class="va">process_category</span><span class="op">[</span></span></span>
+<span class="r-in"><span>        <span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">top_ids</span>, <span class="va">hallmark_pathway_categories</span><span class="op">$</span><span class="va">term</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">]</span>,</span></span>
+<span class="r-in"><span>    <span class="va">top_ids</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># One color per category; covers all eight Hallmark categories</span></span></span>
+<span class="r-in"><span><span class="va">cat_palette</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    Signaling <span class="op">=</span> <span class="st">"#e41a1c"</span>, Development <span class="op">=</span> <span class="st">"#377eb8"</span>, Immune <span class="op">=</span> <span class="st">"#4daf4a"</span>,</span></span>
+<span class="r-in"><span>    Metabolic <span class="op">=</span> <span class="st">"#984ea3"</span>, <span class="st">"DNA damage"</span> <span class="op">=</span> <span class="st">"#ff7f00"</span>, Proliferation <span class="op">=</span> <span class="st">"#a65628"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"Cellular component"</span> <span class="op">=</span> <span class="st">"#f781bf"</span>, Pathway <span class="op">=</span> <span class="st">"#999999"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">plot_pathways</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    gsea_result               <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
+<span class="r-in"><span>    effect_size               <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
+<span class="r-in"><span>    show_pathways             <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>    pathway_cats              <span class="op">=</span> <span class="va">pathway_cats</span>,</span></span>
+<span class="r-in"><span>    pathway_cat_colors        <span class="op">=</span> <span class="va">cat_palette</span>,</span></span>
+<span class="r-in"><span>    legend_pathway_fill_title <span class="op">=</span> <span class="st">"Pathway category"</span>,</span></span>
+<span class="r-in"><span>    effect_size_threshold     <span class="op">=</span> <span class="fl">1.5</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot_pathways-7.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

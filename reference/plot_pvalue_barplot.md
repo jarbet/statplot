@@ -86,6 +86,13 @@ plot_pvalue_barplot(
 
   Character, color for the vertical line.
 
+- vline_legend:
+
+  Logical, whether to include a legend entry for the vertical
+  significance line (default `TRUE`). When `TRUE` a legend key showing
+  the `alpha` value is added; when `FALSE` the line is drawn without a
+  legend.
+
 - show_y_labels:
 
   Logical, whether to show y-axis labels (default FALSE).

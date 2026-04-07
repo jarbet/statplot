@@ -22,12 +22,16 @@ plot_pathways(
   line_size = 0.5,
   pathway_color = "black",
   pathway_label_size = 4,
+  pathway_cats = NULL,
+  pathway_cat_colors = NULL,
+  legend_pathway_fill_title = "Pathway category",
+  legend_pathway_fill_dot_size = 5,
   gene_color = "grey30",
   gene_label_size = 2.5,
   title = "Effect sizes of genes in selected pathways",
-  legend_pathway_size_title = "Num. genes",
+  legend_pathway_size_title = "Num. genes\n in pathway",
   legend_fixed_dot_size = NULL,
-  legend_color_title = "Effect size",
+  legend_color_title = "Gene effect size",
   colorkey_breaks = NULL,
   colorkey_limits = NULL,
   color_low = NULL,
@@ -102,6 +106,41 @@ plot_pathways(
   numeric(1) Font size of pathway labels (default `4`). Must be a single
   positive value.
 
+- pathway_cats:
+
+  named character vector or `NULL` (default `NULL`). Optionally maps
+  pathway IDs to a biological process category name (e.g.
+  `c(MTORC1_SIGNALING = "Signaling", UV_RESPONSE_DN = "DNA damage")`).
+  Partial mappings are allowed: only pathway nodes whose IDs appear in
+  `names(pathway_cats)` receive a category fill color; any displayed
+  pathway not present in `names(pathway_cats)` is left unfilled
+  (transparent overlay). Must be used together with
+  `pathway_cat_colors`. `data(hallmark_pathway_categories)` provides a
+  ready-to-use term-to-category mapping for MSigDB Hallmark gene sets.
+
+- pathway_cat_colors:
+
+  named character vector or `NULL` (default `NULL`). Maps each category
+  name to a color string (hex or named R color), e.g.
+  `c(Signaling = "#e41a1c", "DNA damage" = "#ff7f00")`. Must cover every
+  category value that appears in `pathway_cats`. Node shape is set to
+  `21` (filled circle with border) so `fill` and `colour` remain
+  independent aesthetics — the gene fold-change gradient on `colour` is
+  unaffected. Must be used together with `pathway_cats`.
+
+- legend_pathway_fill_title:
+
+  character(1) or `NULL`. Title for the pathway-fill legend when
+  `pathway_cats` is non-`NULL` (default `"Pathway category"`). Set to
+  `NULL` for no legend title.
+
+- legend_pathway_fill_dot_size:
+
+  numeric(1) Size of the dot/point keys in the pathway-category fill
+  legend (default `5`). Increase this value if the colored dots in the
+  legend appear too small. Must be a single positive numeric value.
+  Ignored when `pathway_cats` is `NULL`.
+
 - gene_color:
 
   character(1) Color of gene label text (default `"grey30"`).
@@ -118,8 +157,9 @@ plot_pathways(
 
 - legend_pathway_size_title:
 
-  character(1) Title for the node-size legend (default `"Num. genes"`).
-  Set to `NULL` to show the legend without a title.
+  character(1) Title for the node-size legend (default
+  `"Num. genes\n in pathway"`). Set to `NULL` to show the legend without
+  a title.
 
 - legend_fixed_dot_size:
 
@@ -134,9 +174,9 @@ plot_pathways(
 - legend_color_title:
 
   character(1) or expression() Title for the color scale legend (default
-  `"Effect size"`). Set to `NULL` to show the legend without a title.
-  Use [`expression()`](https://rdrr.io/r/base/expression.html) to supply
-  plotmath expressions.
+  `"Gene effect size"`). Set to `NULL` to show the legend without a
+  title. Use [`expression()`](https://rdrr.io/r/base/expression.html) to
+  supply plotmath expressions.
 
 - colorkey_breaks:
 
@@ -281,5 +321,32 @@ p2 <- plot_pathways(
 )
 
 patchwork::wrap_plots(p1, p2, guides = "collect")
+
+
+# Color pathway nodes by biological process category using hallmark_pathway_categories
+data(hallmark_pathway_categories)
+top_ids <- utils::head(res$gsea_result@result$ID, 5)
+# Look up the process category for each displayed pathway
+pathway_cats <- setNames(
+    hallmark_pathway_categories$process_category[
+        match(top_ids, hallmark_pathway_categories$term)
+    ],
+    top_ids
+)
+# One color per category; covers all eight Hallmark categories
+cat_palette <- c(
+    Signaling = "#e41a1c", Development = "#377eb8", Immune = "#4daf4a",
+    Metabolic = "#984ea3", "DNA damage" = "#ff7f00", Proliferation = "#a65628",
+    "Cellular component" = "#f781bf", Pathway = "#999999"
+)
+plot_pathways(
+    gsea_result               = res$gsea_result,
+    effect_size               = res$gene_vec,
+    show_pathways             = 5,
+    pathway_cats              = pathway_cats,
+    pathway_cat_colors        = cat_palette,
+    legend_pathway_fill_title = "Pathway category",
+    effect_size_threshold     = 1.5
+)
 
 ```
