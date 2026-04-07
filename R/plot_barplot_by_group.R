@@ -67,9 +67,18 @@
 #'     se        = c(0.9, 1.0, 1.1, 1.0),
 #'     p_value   = c(0.004, 0.004, 0.18, 0.18)
 #' )
-#' plot_two_bar_comparison(df, y_label = "Performance score")
+#' # Default: auto-formatted p-value label
+#' plot_barplot_by_group(df, y_label = "Performance score")
+#'
+#' # Custom bracket label from a column
+#' df$label <- ifelse(
+#'     df$p_value < 0.05,
+#'     paste0("\u0394 = 1.5 [1.1-2.1]\n", format_pvalue(df$p_value)),
+#'     NA
+#' )
+#' plot_barplot_by_group(df, y_label = "Performance score", label_col = "label")
 #' @importFrom stats setNames as.formula
-plot_two_bar_comparison <- function(
+plot_barplot_by_group <- function(
     df,
     group_col = "group",
     condition_col = "condition",
