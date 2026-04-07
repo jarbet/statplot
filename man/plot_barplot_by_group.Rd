@@ -10,7 +10,7 @@ plot_barplot_by_group(
   condition_col = "condition",
   mean_col = "mean",
   error_col = "se",
-  error_direction = "both",
+  error_direction = "up",
   p_col = "p_value",
   label_col = NULL,
   condition_order = NULL,
@@ -23,6 +23,7 @@ plot_barplot_by_group(
   text_size = 3.5,
   bracket_offset = 0.08,
   bracket_gap = 0.04,
+  bracket_text_gap = 0.024,
   facet = FALSE,
   strip_position = "top"
 )
@@ -87,6 +88,10 @@ above bar tops for bracket placement. Default \code{0.08}.}
 \item{bracket_gap}{Fraction of the y range inserted as white space between
 the top of each error bar and the start of the significance bracket tick.
 Default \code{0.04}.}
+
+\item{bracket_text_gap}{Fraction of the y range used as white space between
+the horizontal bracket line and the label text above it.
+Default \code{0.024}.}
 
 \item{facet}{Logical. When \code{FALSE} (default) the current layout is
 preserved: groups appear as labelled sections along the x-axis (facet

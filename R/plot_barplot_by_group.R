@@ -48,6 +48,9 @@
 #' @param bracket_gap Fraction of the y range inserted as white space between
 #'   the top of each error bar and the start of the significance bracket tick.
 #'   Default \code{0.04}.
+#' @param bracket_text_gap Fraction of the y range used as white space between
+#'   the horizontal bracket line and the label text above it.
+#'   Default \code{0.024}.
 #' @param facet Logical. When \code{FALSE} (default) the current layout is
 #'   preserved: groups appear as labelled sections along the x-axis (facet
 #'   strips placed below the panel). When \code{TRUE} each group is placed in
@@ -84,7 +87,7 @@ plot_barplot_by_group <- function(
     condition_col = "condition",
     mean_col = "mean",
     error_col = "se",
-    error_direction = "both",
+    error_direction = "up",
     p_col = "p_value",
     label_col = NULL,
     condition_order = NULL,
@@ -97,6 +100,7 @@ plot_barplot_by_group <- function(
     text_size = 3.5,
     bracket_offset = 0.08,
     bracket_gap = 0.04,
+    bracket_text_gap = 0.024,
     facet = FALSE,
     strip_position = "top"
 ) {
@@ -262,7 +266,7 @@ plot_barplot_by_group <- function(
             text_df <- dplyr::mutate(
                 bracket_df,
                 x = x_mid,
-                y = y_top + y_offset * 0.3
+                y = y_top + (ymax - ymin) * bracket_text_gap
             )
         }
     }
