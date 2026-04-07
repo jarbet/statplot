@@ -24,7 +24,6 @@ plot_barplot_by_group(
   bracket_offset = 0.08,
   bracket_gap = 0.04,
   bracket_text_gap = 0.024,
-  facet = TRUE,
   strip_position = "top"
 )
 }
@@ -46,7 +45,7 @@ half-width, etc.). Default \code{"se"}.}
 
 \item{error_direction}{Direction of error bars. \code{"both"} draws
 \code{mean ± error}; \code{"up"} draws only the upper whisker
-(\code{mean} to \code{mean + error}). Default \code{"both"}.}
+(\code{mean} to \code{mean + error}). Default \code{"up"}.}
 
 \item{p_col}{Column name for p-values. The value should be the same for
 both rows belonging to a group (i.e. repeated). Set to \code{NULL} to
@@ -93,13 +92,9 @@ Default \code{0.04}.}
 the horizontal bracket line and the label text above it.
 Default \code{0.024}.}
 
-\item{facet}{Whether to use faceting. Default \code{TRUE}. When \code{FALSE},
-\code{strip_position} is forced to \code{"bottom"}.}
-
 \item{strip_position}{Controls where the facet strip label is placed.
-One of \code{"top"} (default when \code{facet = TRUE}), \code{"bottom"},
-\code{"left"}, or \code{"right"}. Ignored when \code{facet = FALSE}
-(always uses \code{"bottom"}).}
+One of \code{"top"} (default), \code{"bottom"}, \code{"left"}, or
+\code{"right"}.}
 }
 \value{
 A \code{\link[ggplot2]{ggplot}} object.

@@ -86,6 +86,13 @@ test_that("errors when strip_position is invalid", {
     )
 })
 
+test_that("errors when label_col is not found in df", {
+    expect_error(
+        plot_barplot_by_group(make_df(), label_col = "nonexistent"),
+        "Column.*nonexistent.*not found"
+    )
+})
+
 test_that("errors when df is not a data.frame", {
     expect_error(plot_barplot_by_group(list(a = 1)))
 })

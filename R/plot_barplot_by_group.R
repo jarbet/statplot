@@ -18,7 +18,7 @@
 #'   half-width, etc.). Default \code{"se"}.
 #' @param error_direction Direction of error bars. \code{"both"} draws
 #'   \code{mean ± error}; \code{"up"} draws only the upper whisker
-#'   (\code{mean} to \code{mean + error}). Default \code{"both"}.
+#'   (\code{mean} to \code{mean + error}). Default \code{"up"}.
 #' @param p_col Column name for p-values. The value should be the same for
 #'   both rows belonging to a group (i.e. repeated). Set to \code{NULL} to
 #'   suppress brackets entirely. Default \code{"p_value"}.
@@ -231,11 +231,16 @@ plot_barplot_by_group <- function(
         stop("Column `", p_col, "` not found in `df`")
     }
 
+    # Validate label_col if provided
+    if (!is.null(label_col) && !(label_col %in% names(df))) {
+        stop("Column `", label_col, "` not found in `df`")
+    }
+
     draw_brackets <- !is.null(p_col)
 
     if (draw_brackets) {
         # Determine label text for each row (NA → suppress bracket)
-        if (!is.null(label_col) && label_col %in% names(df)) {
+        if (!is.null(label_col)) {
             df$.lbl <- df[[label_col]]
         } else {
             df$.lbl <- ifelse(
