@@ -17,6 +17,11 @@ biological process categories as defined in Table 1 of Liberzon et al.
   (one strip per covariate). Supports categorical covariates (named color
   vectors) only.
 
+* `plot_barplot_by_group`: new two-condition bar plot function for comparing a
+  numeric outcome across groups. Supports `error_direction = c("both", "up")`,
+  configurable `bar_width`, `bar_gap`, and `bar_padding`, optional facet layout
+  via `facet`/`strip_position`, and custom bracket labels via `label_col`.
+
 * `plot_pathways`: new `pathway_cats` and `pathway_cat_colors` arguments let
   users fill pathway nodes by biological process category. The accompanying
   `legend_pathway_fill_title` and `legend_pathway_fill_dot_size` arguments
