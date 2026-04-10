@@ -136,7 +136,8 @@ test_that("plot_confidence_intervals works with shape style", {
         ci_high = "conf.high",
         id = "cell_line",
         group_col = "group",
-        style = "shape"
+        shape_col = "group",
+        show_separators = FALSE
     )
     expect_s3_class(p, "ggplot")
 })
@@ -157,7 +158,7 @@ test_that("plot_confidence_intervals works with shape style and color", {
         ci_high = "conf.high",
         id = "cell_line",
         group_col = "group",
-        style = "shape",
+        shape_col = "group",
         color_col = "group"
     )
     expect_s3_class(p, "ggplot")
@@ -180,7 +181,7 @@ test_that("plot_confidence_intervals requires point_shapes length matches group 
             ci_high = "conf.high",
             id = "cell_line",
             group_col = "group",
-            style = "shape",
+            shape_col = "group",
             point_shapes = c(21)
         ),
         "point_shapes has 1 element"
@@ -263,7 +264,8 @@ test_that("plot_confidence_intervals works with separator line customization", {
         ci_high = "conf.high",
         id = "cell_line",
         group_col = "group",
-        style = "color",
+        color_col = "group",
+        show_separators = TRUE,
         sep_linetype = "dashed",
         sep_linewidth = 0.8,
         sep_color = "gray50"
@@ -620,7 +622,7 @@ test_that("plot_confidence_intervals works with color_values and shape style", {
         ci_high = "conf.high",
         id = "cell_line",
         group_col = "group",
-        style = "shape",
+        shape_col = "group",
         color_col = "group",
         color_values = c(g1 = "#FF0000", g2 = "#0000FF")
     )
@@ -648,4 +650,71 @@ test_that("plot_confidence_intervals validates color_values is named vector", {
         ),
         "color_values must be NULL or a named character vector"
     )
+})
+
+test_that("plot_confidence_intervals works with shape_col as character column", {
+    df <- data.frame(
+        cell_line = factor(c("A", "A", "B", "B"), levels = c("A", "B")),
+        est = c(0.2, 0.35, -0.1, 0.05),
+        conf.low = c(0.0, 0.10, -0.3, -0.10),
+        conf.high = c(0.4, 0.60, 0.1, 0.20),
+        group = c("g1", "g2", "g1", "g2") # character, not factor
+    )
+
+    p <- plot_confidence_intervals(
+        df,
+        effect_size = "est",
+        ci_low = "conf.low",
+        ci_high = "conf.high",
+        id = "cell_line",
+        shape_col = "group",
+        point_shapes = c(21, 24)
+    )
+    expect_s3_class(p, "ggplot")
+})
+
+test_that("plot_confidence_intervals validates point_shapes length with character shape_col", {
+    df <- data.frame(
+        cell_line = factor(c("A", "A", "B", "B"), levels = c("A", "B")),
+        est = c(0.2, 0.35, -0.1, 0.05),
+        conf.low = c(0.0, 0.10, -0.3, -0.10),
+        conf.high = c(0.4, 0.60, 0.1, 0.20),
+        group = c("g1", "g2", "g1", "g2") # character, not factor
+    )
+
+    expect_error(
+        plot_confidence_intervals(
+            df,
+            effect_size = "est",
+            ci_low = "conf.low",
+            ci_high = "conf.high",
+            id = "cell_line",
+            shape_col = "group",
+            point_shapes = c(21) # only 1 shape but group has 2 unique values
+        ),
+        "point_shapes has 1 element"
+    )
+})
+
+test_that("plot_confidence_intervals works with shape_col as character and color_col", {
+    df <- data.frame(
+        cell_line = factor(c("A", "A", "B", "B"), levels = c("A", "B")),
+        est = c(0.2, 0.35, -0.1, 0.05),
+        conf.low = c(0.0, 0.10, -0.3, -0.10),
+        conf.high = c(0.4, 0.60, 0.1, 0.20),
+        group = c("g1", "g2", "g1", "g2"), # character, not factor
+        color_group = factor(c("c1", "c2", "c1", "c2"), levels = c("c1", "c2"))
+    )
+
+    p <- plot_confidence_intervals(
+        df,
+        effect_size = "est",
+        ci_low = "conf.low",
+        ci_high = "conf.high",
+        id = "cell_line",
+        shape_col = "group",
+        color_col = "color_group",
+        point_shapes = c(21, 24)
+    )
+    expect_s3_class(p, "ggplot")
 })

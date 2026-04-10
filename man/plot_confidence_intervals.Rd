@@ -14,7 +14,8 @@ plot_confidence_intervals(
   dodge_width = 0.3,
   color_col = NULL,
   color_values = NULL,
-  style = c("color", "shape"),
+  show_separators = TRUE,
+  shape_col = NULL,
   sep_linetype = "solid",
   sep_linewidth = 0.4,
   sep_color = "black",
@@ -61,16 +62,20 @@ values should be valid R color names or hex codes (e.g.,
 \code{c(g1 = "#FF0000", g2 = "#0000FF")}). If \code{NULL} (default), ggplot2's
 default color scale is used. Ignored if \code{color_col} is \code{NULL}.}
 
-\item{style}{String. Controls group encoding when \code{group_col} is supplied.
-\code{"color"} (default) uses different colors per group and draws horizontal
-separator lines between rows. \code{"shape"} uses the same color per
-\code{id} row and different point shapes per group.}
+\item{show_separators}{Logical. Whether to draw horizontal separator lines
+between rows when \code{group_col} is supplied. Default \code{TRUE}.}
 
-\item{sep_linetype}{Line type for row separator lines when \code{style = "color"}. Default \code{"solid"}.}
+\item{shape_col}{Optional string name of a column to use for point shapes.
+When \code{NULL} (default), no shape encoding is applied. Can be a factor or
+character column; character columns are coerced to factor with sorted level
+ordering for stable shape assignment. Can be used independently or in
+combination with \code{color_col}.}
 
-\item{sep_linewidth}{Line width for row separator lines when \code{style = "color"}. Default \code{0.4}.}
+\item{sep_linetype}{Line type for row separator lines. Default \code{"solid"}.}
 
-\item{sep_color}{Color for row separator lines when \code{style = "color"}. Default \code{"black"}.}
+\item{sep_linewidth}{Line width for row separator lines. Default \code{0.4}.}
+
+\item{sep_color}{Color for row separator lines. Default \code{"black"}.}
 
 \item{vline_xintercept}{Numeric. Position of the vertical reference line. Default \code{0}.}
 
@@ -79,8 +84,8 @@ separator lines between rows. \code{"shape"} uses the same color per
 \item{vline_color}{Color for the vertical reference line. Default \code{"black"}.}
 
 \item{point_shapes}{Integer vector of point shapes to use when
-\code{style = "shape"}. Must have at least as many elements as there are
-levels in \code{group_col}. Defaults to \code{c(21, 24, 22, 25, 23)} (up to 5
+\code{shape_col} is specified. Must have at least as many elements as there are
+levels in \code{shape_col}. Defaults to \code{c(21, 24, 22, 25, 23)} (up to 5
 groups). See \code{\link[graphics:points]{graphics::points()}} for shape codes.}
 
 \item{pvalue_col}{Optional string name of a column in \code{data} containing
@@ -154,7 +159,8 @@ plot_confidence_intervals(
   ci_high = "conf.high",
   id = "cell_line",
   group_col = "group",
-  style = "shape"
+  shape_col = "group",
+  show_separators = FALSE
 )
 
 # With grouping: color by group with custom colors
@@ -169,7 +175,7 @@ plot_confidence_intervals(
   color_values = c(g1 = "#E69F00", g2 = "#56B4E9")
 )
 
-# Color by label instead of group
+# Color by label, shapes by group
 plot_confidence_intervals(
   df,
   effect_size = "est",
@@ -177,7 +183,7 @@ plot_confidence_intervals(
   ci_high = "conf.high",
   id = "cell_line",
   group_col = "group",
-  style = "shape",
+  shape_col = "group",
   color_col = "cell_line"
 )
 

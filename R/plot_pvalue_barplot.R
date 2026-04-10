@@ -82,7 +82,7 @@ plot_pvalue_barplot <- function(
     vline_color = "red",
     vline_legend = TRUE,
     show_y_labels = FALSE, # whether to show y-axis labels (default FALSE)
-    mlog10_transform_pvalue = FALSE, # when TRUE compute -log10(p) for plotting/order
+    mlog10_transform_pvalue = TRUE, # when TRUE compute -log10(p) for plotting/order
     also_show_qvalue = TRUE, # when TRUE compute q-values (FDR) and draw p-values (grey, behind) plus q-values (black, on top) per row
     custom_qvalues = NULL, # column name in `data` containing user-supplied q-values
     color_qvalue = 'grey',

@@ -6,11 +6,24 @@
 
 ## Changed
 
-...
+* `plot_confidence_intervals`: refactor — replace the monolithic `style`
+  parameter with independent arguments for visual encoding and layout:
+  `color_col`, `color_values`, `shape_col`, and `point_shapes` (for
+  shape-based grouping), plus separator and reference-line controls
+  (`show_separators`, `sep_linetype`, `sep_linewidth`, `sep_color`,
+  `vline_xintercept`, `vline_linetype`, `vline_color`) and `dodge_width`.
+  This makes styling explicit and composable and simplifies legend
+  handling.
+
+* `plot_confidence_intervals`: ensure `shape_col` is coerced to a factor
+  with a stable, sorted level ordering; validate `point_shapes` length
+  against the number of shape levels and provide clearer legend
+  overrides when `color_col` and/or `shape_col` are used.
 
 ## Fixed
 
 ...
+
 
 # statplot 0.5.0 - 2026-04-10
 

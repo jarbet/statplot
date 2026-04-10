@@ -18,13 +18,11 @@
 #'   **factor**; factor levels control the top-to-bottom row ordering (first
 #'   level appears at the top).
 #' @param dodge_width Numeric. Total vertical spread across groups. Default `0.3`.
-#' @param style String. Controls group encoding when `group_col` is supplied.
-#'   `"color"` (default) uses different colors per group and draws horizontal
-#'   separator lines between rows. `"shape"` uses the same color per
-#'   `id` row and different point shapes per group.
-#' @param sep_linetype Line type for row separator lines when `style = "color"`. Default `"solid"`.
-#' @param sep_linewidth Line width for row separator lines when `style = "color"`. Default `0.4`.
-#' @param sep_color Color for row separator lines when `style = "color"`. Default `"black"`.
+#' @param show_separators Logical. Whether to draw horizontal separator lines
+#'   between rows when `group_col` is supplied. Default `TRUE`.
+#' @param sep_linetype Line type for row separator lines. Default `"solid"`.
+#' @param sep_linewidth Line width for row separator lines. Default `0.4`.
+#' @param sep_color Color for row separator lines. Default `"black"`.
 #' @param vline_xintercept Numeric. Position of the vertical reference line. Default `0`.
 #' @param vline_linetype Line type for the vertical reference line. Default `"dashed"`.
 #' @param vline_color Color for the vertical reference line. Default `"black"`.
@@ -37,9 +35,14 @@
 #'   values should be valid R color names or hex codes (e.g.,
 #'   `c(g1 = "#FF0000", g2 = "#0000FF")`). If `NULL` (default), ggplot2's
 #'   default color scale is used. Ignored if `color_col` is `NULL`.
+#' @param shape_col Optional string name of a column to use for point shapes.
+#'   When `NULL` (default), no shape encoding is applied. Can be a factor or
+#'   character column; character columns are coerced to factor with sorted level
+#'   ordering for stable shape assignment. Can be used independently or in
+#'   combination with `color_col`.
 #' @param point_shapes Integer vector of point shapes to use when
-#'   `style = "shape"`. Must have at least as many elements as there are
-#'   levels in `group_col`. Defaults to `c(21, 24, 22, 25, 23)` (up to 5
+#'   `shape_col` is specified. Must have at least as many elements as there are
+#'   levels in `shape_col`. Defaults to `c(21, 24, 22, 25, 23)` (up to 5
 #'   groups). See [graphics::points()] for shape codes.
 #' @param pvalue_col Optional string name of a column in `data` containing
 #'   p-values (one per row). When supplied, a [plot_pvalue_barplot()] is
@@ -102,7 +105,8 @@
 #'   ci_high = "conf.high",
 #'   id = "cell_line",
 #'   group_col = "group",
-#'   style = "shape"
+#'   shape_col = "group",
+#'   show_separators = FALSE
 #' )
 #'
 #' # With grouping: color by group with custom colors
@@ -117,7 +121,7 @@
 #'   color_values = c(g1 = "#E69F00", g2 = "#56B4E9")
 #' )
 #'
-#' # Color by label instead of group
+#' # Color by label, shapes by group
 #' plot_confidence_intervals(
 #'   df,
 #'   effect_size = "est",
@@ -125,7 +129,7 @@
 #'   ci_high = "conf.high",
 #'   id = "cell_line",
 #'   group_col = "group",
-#'   style = "shape",
+#'   shape_col = "group",
 #'   color_col = "cell_line"
 #' )
 #'
@@ -163,7 +167,8 @@ plot_confidence_intervals <- function(
     dodge_width = 0.3,
     color_col = NULL,
     color_values = NULL,
-    style = c("color", "shape"),
+    show_separators = TRUE,
+    shape_col = NULL,
     sep_linetype = "solid",
     sep_linewidth = 0.4,
     sep_color = "black",
@@ -183,7 +188,6 @@ plot_confidence_intervals <- function(
     pvalue_plot_margin = c(5.5, 12, 5.5, 0),
     ...
 ) {
-    style <- match.arg(style)
     combine_pvalue_method <- match.arg(combine_pvalue_method)
 
     # ---- input validation ----
@@ -210,6 +214,12 @@ plot_confidence_intervals <- function(
             color_values
         ) ||
             (is.character(color_values) && !is.null(names(color_values))),
+        "show_separators must be logical" = is.logical(show_separators) &&
+            length(show_separators) == 1,
+        "shape_col must be NULL or a single string" = is.null(shape_col) ||
+            (is.character(shape_col) && length(shape_col) == 1),
+        "shape_col must be a column in data" = is.null(shape_col) ||
+            shape_col %in% names(data),
         "group_col must be NULL or a single string" = is.null(group_col) ||
             (is.character(group_col) && length(group_col) == 1),
         "group_col must be a column in data" = is.null(group_col) ||
@@ -263,27 +273,36 @@ plot_confidence_intervals <- function(
             length(point_shapes) >= 1
     )
 
-    # Validate point_shapes length against number of groups when style = "shape"
-    if (!is.null(group_col) && style == "shape") {
-        n_groups_check <- nlevels(data[[group_col]])
-        if (length(point_shapes) < n_groups_check) {
+    d <- data
+
+    # ---- coerce shape_col to factor with stable level ordering ----
+    if (!is.null(shape_col)) {
+        if (!is.factor(d[[shape_col]])) {
+            # Convert character to factor with sorted levels for stability
+            unique_vals <- unique(as.character(d[[shape_col]]))
+            d[[shape_col]] <- factor(d[[shape_col]], levels = sort(unique_vals))
+        }
+    }
+
+    # Validate point_shapes length against number of shape_col levels
+    if (!is.null(shape_col)) {
+        n_shapes_check <- nlevels(d[[shape_col]])
+        if (length(point_shapes) < n_shapes_check) {
             stop(
                 "point_shapes has ",
                 length(point_shapes),
                 " element(s) but ",
-                "group_col '",
-                group_col,
+                "shape_col '",
+                shape_col,
                 "' has ",
-                n_groups_check,
+                n_shapes_check,
                 " levels. ",
                 "Provide a point_shapes vector with at least ",
-                n_groups_check,
+                n_shapes_check,
                 " elements."
             )
         }
     }
-
-    d <- data
 
     # ---- y positions from factor levels ----
     # label levels run top-to-bottom: first level -> highest y value
@@ -316,8 +335,8 @@ plot_confidence_intervals <- function(
             color = vline_color
         )
 
-    # ---- row separator lines (style = "color" only) ----
-    if (!is.null(group_col) && style == "color" && n_units > 1) {
+    # ---- row separator lines ----
+    if (!is.null(group_col) && show_separators && n_units > 1) {
         separators <- seq_len(n_units - 1) + 0.5
         p <- p +
             ggplot2::geom_hline(
@@ -361,8 +380,8 @@ plot_confidence_intervals <- function(
     }
 
     # ---- points ----
-    if (!is.null(group_col) && style == "shape") {
-        # shape style: use point_shapes for groups, color for color_col
+    if (!is.null(shape_col)) {
+        # Use shapes for shape_col, optionally with colors
         if (!is.null(color_col)) {
             p <- p +
                 ggplot2::geom_point(
@@ -370,14 +389,14 @@ plot_confidence_intervals <- function(
                         y = y_pos,
                         color = .data[[color_col]],
                         fill = .data[[color_col]],
-                        shape = .data[[group_col]]
+                        shape = .data[[shape_col]]
                     ),
                     size = 4,
                     stroke = 0.4,
                     show.legend = TRUE
                 ) +
                 ggplot2::scale_shape_manual(
-                    values = point_shapes[seq_len(nlevels(d[[group_col]]))]
+                    values = point_shapes[seq_len(nlevels(d[[shape_col]]))]
                 )
             if (!is.null(color_values)) {
                 p <- p +
@@ -389,7 +408,7 @@ plot_confidence_intervals <- function(
                 ggplot2::geom_point(
                     ggplot2::aes(
                         y = y_pos,
-                        shape = .data[[group_col]]
+                        shape = .data[[shape_col]]
                     ),
                     size = 4,
                     stroke = 0.4,
@@ -398,11 +417,11 @@ plot_confidence_intervals <- function(
                     show.legend = TRUE
                 ) +
                 ggplot2::scale_shape_manual(
-                    values = point_shapes[seq_len(nlevels(d[[group_col]]))]
+                    values = point_shapes[seq_len(nlevels(d[[shape_col]]))]
                 )
         }
     } else if (!is.null(color_col)) {
-        # color specified: use it for points
+        # Color specified: use it for points
         p <- p +
             ggplot2::geom_point(
                 ggplot2::aes(
@@ -420,7 +439,7 @@ plot_confidence_intervals <- function(
                 ggplot2::scale_fill_manual(values = color_values)
         }
     } else {
-        # no grouping or color: plain points
+        # No shape or color: plain points
         p <- p +
             ggplot2::geom_point(
                 ggplot2::aes(y = y_pos),
@@ -443,8 +462,8 @@ plot_confidence_intervals <- function(
         ggplot2::theme_bw() +
         ggplot2::theme(axis.text.y = ggplot2::element_text(face = "bold"))
 
-    # Add shape legend overrides when using shape style
-    if (!is.null(group_col) && style == "shape") {
+    # Add shape legend overrides when using shape_col
+    if (!is.null(shape_col)) {
         # Only override color to black if no color_col specified
         override_aes <- list(linetype = 0, linewidth = 0)
         if (is.null(color_col)) {
