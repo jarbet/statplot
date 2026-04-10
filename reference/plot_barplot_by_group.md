@@ -27,7 +27,7 @@ plot_barplot_by_group(
   bar_gap = 0.6,
   bar_padding = 0.5,
   text_size = 3.5,
-  bracket_offset = 0.08,
+  bracket_offset = 1,
   bracket_gap = 0.04,
   bracket_text_gap = 1,
   strip_position = "top"
@@ -127,8 +127,8 @@ plot_barplot_by_group(
 
 - bracket_offset:
 
-  Fraction of the y range used as vertical spacing above bar tops for
-  bracket placement. Default `0.08`.
+  Absolute distance (in data units) used as vertical spacing above bar
+  tops for bracket placement. Default `1.0`.
 
 - bracket_gap:
 

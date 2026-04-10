@@ -4,7 +4,23 @@
 
 ### Added
 
-- `plot_dot_whiskers`: added `pvalue_plot_margin` argument to
+…
+
+### Changed
+
+…
+
+### Fixed
+
+…
+
+## statplot 0.5.0 - 2026-04-10
+
+### Added
+
+- `theme_bw2` and `theme_classic2`: commonly used themes
+
+- `plot_confidence_intervals`: added `pvalue_plot_margin` argument to
   parameterize the p-value panel plot margin (points), default
   `c(5.5, 12, 5.5, 0)`. This prevents x-axis labels on the appended
   p-value barplot from being clipped when the panel is composed to the
@@ -33,6 +49,32 @@
   legend, while the gene effect-size colour scale remains independent.
 
 ### Changed
+
+- `plot_dot_whiskers` has been renamed to `plot_confidence_intervals`.
+  The function signature and behavior have been significantly enhanced:
+
+  - **Parameter renames for clarity**: `x` → `effect_size`, `xmin` →
+    `ci_low`, `xmax` → `ci_high`, `label_col` → `id`
+  - **New parameters**:
+    - `effect_size`, `ci_low`, `ci_high`, and `id` are now required
+      positional arguments (previously optional with defaults)
+    - `color_col`: optional column for coloring segments and points (can
+      be group-based or id-based)
+    - `color_values`: optional named character vector for custom colors
+    - `combine_pvalue_method`: method for combining p-values when
+      `group_col` is supplied (default `"fisher"`)
+  - **Enhanced p-value panel logic**: When `group_col` is specified,
+    p-values are now automatically combined across groups for each `id`
+    using the specified method, eliminating the need for pre-computed
+    combined p-values. When `group_col` is `NULL`, individual p-values
+    are displayed directly.
+  - **Improved styling**: Supports shape-based and color-based group
+    distinction, with flexible color and shape customization options
+
+- `plot_barplot_by_group`: changed `bracket_offset` default from `0.08`
+  to `1.0` and updated the parameter documentation to clarify that it is
+  now an absolute distance in data units (formerly a fraction of the y
+  range).
 
 - `plot_dotmap`: added a short example demonstrating `only_show_top_sig`
   (shows top N rows in the combined p-value barplot) and updated the

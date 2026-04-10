@@ -50,12 +50,12 @@ pak::pak("jarbet/statplot")
   : Bar plot comparing a numeric outcome between two conditions
 - [`plot_bars()`](https://github.com/jarbet/statplot/reference/plot_bars.md)
   : Bar plot by group
+- [`plot_confidence_intervals()`](https://github.com/jarbet/statplot/reference/plot_confidence_intervals.md)
+  : Dot-and-whisker plot of estimates with confidence intervals
 - [`plot_covariate_heatmap()`](https://github.com/jarbet/statplot/reference/plot_covariate_heatmap.md)
   : Plot a covariate heatmap
 - [`plot_data_avail_by_group()`](https://github.com/jarbet/statplot/reference/plot_data_avail_by_group.md)
   : Plot data availability by group
-- [`plot_dot_whiskers()`](https://github.com/jarbet/statplot/reference/plot_dot_whiskers.md)
-  : Dot-and-whisker plot of estimates with confidence intervals
 - [`plot_dotmap()`](https://github.com/jarbet/statplot/reference/plot_dotmap.md)
   : Create a dotmap showing effect size (dot size & color) and p-value
   (tile fill)
@@ -86,4 +86,8 @@ pak::pak("jarbet/statplot")
   : Create a table that summarizes the entire cohort.
 - [`table_overall_and_group()`](https://github.com/jarbet/statplot/reference/table_overall_and_group.md)
   : Create overall and by-group summary table
+- [`theme_bw2()`](https://github.com/jarbet/statplot/reference/theme_bw2.md)
+  : Bold-styled Black and White Theme
+- [`theme_classic2()`](https://github.com/jarbet/statplot/reference/theme_classic2.md)
+  : Bold-styled Classic Theme
 

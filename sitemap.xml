@@ -16,9 +16,9 @@
 <url><loc>https://github.com/jarbet/statplot/reference/plot_2_categorical_vars.html</loc></url>
 <url><loc>https://github.com/jarbet/statplot/reference/plot_barplot_by_group.html</loc></url>
 <url><loc>https://github.com/jarbet/statplot/reference/plot_bars.html</loc></url>
+<url><loc>https://github.com/jarbet/statplot/reference/plot_confidence_intervals.html</loc></url>
 <url><loc>https://github.com/jarbet/statplot/reference/plot_covariate_heatmap.html</loc></url>
 <url><loc>https://github.com/jarbet/statplot/reference/plot_data_avail_by_group.html</loc></url>
-<url><loc>https://github.com/jarbet/statplot/reference/plot_dot_whiskers.html</loc></url>
 <url><loc>https://github.com/jarbet/statplot/reference/plot_dotmap.html</loc></url>
 <url><loc>https://github.com/jarbet/statplot/reference/plot_effectsize_01_intervals.html</loc></url>
 <url><loc>https://github.com/jarbet/statplot/reference/plot_heatmap.html</loc></url>
@@ -33,5 +33,7 @@
 <url><loc>https://github.com/jarbet/statplot/reference/run_gsea.html</loc></url>
 <url><loc>https://github.com/jarbet/statplot/reference/table_overall.html</loc></url>
 <url><loc>https://github.com/jarbet/statplot/reference/table_overall_and_group.html</loc></url>
+<url><loc>https://github.com/jarbet/statplot/reference/theme_bw2.html</loc></url>
+<url><loc>https://github.com/jarbet/statplot/reference/theme_classic2.html</loc></url>
 </urlset>
 

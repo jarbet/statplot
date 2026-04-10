@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">statplot</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,15 +36,53 @@
 <h2 class="pkg-version" data-toc-text="development version" id="statplot-development-version">statplot (development version)<a class="anchor" aria-label="anchor" href="#statplot-development-version"></a></h2>
 <div class="section level3">
 <h3 id="added-development-version">Added<a class="anchor" aria-label="anchor" href="#added-development-version"></a></h3>
-<ul><li><p><code>plot_dot_whiskers</code>: added <code>pvalue_plot_margin</code> argument to parameterize the p-value panel plot margin (points), default <code>c(5.5, 12, 5.5, 0)</code>. This prevents x-axis labels on the appended p-value barplot from being clipped when the panel is composed to the right using <code>patchwork</code>.</p></li>
+<p>…</p>
+</div>
+<div class="section level3">
+<h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
+<p>…</p>
+</div>
+<div class="section level3">
+<h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
+<p>…</p>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.0" id="statplot-050---2026-04-10">statplot 0.5.0 - 2026-04-10<a class="anchor" aria-label="anchor" href="#statplot-050---2026-04-10"></a></h2>
+<div class="section level3">
+<h3 id="added-0-5-0">Added<a class="anchor" aria-label="anchor" href="#added-0-5-0"></a></h3>
+<ul><li><p><code>theme_bw2</code> and <code>theme_classic2</code>: commonly used themes</p></li>
+<li><p><code>plot_confidence_intervals</code>: added <code>pvalue_plot_margin</code> argument to parameterize the p-value panel plot margin (points), default <code>c(5.5, 12, 5.5, 0)</code>. This prevents x-axis labels on the appended p-value barplot from being clipped when the panel is composed to the right using <code>patchwork</code>.</p></li>
 <li><p><code>hallmark_pathway_categories</code>: new internal dataset mapping Hallmark pathway names (the <code>term</code> column, with the <code>HALLMARK_</code> prefix removed) to biological process categories as defined in Table 1 of Liberzon et al. (2015). The dataset includes a runtime validation step against the bundled <code>hallmark_t2g</code> data to ensure pathway names align with MSigDB.</p></li>
 <li><p><code>plot_covariate_heatmap</code>: new function to draw vertical covariate strips (one strip per covariate). Supports categorical covariates (named color vectors) only.</p></li>
 <li><p><code>plot_barplot_by_group</code>: new two-condition bar plot function for comparing a numeric outcome across groups. Supports <code>error_direction = c("both", "up")</code>, configurable <code>bar_width</code>, <code>bar_gap</code>, and <code>bar_padding</code>, optional facet layout via <code>facet</code>/<code>strip_position</code>, and custom bracket labels via <code>label_col</code>.</p></li>
 <li><p><code>plot_pathways</code>: new <code>pathway_cats</code> and <code>pathway_cat_colors</code> arguments let users fill pathway nodes by biological process category. The accompanying <code>legend_pathway_fill_title</code> and <code>legend_pathway_fill_dot_size</code> arguments customise the category fill legend, while the gene effect-size colour scale remains independent.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
-<ul><li><p><code>plot_dotmap</code>: added a short example demonstrating <code>only_show_top_sig</code> (shows top N rows in the combined p-value barplot) and updated the <code>combine_pvalue_method</code> parameter documentation to reference <code>combine_pvalues</code> for method details.</p></li>
+<h3 id="changed-0-5-0">Changed<a class="anchor" aria-label="anchor" href="#changed-0-5-0"></a></h3>
+<ul><li>
+<p><code>plot_dot_whiskers</code> has been renamed to <code>plot_confidence_intervals</code>. The function signature and behavior have been significantly enhanced:</p>
+<ul><li>
+<strong>Parameter renames for clarity</strong>: <code>x</code> → <code>effect_size</code>, <code>xmin</code> → <code>ci_low</code>, <code>xmax</code> → <code>ci_high</code>, <code>label_col</code> → <code>id</code>
+</li>
+<li>
+<strong>New parameters</strong>:
+<ul><li>
+<code>effect_size</code>, <code>ci_low</code>, <code>ci_high</code>, and <code>id</code> are now required positional arguments (previously optional with defaults)</li>
+<li>
+<code>color_col</code>: optional column for coloring segments and points (can be group-based or id-based)</li>
+<li>
+<code>color_values</code>: optional named character vector for custom colors</li>
+<li>
+<code>combine_pvalue_method</code>: method for combining p-values when <code>group_col</code> is supplied (default <code>"fisher"</code>)</li>
+</ul></li>
+<li>
+<strong>Enhanced p-value panel logic</strong>: When <code>group_col</code> is specified, p-values are now automatically combined across groups for each <code>id</code> using the specified method, eliminating the need for pre-computed combined p-values. When <code>group_col</code> is <code>NULL</code>, individual p-values are displayed directly.</li>
+<li>
+<strong>Improved styling</strong>: Supports shape-based and color-based group distinction, with flexible color and shape customization options</li>
+</ul></li>
+<li><p><code>plot_barplot_by_group</code>: changed <code>bracket_offset</code> default from <code>0.08</code> to <code>1.0</code> and updated the parameter documentation to clarify that it is now an absolute distance in data units (formerly a fraction of the y range).</p></li>
+<li><p><code>plot_dotmap</code>: added a short example demonstrating <code>only_show_top_sig</code> (shows top N rows in the combined p-value barplot) and updated the <code>combine_pvalue_method</code> parameter documentation to reference <code>combine_pvalues</code> for method details.</p></li>
 <li><p><code>combine_pvalues</code>: default <code>methods</code> changed from <code>'all'</code> to <code>'CMC'</code>; documentation and tests updated to reflect the new default.</p></li>
 <li><p><code>plot_dotmap</code>: the default <code>combine_pvalue_method</code> is now <code>"fisher"</code> (was previously <code>"CMC"</code> when not supplied via <code><a href="https://rdrr.io/r/base/match.arg.html" class="external-link">match.arg()</a></code>); documentation and examples updated to reflect the new default choice.</p></li>
 <li><p><code>plot_pvalue_barplot</code>: improved legend behaviour — when a vertical significance line legend is requested (<code>vline = TRUE, vline_legend = TRUE</code>) the colour scale now stores an explicit named <code>values</code> vector so code and tests can programmatically find the named alpha entry; also the fill legend uses <code>override.aes</code> to remove line linetype in legend keys when showing p/q bars so legend keys render as solid/filled swatches.</p></li>
@@ -52,7 +90,7 @@
 <li><p><code>plot_pathways</code>: default <code>legend_pathway_size_title</code> changed to <code>"Num. genes\n in pathway"</code> and default <code>legend_color_title</code> changed to <code>"Gene effect size"</code>.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
+<h3 id="fixed-0-5-0">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-5-0"></a></h3>
 <ul><li>
 <code>plot_dotmap</code>: <code><a href="../reference/combine_pvalues.html">combine_pvalues()</a></code> is now called with <code>methods = combine_pvalue_method</code> instead of subsetting the result by name. Previously, <code><a href="../reference/combine_pvalues.html">combine_pvalues()</a></code> defaulted to computing only <code>"CMC"</code>, so requesting any other method (e.g. <code>"fisher"</code>) returned <code>NA</code>, causing the combined p-value barplot to draw no bars.</li>
 </ul></div>
