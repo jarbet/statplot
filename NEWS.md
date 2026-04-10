@@ -16,6 +16,8 @@
 
 ## Added
 
+* `theme_bw2` and `theme_classic2`: commonly used themes
+
 * `plot_confidence_intervals`: added `pvalue_plot_margin` argument to parameterize
   the p-value panel plot margin (points), default `c(5.5, 12, 5.5, 0)`. This
   prevents x-axis labels on the appended p-value barplot from being clipped
