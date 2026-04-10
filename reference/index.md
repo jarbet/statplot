@@ -21,6 +21,8 @@
   : Hallmark gene sets (Human) from MSigDB
 - [`plot_2_categorical_vars()`](https://github.com/jarbet/statplot/reference/plot_2_categorical_vars.md)
   : Stacked percent bar chart for two categorical variables
+- [`plot_barplot_by_group()`](https://github.com/jarbet/statplot/reference/plot_barplot_by_group.md)
+  : Bar plot comparing a numeric outcome between two conditions
 - [`plot_bars()`](https://github.com/jarbet/statplot/reference/plot_bars.md)
   : Bar plot by group
 - [`plot_covariate_heatmap()`](https://github.com/jarbet/statplot/reference/plot_covariate_heatmap.md)
