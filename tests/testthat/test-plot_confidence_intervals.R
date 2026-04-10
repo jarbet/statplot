@@ -136,7 +136,8 @@ test_that("plot_confidence_intervals works with shape style", {
         ci_high = "conf.high",
         id = "cell_line",
         group_col = "group",
-        style = "shape"
+        shape_col = "group",
+        show_separators = FALSE
     )
     expect_s3_class(p, "ggplot")
 })
@@ -157,7 +158,7 @@ test_that("plot_confidence_intervals works with shape style and color", {
         ci_high = "conf.high",
         id = "cell_line",
         group_col = "group",
-        style = "shape",
+        shape_col = "group",
         color_col = "group"
     )
     expect_s3_class(p, "ggplot")
@@ -180,7 +181,7 @@ test_that("plot_confidence_intervals requires point_shapes length matches group 
             ci_high = "conf.high",
             id = "cell_line",
             group_col = "group",
-            style = "shape",
+            shape_col = "group",
             point_shapes = c(21)
         ),
         "point_shapes has 1 element"
@@ -263,7 +264,8 @@ test_that("plot_confidence_intervals works with separator line customization", {
         ci_high = "conf.high",
         id = "cell_line",
         group_col = "group",
-        style = "color",
+        color_col = "group",
+        show_separators = TRUE,
         sep_linetype = "dashed",
         sep_linewidth = 0.8,
         sep_color = "gray50"
@@ -620,7 +622,7 @@ test_that("plot_confidence_intervals works with color_values and shape style", {
         ci_high = "conf.high",
         id = "cell_line",
         group_col = "group",
-        style = "shape",
+        shape_col = "group",
         color_col = "group",
         color_values = c(g1 = "#FF0000", g2 = "#0000FF")
     )

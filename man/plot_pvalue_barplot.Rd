@@ -19,7 +19,7 @@ plot_pvalue_barplot(
   vline_color = "red",
   vline_legend = TRUE,
   show_y_labels = FALSE,
-  mlog10_transform_pvalue = FALSE,
+  mlog10_transform_pvalue = TRUE,
   also_show_qvalue = TRUE,
   custom_qvalues = NULL,
   color_qvalue = "grey",
