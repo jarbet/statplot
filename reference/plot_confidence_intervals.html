@@ -35,7 +35,7 @@ append a p-value barplot to the right via patchwork."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Dot-and-whisker plot of estimates with confidence intervals</h1>
-      <small class="dont-index">Source: <a href="https://github.com/jarbet/statplot/blob/v0.5.0/R/plot_confidence_intervals.R"><code>R/plot_confidence_intervals.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/jarbet/statplot/blob/main/R/plot_confidence_intervals.R"><code>R/plot_confidence_intervals.R</code></a></small>
       <div class="d-none name"><code>plot_confidence_intervals.Rd</code></div>
     </div>
 
@@ -58,7 +58,8 @@ append a p-value barplot to the right via patchwork.</p>
 <span>  dodge_width <span class="op">=</span> <span class="fl">0.3</span>,</span>
 <span>  color_col <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  color_values <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"color"</span>, <span class="st">"shape"</span><span class="op">)</span>,</span>
+<span>  show_separators <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  shape_col <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sep_linetype <span class="op">=</span> <span class="st">"solid"</span>,</span>
 <span>  sep_linewidth <span class="op">=</span> <span class="fl">0.4</span>,</span>
 <span>  sep_color <span class="op">=</span> <span class="st">"black"</span>,</span>
@@ -127,23 +128,29 @@ values should be valid R color names or hex codes (e.g.,
 default color scale is used. Ignored if <code>color_col</code> is <code>NULL</code>.</p></dd>
 
 
-<dt id="arg-style">style<a class="anchor" aria-label="anchor" href="#arg-style"></a></dt>
-<dd><p>String. Controls group encoding when <code>group_col</code> is supplied.
-<code>"color"</code> (default) uses different colors per group and draws horizontal
-separator lines between rows. <code>"shape"</code> uses the same color per
-<code>id</code> row and different point shapes per group.</p></dd>
+<dt id="arg-show-separators">show_separators<a class="anchor" aria-label="anchor" href="#arg-show-separators"></a></dt>
+<dd><p>Logical. Whether to draw horizontal separator lines
+between rows when <code>group_col</code> is supplied. Default <code>TRUE</code>.</p></dd>
+
+
+<dt id="arg-shape-col">shape_col<a class="anchor" aria-label="anchor" href="#arg-shape-col"></a></dt>
+<dd><p>Optional string name of a column to use for point shapes.
+When <code>NULL</code> (default), no shape encoding is applied. Can be a factor or
+character column; character columns are coerced to factor with sorted level
+ordering for stable shape assignment. Can be used independently or in
+combination with <code>color_col</code>.</p></dd>
 
 
 <dt id="arg-sep-linetype">sep_linetype<a class="anchor" aria-label="anchor" href="#arg-sep-linetype"></a></dt>
-<dd><p>Line type for row separator lines when <code>style = "color"</code>. Default <code>"solid"</code>.</p></dd>
+<dd><p>Line type for row separator lines. Default <code>"solid"</code>.</p></dd>
 
 
 <dt id="arg-sep-linewidth">sep_linewidth<a class="anchor" aria-label="anchor" href="#arg-sep-linewidth"></a></dt>
-<dd><p>Line width for row separator lines when <code>style = "color"</code>. Default <code>0.4</code>.</p></dd>
+<dd><p>Line width for row separator lines. Default <code>0.4</code>.</p></dd>
 
 
 <dt id="arg-sep-color">sep_color<a class="anchor" aria-label="anchor" href="#arg-sep-color"></a></dt>
-<dd><p>Color for row separator lines when <code>style = "color"</code>. Default <code>"black"</code>.</p></dd>
+<dd><p>Color for row separator lines. Default <code>"black"</code>.</p></dd>
 
 
 <dt id="arg-vline-xintercept">vline_xintercept<a class="anchor" aria-label="anchor" href="#arg-vline-xintercept"></a></dt>
@@ -160,8 +167,8 @@ separator lines between rows. <code>"shape"</code> uses the same color per
 
 <dt id="arg-point-shapes">point_shapes<a class="anchor" aria-label="anchor" href="#arg-point-shapes"></a></dt>
 <dd><p>Integer vector of point shapes to use when
-<code>style = "shape"</code>. Must have at least as many elements as there are
-levels in <code>group_col</code>. Defaults to <code>c(21, 24, 22, 25, 23)</code> (up to 5
+<code>shape_col</code> is specified. Must have at least as many elements as there are
+levels in <code>shape_col</code>. Defaults to <code>c(21, 24, 22, 25, 23)</code> (up to 5
 groups). See <code><a href="https://rdrr.io/r/graphics/points.html" class="external-link">graphics::points()</a></code> for shape codes.</p></dd>
 
 
@@ -245,7 +252,8 @@ supplied.</p>
 <span class="r-in"><span>  ci_high <span class="op">=</span> <span class="st">"conf.high"</span>,</span></span>
 <span class="r-in"><span>  id <span class="op">=</span> <span class="st">"cell_line"</span>,</span></span>
 <span class="r-in"><span>  group_col <span class="op">=</span> <span class="st">"group"</span>,</span></span>
-<span class="r-in"><span>  style <span class="op">=</span> <span class="st">"shape"</span></span></span>
+<span class="r-in"><span>  shape_col <span class="op">=</span> <span class="st">"group"</span>,</span></span>
+<span class="r-in"><span>  show_separators <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot_confidence_intervals-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
@@ -264,7 +272,7 @@ supplied.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">colour</span>, which will replace the existing scale.</span>
 <span class="r-plt img"><img src="plot_confidence_intervals-4.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Color by label instead of group</span></span></span>
+<span class="r-in"><span><span class="co"># Color by label, shapes by group</span></span></span>
 <span class="r-in"><span><span class="fu">plot_confidence_intervals</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">df</span>,</span></span>
 <span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"est"</span>,</span></span>
@@ -272,7 +280,7 @@ supplied.</p>
 <span class="r-in"><span>  ci_high <span class="op">=</span> <span class="st">"conf.high"</span>,</span></span>
 <span class="r-in"><span>  id <span class="op">=</span> <span class="st">"cell_line"</span>,</span></span>
 <span class="r-in"><span>  group_col <span class="op">=</span> <span class="st">"group"</span>,</span></span>
-<span class="r-in"><span>  style <span class="op">=</span> <span class="st">"shape"</span>,</span></span>
+<span class="r-in"><span>  shape_col <span class="op">=</span> <span class="st">"group"</span>,</span></span>
 <span class="r-in"><span>  color_col <span class="op">=</span> <span class="st">"cell_line"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot_confidence_intervals-5.png" alt="" width="700" height="433"></span>

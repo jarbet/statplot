@@ -18,7 +18,8 @@ plot_confidence_intervals(
   dodge_width = 0.3,
   color_col = NULL,
   color_values = NULL,
-  style = c("color", "shape"),
+  show_separators = TRUE,
+  shape_col = NULL,
   sep_linetype = "solid",
   sep_linewidth = 0.4,
   sep_color = "black",
@@ -85,27 +86,30 @@ plot_confidence_intervals(
   `c(g1 = "#FF0000", g2 = "#0000FF")`). If `NULL` (default), ggplot2's
   default color scale is used. Ignored if `color_col` is `NULL`.
 
-- style:
+- show_separators:
 
-  String. Controls group encoding when `group_col` is supplied.
-  `"color"` (default) uses different colors per group and draws
-  horizontal separator lines between rows. `"shape"` uses the same color
-  per `id` row and different point shapes per group.
+  Logical. Whether to draw horizontal separator lines between rows when
+  `group_col` is supplied. Default `TRUE`.
+
+- shape_col:
+
+  Optional string name of a column to use for point shapes. When `NULL`
+  (default), no shape encoding is applied. Can be a factor or character
+  column; character columns are coerced to factor with sorted level
+  ordering for stable shape assignment. Can be used independently or in
+  combination with `color_col`.
 
 - sep_linetype:
 
-  Line type for row separator lines when `style = "color"`. Default
-  `"solid"`.
+  Line type for row separator lines. Default `"solid"`.
 
 - sep_linewidth:
 
-  Line width for row separator lines when `style = "color"`. Default
-  `0.4`.
+  Line width for row separator lines. Default `0.4`.
 
 - sep_color:
 
-  Color for row separator lines when `style = "color"`. Default
-  `"black"`.
+  Color for row separator lines. Default `"black"`.
 
 - vline_xintercept:
 
@@ -121,9 +125,9 @@ plot_confidence_intervals(
 
 - point_shapes:
 
-  Integer vector of point shapes to use when `style = "shape"`. Must
-  have at least as many elements as there are levels in `group_col`.
-  Defaults to `c(21, 24, 22, 25, 23)` (up to 5 groups). See
+  Integer vector of point shapes to use when `shape_col` is specified.
+  Must have at least as many elements as there are levels in
+  `shape_col`. Defaults to `c(21, 24, 22, 25, 23)` (up to 5 groups). See
   [`graphics::points()`](https://rdrr.io/r/graphics/points.html) for
   shape codes.
 
@@ -212,7 +216,8 @@ plot_confidence_intervals(
   ci_high = "conf.high",
   id = "cell_line",
   group_col = "group",
-  style = "shape"
+  shape_col = "group",
+  show_separators = FALSE
 )
 
 
@@ -231,7 +236,7 @@ plot_confidence_intervals(
 #> Adding another scale for colour, which will replace the existing scale.
 
 
-# Color by label instead of group
+# Color by label, shapes by group
 plot_confidence_intervals(
   df,
   effect_size = "est",
@@ -239,7 +244,7 @@ plot_confidence_intervals(
   ci_high = "conf.high",
   id = "cell_line",
   group_col = "group",
-  style = "shape",
+  shape_col = "group",
   color_col = "cell_line"
 )
 

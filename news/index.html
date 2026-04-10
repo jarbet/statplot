@@ -29,7 +29,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/jarbet/statplot/blob/v0.5.0/NEWS.md"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/jarbet/statplot/blob/main/NEWS.md"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
@@ -40,8 +40,9 @@
 </div>
 <div class="section level3">
 <h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
-<p>…</p>
-</div>
+<ul><li><p><code>plot_confidence_intervals</code>: refactor — replace the monolithic <code>style</code> parameter with independent arguments for visual encoding and layout: <code>color_col</code>, <code>color_values</code>, <code>shape_col</code>, and <code>point_shapes</code> (for shape-based grouping), plus separator and reference-line controls (<code>show_separators</code>, <code>sep_linetype</code>, <code>sep_linewidth</code>, <code>sep_color</code>, <code>vline_xintercept</code>, <code>vline_linetype</code>, <code>vline_color</code>) and <code>dodge_width</code>. This makes styling explicit and composable and simplifies legend handling.</p></li>
+<li><p><code>plot_confidence_intervals</code>: ensure <code>shape_col</code> is coerced to a factor with a stable, sorted level ordering; validate <code>point_shapes</code> length against the number of shape levels and provide clearer legend overrides when <code>color_col</code> and/or <code>shape_col</code> are used.</p></li>
+</ul></div>
 <div class="section level3">
 <h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
 <p>…</p>
