@@ -36,8 +36,10 @@
 #'   `c(g1 = "#FF0000", g2 = "#0000FF")`). If `NULL` (default), ggplot2's
 #'   default color scale is used. Ignored if `color_col` is `NULL`.
 #' @param shape_col Optional string name of a column to use for point shapes.
-#'   When `NULL` (default), no shape encoding is applied. Must be a factor or
-#'   character column. Can be used independently or in combination with `color_col`.
+#'   When `NULL` (default), no shape encoding is applied. Can be a factor or
+#'   character column; character columns are coerced to factor with sorted level
+#'   ordering for stable shape assignment. Can be used independently or in
+#'   combination with `color_col`.
 #' @param point_shapes Integer vector of point shapes to use when
 #'   `shape_col` is specified. Must have at least as many elements as there are
 #'   levels in `shape_col`. Defaults to `c(21, 24, 22, 25, 23)` (up to 5
@@ -271,9 +273,20 @@ plot_confidence_intervals <- function(
             length(point_shapes) >= 1
     )
 
+    d <- data
+
+    # ---- coerce shape_col to factor with stable level ordering ----
+    if (!is.null(shape_col)) {
+        if (!is.factor(d[[shape_col]])) {
+            # Convert character to factor with sorted levels for stability
+            unique_vals <- unique(as.character(d[[shape_col]]))
+            d[[shape_col]] <- factor(d[[shape_col]], levels = sort(unique_vals))
+        }
+    }
+
     # Validate point_shapes length against number of shape_col levels
     if (!is.null(shape_col)) {
-        n_shapes_check <- nlevels(data[[shape_col]])
+        n_shapes_check <- nlevels(d[[shape_col]])
         if (length(point_shapes) < n_shapes_check) {
             stop(
                 "point_shapes has ",
@@ -290,8 +303,6 @@ plot_confidence_intervals <- function(
             )
         }
     }
-
-    d <- data
 
     # ---- y positions from factor levels ----
     # label levels run top-to-bottom: first level -> highest y value

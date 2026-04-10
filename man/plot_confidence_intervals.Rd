@@ -66,8 +66,10 @@ default color scale is used. Ignored if \code{color_col} is \code{NULL}.}
 between rows when \code{group_col} is supplied. Default \code{TRUE}.}
 
 \item{shape_col}{Optional string name of a column to use for point shapes.
-When \code{NULL} (default), no shape encoding is applied. Must be a factor or
-character column. Can be used independently or in combination with \code{color_col}.}
+When \code{NULL} (default), no shape encoding is applied. Can be a factor or
+character column; character columns are coerced to factor with sorted level
+ordering for stable shape assignment. Can be used independently or in
+combination with \code{color_col}.}
 
 \item{sep_linetype}{Line type for row separator lines. Default \code{"solid"}.}
 
