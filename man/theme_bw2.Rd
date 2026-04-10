@@ -13,6 +13,7 @@ A ggplot2 theme object
 A modified ggplot2 black and white theme with bold text elements.
 }
 \examples{
+library(ggplot2)
 ggplot(mtcars, aes(x = wt, y = mpg)) +
   geom_point() +
   theme_bw2()

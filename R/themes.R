@@ -6,6 +6,7 @@
 #' @export
 #'
 #' @examples
+#' library(ggplot2)
 #' ggplot(mtcars, aes(x = wt, y = mpg)) +
 #'   geom_point() +
 #'   theme_bw2()
@@ -29,6 +30,7 @@ theme_bw2 <- function() {
 #' @export
 #'
 #' @examples
+#' library(ggplot2)
 #' ggplot(mtcars, aes(x = wt, y = mpg)) +
 #'   geom_point() +
 #'   theme_classic2()
