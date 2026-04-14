@@ -133,14 +133,14 @@
 #'     subtitle_effect_size_label  = "log2FC"
 #' )
 #'
-#' # 3-color diverging scale (blue -> white -> red)
+#' # 3-color diverging scale (purple -> white -> orange)
 #' plot_pathways(
 #'     gsea_result   = res$gsea_result,
 #'     effect_size   = res$gene_vec,
 #'     show_pathways = 5,
-#'     color_low     = "blue",
+#'     color_low     = "purple",
 #'     color_mid     = "white",
-#'     color_high    = "red",
+#'     color_high    = "orange",
 #'     effect_size_threshold = 1.5
 #' )
 #'
@@ -241,9 +241,9 @@ plot_pathways <- function(
     legend_color_title = "Gene effect size",
     colorkey_breaks = NULL,
     colorkey_limits = NULL,
-    color_low = NULL,
-    color_mid = NULL,
-    color_high = NULL,
+    color_low = "blue",
+    color_mid = "white",
+    color_high = "red",
     plot_margin = c(0.5, 0.5, 0.5, 0.5)
 ) {
     stopifnot(
