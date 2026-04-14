@@ -27,7 +27,8 @@ plot_dotmap(
   only_show_top_sig = NULL,
   also_show_qvalue = TRUE,
   ...,
-  patchwork_widths = c(3, 1)
+  patchwork_widths = c(3, 1),
+  legend_position = "right"
 )
 }
 \arguments{
@@ -94,6 +95,10 @@ When not supplied, BH-adjusted q-values are computed from the internally combine
 p-values and used for the barplot.}
 
 \item{patchwork_widths}{Numeric(2); widths passed to \pkg{patchwork}::\code{wrap_plots()} when adding the combined p-value barplot (default c(3, 1))}
+
+\item{legend_position}{character(1) Position of the legend (default \code{"right"}). Passed to
+\code{ggplot2::theme(legend.position = ...)}. Common values include \code{"right"},
+\code{"left"}, \code{"top"}, \code{"bottom"}, or \code{"none"} to hide the legend.}
 }
 \value{
 A \code{ggplot2}::\code{ggplot} object when \code{add_combined_pvalue_barplot = FALSE},
@@ -161,6 +166,15 @@ plot_dotmap(
   add_combined_pvalue_barplot = TRUE,
   combine_pvalue_method = "CMC",
   only_show_top_sig = 3
+)
+#
+# Move legend to the left side
+plot_dotmap(
+  df,
+  x = "col", y = "row", effect = "effect", p = "p",
+  mlog10_transform_pvalue = TRUE,
+  add_combined_pvalue_barplot = TRUE,
+  legend_position = "left"
 )
 #
 ### Simulate example dataset:

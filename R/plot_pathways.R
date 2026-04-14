@@ -106,6 +106,9 @@
 #'   lines: `c(top, right, bottom, left)` (default `c(0.5, 0.5, 0.5, 0.5)`).
 #'   All values must be finite and non-negative.  Increase
 #'   the left/right values if node labels are being clipped at the edges.
+#' @param legend_position character(1) Position of the legend (default `"right"`).
+#'   Passed to `ggplot2::theme(legend.position = ...)`.  Common values include
+#'   `"right"`, `"left"`, `"top"`, `"bottom"`, or `"none"` to hide the legend.
 #'
 #' @return A ggplot2 object.
 #'
@@ -192,6 +195,15 @@
 #'
 #' patchwork::wrap_plots(p1, p2, guides = "collect")
 #'
+#' # Move legend to the left side
+#' plot_pathways(
+#'     gsea_result           = res$gsea_result,
+#'     effect_size           = res$gene_vec,
+#'     show_pathways         = 5,
+#'     legend_position       = "left",
+#'     effect_size_threshold = 1.5
+#' )
+#'
 #' # Color pathway nodes by biological process category using hallmark_pathway_categories
 #' data(hallmark_pathway_categories)
 #' top_ids <- utils::head(res$gsea_result@result$ID, 5)
@@ -247,7 +259,8 @@ plot_pathways <- function(
     color_low = "blue",
     color_mid = "white",
     color_high = "red",
-    plot_margin = c(0.5, 0.5, 0.5, 0.5)
+    plot_margin = c(0.5, 0.5, 0.5, 0.5),
+    legend_position = "right"
 ) {
     stopifnot(
         "effect_size must be a named numeric vector" = is.numeric(
@@ -357,6 +370,10 @@ plot_pathways <- function(
             length(plot_margin) == 4 &&
             all(is.finite(plot_margin)) &&
             all(plot_margin >= 0),
+        "legend_position must be a single character string" = is.character(
+            legend_position
+        ) &&
+            length(legend_position) == 1,
         "pathway_cats must be a named character vector or NULL" = is.null(
             pathway_cats
         ) ||
@@ -493,7 +510,8 @@ plot_pathways <- function(
                 b = plot_margin[3],
                 l = plot_margin[4],
                 unit = "lines"
-            )
+            ),
+            legend.position = legend_position
         )
 
     # Size-legend customisation: fix the breaks (and limits) shown in the
