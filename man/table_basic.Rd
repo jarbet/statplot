@@ -18,8 +18,9 @@ table_basic(
 \item{digits}{numeric or list. Rounding specification for columns:
 \itemize{
 \item If a single numeric value, applied to all numeric columns.
-\item If a numeric vector, one value per column in order. Non-numeric columns
-ignore their corresponding value.
+\item If a numeric vector, must have length equal to the number of columns in
+\code{d}. Non-numeric columns ignore their corresponding value. Providing a
+vector with any other length will raise an error.
 \item If a list, a named list mapping column names to number of digits (e.g.,
 \code{list(age = 0, salary = 2)}). Unnamed or missing columns keep their
 original precision.

@@ -149,8 +149,9 @@ table_overall <- function(d) {
 #' @param d data.frame. Dataset to display as a table.
 #' @param digits numeric or list. Rounding specification for columns:
 #'   - If a single numeric value, applied to all numeric columns.
-#'   - If a numeric vector, one value per column in order. Non-numeric columns
-#'     ignore their corresponding value.
+#'   - If a numeric vector, must have length equal to the number of columns in
+#'     `d`. Non-numeric columns ignore their corresponding value. Providing a
+#'     vector with any other length will raise an error.
 #'   - If a list, a named list mapping column names to number of digits (e.g.,
 #'     `list(age = 0, salary = 2)`). Unnamed or missing columns keep their
 #'     original precision.
@@ -207,6 +208,23 @@ table_basic <- function(
                         d_formatted[[j]] <- round(d_formatted[[j]], digits[j])
                     }
                 }
+            } else {
+                # Invalid vector length: throw a clear error
+                rlang::abort(
+                    c(
+                        "Invalid `digits` vector length.",
+                        "x" = paste0(
+                            "The `digits` vector has length ",
+                            length(digits),
+                            ", but must be either:\n",
+                            "  1. A single value (applied to all numeric columns), or\n",
+                            "  2. A vector of length ",
+                            ncol(d),
+                            " (one value per column)"
+                        ),
+                        "i" = "Alternatively, use a named list: list(col1 = 1, col2 = 2)"
+                    )
+                )
             }
         } else if (is.list(digits)) {
             # Named list: apply rounding to specified columns
@@ -231,7 +249,8 @@ table_basic <- function(
                 d_formatted[[j]],
                 big.mark = ",",
                 scientific = FALSE,
-                trim = TRUE
+                trim = TRUE,
+                na.encode = FALSE
             )
         }
     }
