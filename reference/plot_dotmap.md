@@ -31,7 +31,8 @@ plot_dotmap(
   only_show_top_sig = NULL,
   also_show_qvalue = TRUE,
   ...,
-  patchwork_widths = c(3, 1)
+  patchwork_widths = c(3, 1),
+  legend_position = "right"
 )
 ```
 
@@ -172,6 +173,13 @@ plot_dotmap(
   Numeric(2); widths passed to patchwork::`wrap_plots()` when adding the
   combined p-value barplot (default c(3, 1))
 
+- legend_position:
+
+  character(1) Position of the legend (default `"right"`). Passed to
+  `ggplot2::theme(legend.position = ...)`. Common values include
+  `"right"`, `"left"`, `"top"`, `"bottom"`, or `"none"` to hide the
+  legend.
+
 ## Value
 
 A `ggplot2`::`ggplot` object when `add_combined_pvalue_barplot = FALSE`,
@@ -269,6 +277,24 @@ plot_dotmap(
 #> data's shape values.
 #> Warning: Removed 9 rows containing missing values or values outside the scale range
 #> (`geom_tile()`).
+
+#
+# Move legend to the left side
+plot_dotmap(
+  df,
+  x = "col", y = "row", effect = "effect", p = "p",
+  mlog10_transform_pvalue = TRUE,
+  add_combined_pvalue_barplot = TRUE,
+  legend_position = "left"
+)
+#> Scale for size is already present.
+#> Adding another scale for size, which will replace the existing scale.
+#> Scale for y is already present.
+#> Adding another scale for y, which will replace the existing scale.
+#> Scale for y is already present.
+#> Adding another scale for y, which will replace the existing scale.
+#> Warning: No shared levels found between `names(values)` of the manual scale and the
+#> data's shape values.
 
 #
 ### Simulate example dataset:

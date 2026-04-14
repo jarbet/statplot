@@ -141,12 +141,14 @@ plot_covariate_heatmap(
   row_id_var = "sample"
 )
 
+
 # Single vertical covariate bar - useful for placing to left/right of the main ggplot
 plot_covariate_heatmap(
   dataset    = sample_meta,
   color_map  = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
   row_id_var = "sample"
 )
+
 
 # Single horizontal covariate bar — useful for placing below a main ggplot
 plot_covariate_heatmap(
@@ -155,6 +157,7 @@ plot_covariate_heatmap(
   row_id_var = "sample",
   horizontal = TRUE
 )
+
 
 
 # merge_legends: two strips sharing the same color mapping → one legend

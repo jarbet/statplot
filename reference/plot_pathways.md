@@ -37,7 +37,8 @@ plot_pathways(
   color_low = "blue",
   color_mid = "white",
   color_high = "red",
-  plot_margin = c(0.5, 0.5, 0.5, 0.5)
+  plot_margin = c(0.5, 0.5, 0.5, 0.5),
+  legend_position = "right"
 )
 ```
 
@@ -225,6 +226,13 @@ plot_pathways(
   values must be finite and non-negative. Increase the left/right values
   if node labels are being clipped at the edges.
 
+- legend_position:
+
+  character(1) Position of the legend (default `"right"`). Passed to
+  `ggplot2::theme(legend.position = ...)`. Common values include
+  `"right"`, `"left"`, `"top"`, `"bottom"`, or `"none"` to hide the
+  legend.
+
 ## Value
 
 A ggplot2 object.
@@ -332,6 +340,18 @@ p2 <- plot_pathways(
 #> Adding another scale for colour, which will replace the existing scale.
 
 patchwork::wrap_plots(p1, p2, guides = "collect")
+
+
+# Move legend to the left side
+plot_pathways(
+    gsea_result           = res$gsea_result,
+    effect_size           = res$gene_vec,
+    show_pathways         = 5,
+    legend_position       = "left",
+    effect_size_threshold = 1.5
+)
+#> Scale for colour is already present.
+#> Adding another scale for colour, which will replace the existing scale.
 
 
 # Color pathway nodes by biological process category using hallmark_pathway_categories
