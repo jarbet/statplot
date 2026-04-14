@@ -4,9 +4,27 @@
 
 ### Added
 
-…
+- `table_basic`: new function for creating clean, formatted tables using
+  tinytable. Supports column-level rounding control via named lists or
+  vectors, optional comma formatting for large numbers, and configurable
+  handling of missing values. By default uses bold header rows and can
+  respect column `label` attributes.
 
 ### Changed
+
+- `plot_pvalue_barplot`: default `-log10(p)` x-axis breaks now use
+  meaningful p-value ticks (`1, 0.2, 0.1, 0.01, 0.001`) instead of
+  equally-spaced integer breaks; label formatting simplified to remove
+  the `"<"` prefix previously shown for the smallest p-value.
+
+- `plot_pathways`: default `color_low`, `color_mid`, and `color_high`
+  changed from `NULL` to `"blue"`, `"white"`, and `"red"`, respectively,
+  providing a sensible default diverging color palette without requiring
+  explicit user specification.
+
+- `combine_pvalues`: now allows p-values equal to 1 (previously
+  rejected); validation changed from `p > 0 & p < 1` to
+  `p > 0 & p <= 1`.
 
 - `plot_confidence_intervals`: refactor — replace the monolithic `style`
   parameter with independent arguments for visual encoding and layout:

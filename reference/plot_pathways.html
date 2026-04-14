@@ -77,9 +77,9 @@ co-expression structure.</p>
 <span>  legend_color_title <span class="op">=</span> <span class="st">"Gene effect size"</span>,</span>
 <span>  colorkey_breaks <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  colorkey_limits <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  color_low <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  color_mid <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  color_high <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  color_low <span class="op">=</span> <span class="st">"blue"</span>,</span>
+<span>  color_mid <span class="op">=</span> <span class="st">"white"</span>,</span>
+<span>  color_high <span class="op">=</span> <span class="st">"red"</span>,</span>
 <span>  plot_margin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -237,22 +237,25 @@ this preserves the cnetplot palette when no <code>color_*</code> arguments are s
 
 <dt id="arg-color-low">color_low<a class="anchor" aria-label="anchor" href="#arg-color-low"></a></dt>
 <dd><p>character(1) Color for the low end of the scale (default
-<code>NULL</code>, uses cnetplot's palette).  Combine with <code>color_high</code> for a
-2-color sequential scale, or also set <code>color_mid</code> for a 3-color
-diverging scale.</p></dd>
+<code>"blue"</code>).  Combine with <code>color_high</code> for a 2-color sequential scale, or
+also set <code>color_mid</code> for a 3-color diverging scale.  Set to <code>NULL</code> to
+use cnetplot's default palette (only when no <code>color_*</code> arguments are
+specified).</p></dd>
 
 
 <dt id="arg-color-mid">color_mid<a class="anchor" aria-label="anchor" href="#arg-color-mid"></a></dt>
 <dd><p>character(1) Color for the midpoint of the scale (default
-<code>NULL</code>).  When non-<code>NULL</code>, a 3-color diverging
-<code><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">ggplot2::scale_color_gradient2()</a></code> is used (e.g. <code>color_mid = "white"</code>).
-Leave as <code>NULL</code> to use a 2-color <code><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">ggplot2::scale_color_gradient()</a></code> when
-<code>color_low</code> or <code>color_high</code> are set.</p></dd>
+<code>"white"</code>).  When non-<code>NULL</code>, a 3-color diverging
+<code><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">ggplot2::scale_color_gradient2()</a></code> is used.  Set to <code>NULL</code> to use a
+2-color <code><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">ggplot2::scale_color_gradient()</a></code> when <code>color_low</code> or
+<code>color_high</code> are set.  To restore cnetplot's original palette, set all
+<code>color_*</code> arguments to <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-color-high">color_high<a class="anchor" aria-label="anchor" href="#arg-color-high"></a></dt>
 <dd><p>character(1) Color for the high end of the scale (default
-<code>NULL</code>, uses cnetplot's palette).</p></dd>
+<code>"red"</code>).  Set to <code>NULL</code> (with <code>color_low</code> and <code>color_mid</code> also <code>NULL</code>)
+to use cnetplot's default palette.</p></dd>
 
 
 <dt id="arg-plot-margin">plot_margin<a class="anchor" aria-label="anchor" href="#arg-plot-margin"></a></dt>
@@ -284,6 +287,8 @@ the left/right values if node labels are being clipped at the edges.</p></dd>
 <span class="r-in"><span>    show_pathways         <span class="op">=</span> <span class="fl">5</span>,</span></span>
 <span class="r-in"><span>    effect_size_threshold <span class="op">=</span> <span class="fl">1.5</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">colour</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">colour</span>, which will replace the existing scale.</span>
 <span class="r-plt img"><img src="plot_pathways-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Adaptively cap gene nodes at 50: effect_size_threshold is raised automatically</span></span></span>
@@ -295,16 +300,18 @@ the left/right values if node labels are being clipped at the edges.</p></dd>
 <span class="r-in"><span>    max_genes_shown    <span class="op">=</span> <span class="fl">50</span>,</span></span>
 <span class="r-in"><span>    subtitle_effect_size_label  <span class="op">=</span> <span class="st">"log2FC"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">colour</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">colour</span>, which will replace the existing scale.</span>
 <span class="r-plt img"><img src="plot_pathways-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># 3-color diverging scale (blue -&gt; white -&gt; red)</span></span></span>
+<span class="r-in"><span><span class="co"># 3-color diverging scale (purple -&gt; white -&gt; orange)</span></span></span>
 <span class="r-in"><span><span class="fu">plot_pathways</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    gsea_result   <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
 <span class="r-in"><span>    effect_size   <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
 <span class="r-in"><span>    show_pathways <span class="op">=</span> <span class="fl">5</span>,</span></span>
-<span class="r-in"><span>    color_low     <span class="op">=</span> <span class="st">"blue"</span>,</span></span>
+<span class="r-in"><span>    color_low     <span class="op">=</span> <span class="st">"purple"</span>,</span></span>
 <span class="r-in"><span>    color_mid     <span class="op">=</span> <span class="st">"white"</span>,</span></span>
-<span class="r-in"><span>    color_high    <span class="op">=</span> <span class="st">"red"</span>,</span></span>
+<span class="r-in"><span>    color_high    <span class="op">=</span> <span class="st">"orange"</span>,</span></span>
 <span class="r-in"><span>    effect_size_threshold <span class="op">=</span> <span class="fl">1.5</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">colour</span> is already present.</span>
@@ -352,6 +359,8 @@ the left/right values if node labels are being clipped at the edges.</p></dd>
 <span class="r-in"><span>    legend_fixed_dot_size <span class="op">=</span> <span class="va">shared_dot_sizes</span>,</span></span>
 <span class="r-in"><span>    effect_size_threshold <span class="op">=</span> <span class="fl">1.5</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">colour</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">colour</span>, which will replace the existing scale.</span>
 <span class="r-in"><span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu">plot_pathways</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    gsea_result           <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gsea_result</span>,</span></span>
 <span class="r-in"><span>    effect_size           <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">gene_vec</span>,</span></span>
@@ -359,6 +368,8 @@ the left/right values if node labels are being clipped at the edges.</p></dd>
 <span class="r-in"><span>    legend_fixed_dot_size <span class="op">=</span> <span class="va">shared_dot_sizes</span>,</span></span>
 <span class="r-in"><span>    effect_size_threshold <span class="op">=</span> <span class="fl">1.5</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">colour</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">colour</span>, which will replace the existing scale.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">patchwork</span><span class="fu">::</span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, guides <span class="op">=</span> <span class="st">"collect"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot_pathways-6.png" alt="" width="700" height="433"></span>
@@ -388,6 +399,8 @@ the left/right values if node labels are being clipped at the edges.</p></dd>
 <span class="r-in"><span>    legend_pathway_fill_title <span class="op">=</span> <span class="st">"Pathway category"</span>,</span></span>
 <span class="r-in"><span>    effect_size_threshold     <span class="op">=</span> <span class="fl">1.5</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Scale for <span style="color: #00BB00;">colour</span> is already present.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Adding another scale for <span style="color: #00BB00;">colour</span>, which will replace the existing scale.</span>
 <span class="r-plt img"><img src="plot_pathways-7.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

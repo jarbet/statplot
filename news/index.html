@@ -36,11 +36,15 @@
 <h2 class="pkg-version" data-toc-text="development version" id="statplot-development-version">statplot (development version)<a class="anchor" aria-label="anchor" href="#statplot-development-version"></a></h2>
 <div class="section level3">
 <h3 id="added-development-version">Added<a class="anchor" aria-label="anchor" href="#added-development-version"></a></h3>
-<p>…</p>
-</div>
+<ul><li>
+<code>table_basic</code>: new function for creating clean, formatted tables using tinytable. Supports column-level rounding control via named lists or vectors, optional comma formatting for large numbers, and configurable handling of missing values. By default uses bold header rows and can respect column <code>label</code> attributes.</li>
+</ul></div>
 <div class="section level3">
 <h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
-<ul><li><p><code>plot_confidence_intervals</code>: refactor — replace the monolithic <code>style</code> parameter with independent arguments for visual encoding and layout: <code>color_col</code>, <code>color_values</code>, <code>shape_col</code>, and <code>point_shapes</code> (for shape-based grouping), plus separator and reference-line controls (<code>show_separators</code>, <code>sep_linetype</code>, <code>sep_linewidth</code>, <code>sep_color</code>, <code>vline_xintercept</code>, <code>vline_linetype</code>, <code>vline_color</code>) and <code>dodge_width</code>. This makes styling explicit and composable and simplifies legend handling.</p></li>
+<ul><li><p><code>plot_pvalue_barplot</code>: default <code>-log10(p)</code> x-axis breaks now use meaningful p-value ticks (<code>1, 0.2, 0.1, 0.01, 0.001</code>) instead of equally-spaced integer breaks; label formatting simplified to remove the <code>"&lt;"</code> prefix previously shown for the smallest p-value.</p></li>
+<li><p><code>plot_pathways</code>: default <code>color_low</code>, <code>color_mid</code>, and <code>color_high</code> changed from <code>NULL</code> to <code>"blue"</code>, <code>"white"</code>, and <code>"red"</code>, respectively, providing a sensible default diverging color palette without requiring explicit user specification.</p></li>
+<li><p><code>combine_pvalues</code>: now allows p-values equal to 1 (previously rejected); validation changed from <code>p &gt; 0 &amp; p &lt; 1</code> to <code>p &gt; 0 &amp; p &lt;= 1</code>.</p></li>
+<li><p><code>plot_confidence_intervals</code>: refactor — replace the monolithic <code>style</code> parameter with independent arguments for visual encoding and layout: <code>color_col</code>, <code>color_values</code>, <code>shape_col</code>, and <code>point_shapes</code> (for shape-based grouping), plus separator and reference-line controls (<code>show_separators</code>, <code>sep_linetype</code>, <code>sep_linewidth</code>, <code>sep_color</code>, <code>vline_xintercept</code>, <code>vline_linetype</code>, <code>vline_color</code>) and <code>dodge_width</code>. This makes styling explicit and composable and simplifies legend handling.</p></li>
 <li><p><code>plot_confidence_intervals</code>: ensure <code>shape_col</code> is coerced to a factor with a stable, sorted level ordering; validate <code>point_shapes</code> length against the number of shape levels and provide clearer legend overrides when <code>color_col</code> and/or <code>shape_col</code> are used.</p></li>
 </ul></div>
 <div class="section level3">

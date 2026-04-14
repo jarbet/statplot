@@ -34,9 +34,9 @@ plot_pathways(
   legend_color_title = "Gene effect size",
   colorkey_breaks = NULL,
   colorkey_limits = NULL,
-  color_low = NULL,
-  color_mid = NULL,
-  color_high = NULL,
+  color_low = "blue",
+  color_mid = "white",
+  color_high = "red",
   plot_margin = c(0.5, 0.5, 0.5, 0.5)
 )
 ```
@@ -196,24 +196,27 @@ plot_pathways(
 
 - color_low:
 
-  character(1) Color for the low end of the scale (default `NULL`, uses
-  cnetplot's palette). Combine with `color_high` for a 2-color
-  sequential scale, or also set `color_mid` for a 3-color diverging
-  scale.
+  character(1) Color for the low end of the scale (default `"blue"`).
+  Combine with `color_high` for a 2-color sequential scale, or also set
+  `color_mid` for a 3-color diverging scale. Set to `NULL` to use
+  cnetplot's default palette (only when no `color_*` arguments are
+  specified).
 
 - color_mid:
 
-  character(1) Color for the midpoint of the scale (default `NULL`).
+  character(1) Color for the midpoint of the scale (default `"white"`).
   When non-`NULL`, a 3-color diverging
   [`ggplot2::scale_color_gradient2()`](https://ggplot2.tidyverse.org/reference/scale_gradient.html)
-  is used (e.g. `color_mid = "white"`). Leave as `NULL` to use a 2-color
+  is used. Set to `NULL` to use a 2-color
   [`ggplot2::scale_color_gradient()`](https://ggplot2.tidyverse.org/reference/scale_gradient.html)
-  when `color_low` or `color_high` are set.
+  when `color_low` or `color_high` are set. To restore cnetplot's
+  original palette, set all `color_*` arguments to `NULL`.
 
 - color_high:
 
-  character(1) Color for the high end of the scale (default `NULL`, uses
-  cnetplot's palette).
+  character(1) Color for the high end of the scale (default `"red"`).
+  Set to `NULL` (with `color_low` and `color_mid` also `NULL`) to use
+  cnetplot's default palette.
 
 - plot_margin:
 
@@ -244,6 +247,8 @@ plot_pathways(
     show_pathways         = 5,
     effect_size_threshold = 1.5
 )
+#> Scale for colour is already present.
+#> Adding another scale for colour, which will replace the existing scale.
 
 
 # Adaptively cap gene nodes at 50: effect_size_threshold is raised automatically
@@ -255,16 +260,18 @@ plot_pathways(
     max_genes_shown    = 50,
     subtitle_effect_size_label  = "log2FC"
 )
+#> Scale for colour is already present.
+#> Adding another scale for colour, which will replace the existing scale.
 
 
-# 3-color diverging scale (blue -> white -> red)
+# 3-color diverging scale (purple -> white -> orange)
 plot_pathways(
     gsea_result   = res$gsea_result,
     effect_size   = res$gene_vec,
     show_pathways = 5,
-    color_low     = "blue",
+    color_low     = "purple",
     color_mid     = "white",
-    color_high    = "red",
+    color_high    = "orange",
     effect_size_threshold = 1.5
 )
 #> Scale for colour is already present.
@@ -312,6 +319,8 @@ p1 <- plot_pathways(
     legend_fixed_dot_size = shared_dot_sizes,
     effect_size_threshold = 1.5
 )
+#> Scale for colour is already present.
+#> Adding another scale for colour, which will replace the existing scale.
 p2 <- plot_pathways(
     gsea_result           = res$gsea_result,
     effect_size           = res$gene_vec,
@@ -319,6 +328,8 @@ p2 <- plot_pathways(
     legend_fixed_dot_size = shared_dot_sizes,
     effect_size_threshold = 1.5
 )
+#> Scale for colour is already present.
+#> Adding another scale for colour, which will replace the existing scale.
 
 patchwork::wrap_plots(p1, p2, guides = "collect")
 
@@ -348,5 +359,7 @@ plot_pathways(
     legend_pathway_fill_title = "Pathway category",
     effect_size_threshold     = 1.5
 )
+#> Scale for colour is already present.
+#> Adding another scale for colour, which will replace the existing scale.
 
 ```

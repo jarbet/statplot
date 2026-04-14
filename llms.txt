@@ -82,6 +82,8 @@ pak::pak("jarbet/statplot")
   : Render a named list as a Quarto tabset
 - [`run_gsea()`](https://github.com/jarbet/statplot/reference/run_gsea.md)
   : Run Gene Set Enrichment Analysis (GSEA)
+- [`table_basic()`](https://github.com/jarbet/statplot/reference/table_basic.md)
+  : Create a basic table using tinytable
 - [`table_overall()`](https://github.com/jarbet/statplot/reference/table_overall.md)
   : Create a table that summarizes the entire cohort.
 - [`table_overall_and_group()`](https://github.com/jarbet/statplot/reference/table_overall_and_group.md)
