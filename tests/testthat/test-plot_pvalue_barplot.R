@@ -82,6 +82,27 @@ test_that("plot_pvalue_barplot returns a ggplot (no q-value)", {
     expect_s3_class(p, "ggplot")
 })
 
+test_that("default transformed p-value x-axis breaks use p-value ticks", {
+    df <- make_pval_df()
+    p <- plot_pvalue_barplot(
+        df,
+        x = "pvalue",
+        y = "term",
+        also_show_qvalue = FALSE,
+        mlog10_transform_pvalue = TRUE
+    )
+    scale_x <- p$scales$get_scales("x")
+    expect_equal(
+        scale_x$breaks,
+        -log10(c(1, 0.2, 0.1, 0.01, 0.001)),
+        tolerance = 1e-8
+    )
+    expect_equal(
+        scale_x$labels(scale_x$breaks),
+        c("1", "0.2", "0.1", "0.01", "0.001")
+    )
+})
+
 test_that("custom_qvalues column is used without error", {
     df <- make_pval_df(with_qvalue = TRUE)
     p <- plot_pvalue_barplot(

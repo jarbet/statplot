@@ -202,7 +202,8 @@ plot_pvalue_barplot <- function(
     }
     if (is.null(xbreaks)) {
         if (mlog10_transform_pvalue) {
-            xbreaks <- seq(xlim[1], xlim[2], by = 1)
+            # Default p-value breaks: 1, 0.2, 0.1, 0.01, 0.001 -> -log10 scale
+            xbreaks <- -log10(c(1, 0.2, 0.1, 0.01, 0.001))
         } else {
             xbreaks <- pretty(xlim, n = 5)
         }
@@ -224,12 +225,7 @@ plot_pvalue_barplot <- function(
     x_label_fun <- function(b) {
         if (mlog10_transform_pvalue) {
             pvals <- 10^(-b)
-            labs <- formatC(pvals, digits = 2, format = "g")
-            maxb <- max(xbreaks)
-            is_max <- abs(b - maxb) < .Machine$double.eps^0.5
-            if (any(is_max)) {
-                labs[is_max] <- paste0("<", labs[is_max])
-            }
+            labs <- trimws(formatC(pvals, digits = 2, format = "g"))
             labs
         } else {
             b
