@@ -24,7 +24,7 @@ combine_pvalues <- function(p, methods = "CMC") {
     if (length(p) == 0) {
         stop("no p-values after removing NA")
     }
-    stopifnot(all(p > 0 & p < 1))
+    stopifnot(all(p > 0 & p <= 1))
 
     n <- length(p)
 

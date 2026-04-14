@@ -44,6 +44,7 @@ Imports:
     survival,
     tibble,
     tidyr,
+    tinytable,
     UpSetR
 URL: https://github.com/jarbet/statplot
 BugReports: https://github.com/jarbet/statplot/issues

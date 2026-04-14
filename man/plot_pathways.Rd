@@ -27,9 +27,9 @@ plot_pathways(
   legend_color_title = "Gene effect size",
   colorkey_breaks = NULL,
   colorkey_limits = NULL,
-  color_low = NULL,
-  color_mid = NULL,
-  color_high = NULL,
+  color_low = "blue",
+  color_mid = "white",
+  color_high = "red",
   plot_margin = c(0.5, 0.5, 0.5, 0.5)
 )
 }
@@ -138,18 +138,21 @@ useful together with \code{colorkey_breaks}.  Like \code{colorkey_breaks},
 this preserves the cnetplot palette when no \verb{color_*} arguments are set.}
 
 \item{color_low}{character(1) Color for the low end of the scale (default
-\code{NULL}, uses cnetplot's palette).  Combine with \code{color_high} for a
-2-color sequential scale, or also set \code{color_mid} for a 3-color
-diverging scale.}
+\code{"blue"}).  Combine with \code{color_high} for a 2-color sequential scale, or
+also set \code{color_mid} for a 3-color diverging scale.  Set to \code{NULL} to
+use cnetplot's default palette (only when no \verb{color_*} arguments are
+specified).}
 
 \item{color_mid}{character(1) Color for the midpoint of the scale (default
-\code{NULL}).  When non-\code{NULL}, a 3-color diverging
-\code{\link[ggplot2:scale_gradient]{ggplot2::scale_color_gradient2()}} is used (e.g. \code{color_mid = "white"}).
-Leave as \code{NULL} to use a 2-color \code{\link[ggplot2:scale_gradient]{ggplot2::scale_color_gradient()}} when
-\code{color_low} or \code{color_high} are set.}
+\code{"white"}).  When non-\code{NULL}, a 3-color diverging
+\code{\link[ggplot2:scale_gradient]{ggplot2::scale_color_gradient2()}} is used.  Set to \code{NULL} to use a
+2-color \code{\link[ggplot2:scale_gradient]{ggplot2::scale_color_gradient()}} when \code{color_low} or
+\code{color_high} are set.  To restore cnetplot's original palette, set all
+\verb{color_*} arguments to \code{NULL}.}
 
 \item{color_high}{character(1) Color for the high end of the scale (default
-\code{NULL}, uses cnetplot's palette).}
+\code{"red"}).  Set to \code{NULL} (with \code{color_low} and \code{color_mid} also \code{NULL})
+to use cnetplot's default palette.}
 
 \item{plot_margin}{numeric vector of length 4 giving the plot margin in
 lines: \code{c(top, right, bottom, left)} (default \code{c(0.5, 0.5, 0.5, 0.5)}).
@@ -194,14 +197,14 @@ plot_pathways(
     subtitle_effect_size_label  = "log2FC"
 )
 
-# 3-color diverging scale (blue -> white -> red)
+# 3-color diverging scale (purple -> white -> orange)
 plot_pathways(
     gsea_result   = res$gsea_result,
     effect_size   = res$gene_vec,
     show_pathways = 5,
-    color_low     = "blue",
+    color_low     = "purple",
     color_mid     = "white",
-    color_high    = "red",
+    color_high    = "orange",
     effect_size_threshold = 1.5
 )
 

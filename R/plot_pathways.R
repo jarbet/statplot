@@ -89,16 +89,19 @@
 #'   useful together with `colorkey_breaks`.  Like `colorkey_breaks`,
 #'   this preserves the cnetplot palette when no `color_*` arguments are set.
 #' @param color_low character(1) Color for the low end of the scale (default
-#'   `NULL`, uses cnetplot's palette).  Combine with `color_high` for a
-#'   2-color sequential scale, or also set `color_mid` for a 3-color
-#'   diverging scale.
+#'   `"blue"`).  Combine with `color_high` for a 2-color sequential scale, or
+#'   also set `color_mid` for a 3-color diverging scale.  Set to `NULL` to
+#'   use cnetplot's default palette (only when no `color_*` arguments are
+#'   specified).
 #' @param color_mid character(1) Color for the midpoint of the scale (default
-#'   `NULL`).  When non-`NULL`, a 3-color diverging
-#'   [ggplot2::scale_color_gradient2()] is used (e.g. `color_mid = "white"`).
-#'   Leave as `NULL` to use a 2-color [ggplot2::scale_color_gradient()] when
-#'   `color_low` or `color_high` are set.
+#'   `"white"`).  When non-`NULL`, a 3-color diverging
+#'   [ggplot2::scale_color_gradient2()] is used.  Set to `NULL` to use a
+#'   2-color [ggplot2::scale_color_gradient()] when `color_low` or
+#'   `color_high` are set.  To restore cnetplot's original palette, set all
+#'   `color_*` arguments to `NULL`.
 #' @param color_high character(1) Color for the high end of the scale (default
-#'   `NULL`, uses cnetplot's palette).
+#'   `"red"`).  Set to `NULL` (with `color_low` and `color_mid` also `NULL`)
+#'   to use cnetplot's default palette.
 #' @param plot_margin numeric vector of length 4 giving the plot margin in
 #'   lines: `c(top, right, bottom, left)` (default `c(0.5, 0.5, 0.5, 0.5)`).
 #'   All values must be finite and non-negative.  Increase
@@ -133,14 +136,14 @@
 #'     subtitle_effect_size_label  = "log2FC"
 #' )
 #'
-#' # 3-color diverging scale (blue -> white -> red)
+#' # 3-color diverging scale (purple -> white -> orange)
 #' plot_pathways(
 #'     gsea_result   = res$gsea_result,
 #'     effect_size   = res$gene_vec,
 #'     show_pathways = 5,
-#'     color_low     = "blue",
+#'     color_low     = "purple",
 #'     color_mid     = "white",
-#'     color_high    = "red",
+#'     color_high    = "orange",
 #'     effect_size_threshold = 1.5
 #' )
 #'
@@ -241,9 +244,9 @@ plot_pathways <- function(
     legend_color_title = "Gene effect size",
     colorkey_breaks = NULL,
     colorkey_limits = NULL,
-    color_low = NULL,
-    color_mid = NULL,
-    color_high = NULL,
+    color_low = "blue",
+    color_mid = "white",
+    color_high = "red",
     plot_margin = c(0.5, 0.5, 0.5, 0.5)
 ) {
     stopifnot(

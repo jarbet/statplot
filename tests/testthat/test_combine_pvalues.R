@@ -1,9 +1,9 @@
 test_that("input validation errors", {
     expect_error(combine_pvalues("not numeric"), "p must be numeric")
     expect_error(combine_pvalues(c(NA_real_)), "no p-values after removing NA")
-    # values equal to 0 or 1 are invalid
+    # values equal to 0 are invalid; 1 is allowed
     expect_error(combine_pvalues(c(0, 0.5)))
-    expect_error(combine_pvalues(c(1, 0.5)))
+    expect_no_error(combine_pvalues(c(1, 0.5)))
 })
 
 test_that("output structure", {
