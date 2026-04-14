@@ -637,13 +637,13 @@ plot_dotmap <- function(
 
         p_comb <- p_comb +
             ggplot2::scale_y_discrete(limits = y_levels, expand = c(0, 0)) +
-            ggplot2::coord_cartesian(ylim = c(0.5, n_levels + 0.5))
-        ggplot2::theme(
-            legend.position = "right",
-            legend.direction = "vertical",
-            axis.text.y = ggplot2::element_blank(),
-            axis.ticks.y = ggplot2::element_blank()
-        )
+            ggplot2::coord_cartesian(ylim = c(0.5, n_levels + 0.5)) +
+            ggplot2::theme(
+                legend.position = legend_position,
+                legend.direction = "vertical",
+                axis.text.y = ggplot2::element_blank(),
+                axis.ticks.y = ggplot2::element_blank()
+            )
         combined <- patchwork::wrap_plots(
             p_obj,
             p_comb,
