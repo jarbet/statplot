@@ -45,6 +45,9 @@
 #'   p-values and used for the barplot.
 #' @param patchwork_widths Numeric(2); widths passed to \pkg{patchwork}::\code{wrap_plots()} when adding the combined p-value barplot (default c(3, 1))
 #' @param only_show_top_sig Numeric(1) or NULL; when adding the combined p-value barplot, if this is a positive integer then only the top X most significant rows by combined p-value are shown (default NULL, show all)
+#' @param legend_position character(1) Position of the legend (default `"right"`). Passed to
+#'   `ggplot2::theme(legend.position = ...)`. Common values include `"right"`,
+#'   `"left"`, `"top"`, `"bottom"`, or `"none"` to hide the legend.
 #'
 #' @return A \code{ggplot2}::\code{ggplot} object when \code{add_combined_pvalue_barplot = FALSE},
 #'   or a \pkg{patchwork} composition object (from \pkg{patchwork}) when
@@ -108,6 +111,15 @@
 #'   only_show_top_sig = 3
 #' )
 #' #
+#' # Move legend to the left side
+#' plot_dotmap(
+#'   df,
+#'   x = "col", y = "row", effect = "effect", p = "p",
+#'   mlog10_transform_pvalue = TRUE,
+#'   add_combined_pvalue_barplot = TRUE,
+#'   legend_position = "left"
+#' )
+#' #
 #' ### Simulate example dataset:
 #' set.seed(1)
 #' genes2 <- paste0("gene", 1:4)
@@ -161,7 +173,8 @@ plot_dotmap <- function(
     only_show_top_sig = NULL, # NULL (show all) or positive integer: show top X by combined p-value (only used when add_combined_pvalue_barplot = TRUE)
     also_show_qvalue = TRUE, # when TRUE, show both p- and q-value bars in the combined barplot
     ...,
-    patchwork_widths = c(3, 1) # NEW: widths for patchwork layout when combined plot is requested
+    patchwork_widths = c(3, 1), # NEW: widths for patchwork layout when combined plot is requested
+    legend_position = "right"
 ) {
     combine_pvalue_method <- match.arg(combine_pvalue_method)
     # simple input checks (one-line checks per argument)
@@ -234,6 +247,10 @@ plot_dotmap <- function(
                 (as.integer(only_show_top_sig) == only_show_top_sig))
     )
     stopifnot(is.numeric(patchwork_widths), length(patchwork_widths) == 2)
+    stopifnot(
+        is.character(legend_position) &&
+            length(legend_position) == 1
+    )
 
     fill_col <- if (!is.null(q)) q else p
     data <- tibble::as_tibble(data) |>
@@ -614,7 +631,7 @@ plot_dotmap <- function(
             ggplot2::scale_y_discrete(limits = y_levels, expand = c(0, 0)) +
             ggplot2::coord_cartesian(ylim = c(0.5, n_levels + 0.5)) +
             ggplot2::theme(
-                legend.position = "right",
+                legend.position = legend_position,
                 legend.direction = "vertical"
             )
 
@@ -633,7 +650,8 @@ plot_dotmap <- function(
             ncol = 2,
             widths = patchwork_widths,
             guides = "collect"
-        )
+        ) &
+            ggplot2::theme(legend.position = legend_position)
         return(combined)
     } else {
         p_obj <- p_obj +
@@ -651,7 +669,8 @@ plot_dotmap <- function(
                     b = 5,
                     l = 5.5,
                     unit = "pt"
-                )
+                ),
+                legend.position = legend_position
             )
     }
 

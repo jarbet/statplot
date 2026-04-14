@@ -330,7 +330,7 @@ plot_covariate_heatmap <- function(
                     name = leg_title,
                     drop = FALSE
                 ) +
-                ggplot2::scale_x_discrete() +
+                ggplot2::scale_x_discrete(expand = ggplot2::expansion(0)) +
                 ggplot2::scale_y_continuous(
                     position = if (column_labels_side == "right") {
                         "right"
@@ -395,7 +395,10 @@ plot_covariate_heatmap <- function(
                     limits = c(0, 1),
                     expand = ggplot2::expansion(0)
                 ) +
-                ggplot2::scale_y_discrete(limits = rev) +
+                ggplot2::scale_y_discrete(
+                    limits = rev,
+                    expand = ggplot2::expansion(0)
+                ) +
                 ggplot2::labs(
                     x = NULL,
                     y = NULL,
@@ -465,8 +468,8 @@ plot_covariate_heatmap <- function(
         ggplot2::theme(legend.position = legend_side)
 
     if (isTRUE(return_details)) {
-        return(invisible(list(ht = combined, final_colors = final_colors)))
+        return(list(ht = combined, final_colors = final_colors))
     } else {
-        return(invisible(combined))
+        return(combined)
     }
 }
