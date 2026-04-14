@@ -30,7 +30,8 @@ plot_pathways(
   color_low = "blue",
   color_mid = "white",
   color_high = "red",
-  plot_margin = c(0.5, 0.5, 0.5, 0.5)
+  plot_margin = c(0.5, 0.5, 0.5, 0.5),
+  legend_position = "right"
 )
 }
 \arguments{
@@ -158,6 +159,10 @@ to use cnetplot's default palette.}
 lines: \code{c(top, right, bottom, left)} (default \code{c(0.5, 0.5, 0.5, 0.5)}).
 All values must be finite and non-negative.  Increase
 the left/right values if node labels are being clipped at the edges.}
+
+\item{legend_position}{character(1) Position of the legend (default \code{"right"}).
+Passed to \code{ggplot2::theme(legend.position = ...)}.  Common values include
+\code{"right"}, \code{"left"}, \code{"top"}, \code{"bottom"}, or \code{"none"} to hide the legend.}
 }
 \value{
 A ggplot2 object.
@@ -252,6 +257,15 @@ p2 <- plot_pathways(
 )
 
 patchwork::wrap_plots(p1, p2, guides = "collect")
+
+# Move legend to the left side
+plot_pathways(
+    gsea_result           = res$gsea_result,
+    effect_size           = res$gene_vec,
+    show_pathways         = 5,
+    legend_position       = "left",
+    effect_size_threshold = 1.5
+)
 
 # Color pathway nodes by biological process category using hallmark_pathway_categories
 data(hallmark_pathway_categories)
