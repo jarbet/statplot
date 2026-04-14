@@ -73,12 +73,10 @@ test_that("table_basic with missing values replaced", {
     )
     result <- table_basic(df, replace_missing = "N/A")
     expect_s4_class(result, "tinytable")
-    # The replace_missing parameter is passed to format_tt but NA values
-    # are rendered as "NA" strings in the data. format_tt may apply replacement
-    # during rendering to HTML/other formats, not in the underlying data.
+    # The replace_missing parameter replaces NA values with the specified string
     body <- result@data_body
-    expect_equal(body$name[3], "NA")
-    expect_equal(body$value[3], "NA")
+    expect_equal(body$name[3], "N/A")
+    expect_equal(body$value[3], "N/A")
 })
 
 test_that("table_basic default replace_missing is empty string", {
@@ -88,10 +86,10 @@ test_that("table_basic default replace_missing is empty string", {
     )
     result <- table_basic(df)
     expect_s4_class(result, "tinytable")
-    # NAs in both columns are rendered as "NA" when formatted
+    # NAs in both columns are replaced with empty string by default
     body <- result@data_body
-    expect_equal(body$name[2], "NA")
-    expect_equal(body$value[2], "NA")
+    expect_equal(body$name[2], "")
+    expect_equal(body$value[2], "")
 })
 
 test_that("table_basic with no digits argument works", {
@@ -266,14 +264,15 @@ test_that("table_basic with commas and replace_missing handles NA correctly", {
     # With commas_large_numbers = TRUE and replace_missing, NAs should be replaced
     result <- table_basic(
         df,
+        digits = 2,
         commas_large_numbers = TRUE,
         replace_missing = "N/A"
     )
     expect_s4_class(result, "tinytable")
     body <- result@data_body
-    # The format_tt function should replace NA values with "N/A" in the output
-    # Note: The actual replacement happens in format_tt, which may process it during rendering
-    # We verify that the function doesn't error and returns a valid object
+    # NA values should be replaced with the replace_missing string
     expect_equal(nrow(body), 3)
     expect_equal(body$salary[1], "50,000.12")
+    expect_equal(body$salary[2], "N/A")
+    expect_equal(body$salary[3], "60,000.46")
 })
