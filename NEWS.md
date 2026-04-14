@@ -20,6 +20,11 @@
   sensible default diverging color palette without requiring explicit user
   specification.
 
+* `plot_pathways`: new `legend_position` argument (default `"right"`) allows
+  users to control the legend position via `ggplot2::theme(legend.position = ...)`.
+  Common values include `"right"`, `"left"`, `"top"`, `"bottom"`, or `"none"`
+  to hide the legend.
+
 * `combine_pvalues`: now allows p-values equal to 1 (previously rejected);
   validation changed from `p > 0 & p < 1` to `p > 0 & p <= 1`.
 
