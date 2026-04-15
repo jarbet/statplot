@@ -42,6 +42,16 @@
   against the number of shape levels and provide clearer legend
   overrides when `color_col` and/or `shape_col` are used.
 
+* `plot_2_categorical_vars`: validation for `yvar_text_colors` now requires
+  all names to be non-empty and non-NA strings, preventing silent
+  mis-specifications like `c("" = "red")` from being accepted and ignored.
+
+* `plot_2_categorical_vars`: refactored text color layer logic — when
+  `yvar_text_colors = NULL` (default), text now uses a constant black color
+  without adding a color aesthetic or scale to the plot, preventing
+  unexpected interference with downstream user-added layers that also map
+  colour/color.
+
 ## Fixed
 
 * `plot_covariate_heatmap`: removed whitespace padding between covariate bars and plot borders by applying `expand = ggplot2::expansion(0)` to both applicable scales in vertical and horizontal layouts.
