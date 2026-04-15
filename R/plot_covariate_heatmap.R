@@ -53,6 +53,10 @@
 #'   same color mapping show a legend only on the first occurrence; that
 #'   legend's title joins the covariate names with \code{"\\n"}. Default
 #'   \code{FALSE}.
+#' @param x_title Character scalar or NULL. When \code{horizontal = TRUE},
+#'   sets the x-axis title on the bottom-most strip only. Use this instead of
+#'   \code{\& ggplot2::labs(x = ...)} which would apply the title to every
+#'   strip. Default \code{NULL} (no x-axis title).
 #' @param collect_guides Logical. When \code{TRUE} (default), legends from all
 #'   strips are collected inside the returned patchwork using
 #'   \code{plot_layout(guides = "collect")} and positioned according to
@@ -132,6 +136,7 @@ plot_covariate_heatmap <- function(
     horizontal = FALSE,
     merge_legends = FALSE,
     collect_guides = TRUE,
+    x_title = NULL,
     return_details = FALSE
 ) {
     # ---- input checks -------------------------------------------------------
@@ -350,7 +355,7 @@ plot_covariate_heatmap <- function(
                     expand = ggplot2::expansion(0)
                 ) +
                 ggplot2::labs(
-                    x = NULL,
+                    x = if (i == n_covs) x_title else NULL,
                     y = if (isTRUE(show_column_names)) nm else NULL
                 ) +
                 ggplot2::theme(

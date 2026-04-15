@@ -108,7 +108,10 @@
 #' p_text_colors$ggplot
 #'
 #' ######### Combine stacked barchart with a horizontal covariate bar
-#' mtcars$am <- factor(mtcars$am, labels = c("Automatic", "Manual"))
+#' # The covariate heatmap is designed for group-level annotations where each
+#' # x-axis group has exactly one value per covariate (e.g. treatment arms with
+#' # fixed properties). Here we use simulated group-level covariates.
+#' ggplot2::theme_set(theme_bw2())
 #'
 #' # Create the main stacked barchart
 #' p <- plot_2_categorical_vars(
@@ -120,11 +123,13 @@
 #'   inside_bar_stats = "pct_and_n"
 #' )
 #'
-#' # Prepare covariate data: one row per unique xvar level, in the same order
-#' # as the barplot x-axis (i.e. factor level order).
-#' cov_data <- mtcars[, c("cyl", "am")] |>
-#'   dplyr::distinct(cyl, .keep_all = TRUE) |>
-#'   dplyr::arrange(cyl)
+#' # Simulated group-level covariates: one row per cylinder group, in the same
+#' # order as the barplot x-axis (i.e. factor level order).
+#' cov_data <- data.frame(
+#'   cyl       = factor(c("4",     "6",        "8")),
+#'   fuel_type = factor(c("Electric", "Gasoline", "Gasoline")),
+#'   origin    = factor(c("A", "B", "C"))
+#' )
 #'
 #' # Verify x-axis labels match before hiding the barplot x-axis.
 #' # patchwork's axes = "collect_x" cannot reach into a nested patchwork,
@@ -148,15 +153,18 @@
 #' # patchwork absorbs the guides before the outer composition sees them.
 #' cov_bar <- plot_covariate_heatmap(
 #'   dataset = cov_data,
-#'   color_map = list(am = c("Automatic" = "#619CBA", "Manual" = "#F39C12")),
+#'   color_map = list(
+#'     fuel_type = c("Electric" = "#619CBA", "Gasoline" = "#F39C12"),
+#'     origin    = c("A" = "#9B59B6", "B" = "#2ECC71", "C" = "#E67E22")
+#'   ),
 #'   row_id_var = "cyl",
-#'   show_column_names = FALSE,
+#'   show_column_names = TRUE,
 #'   show_row_names = TRUE,
 #'   horizontal = TRUE,
-#'   collect_guides = FALSE
+#'   collect_guides = FALSE,
+#'   x_title = "Cylinders"
 #' ) &
 #'   ggplot2::scale_x_discrete(expand = ggplot2::expansion(add = 0.6)) &
-#'   ggplot2::labs(x = "Cylinders") &
 #'   ggplot2::theme(panel.border = ggplot2::element_blank())
 #'
 #' # Combine plots vertically with collected legends
@@ -170,7 +178,7 @@
 #'     ),
 #'   cov_bar,
 #'   ncol = 1,
-#'   heights = c(0.9, 0.1),
+#'   heights = c(0.85, 0.15),
 #'   guides = "collect"
 #' ) & ggplot2::theme(legend.position = "right")
 #'
