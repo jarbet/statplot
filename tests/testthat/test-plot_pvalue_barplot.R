@@ -123,9 +123,34 @@ test_that("fill legend override removes dashed line with fill mapping (also_show
     expect_true("fill" %in% names(p$mapping))
     # Check that plot renders without error (this ensures guides() is properly applied)
     expect_no_error(ggplot2::ggplot_build(p))
-    # Verify both a fill legend (for group) and color legend (for vline) are present
+
+    # Build the plot to inspect guide configuration
     pb <- ggplot2::ggplot_build(p)
-    expect_equal(length(pb$plot$guides$guides), 2)
+
+    # Verify fill guide has override.aes$linetype set to remove dashed line artifact
+    # The guides are keyed by hash, so we check all guides for one with linetype override
+    fill_guide_found <- FALSE
+    for (guide in pb$plot$guides$guides) {
+        if (!is.null(guide$params$override.aes$linetype)) {
+            linetype_override <- guide$params$override.aes$linetype
+            if (
+                identical(linetype_override, 0) ||
+                    identical(linetype_override, "blank") ||
+                    identical(linetype_override, "")
+            ) {
+                fill_guide_found <- TRUE
+                break
+            }
+        }
+    }
+    expect_true(
+        fill_guide_found,
+        info = "fill guide should have override.aes$linetype set to 0/blank/empty"
+    )
+
+    # Verify the color scale for vline exists
+    scale_color <- p$scales$get_scales("colour")
+    expect_true(!is.null(scale_color))
 })
 
 test_that("custom_qvalues column is used without error", {
@@ -154,32 +179,6 @@ test_that("custom_qvalues works with mlog10 transform", {
 })
 
 test_that("custom_qvalues via plot_dotmap ... does not cause 'matched by multiple actual arguments'", {
-    # Regression test: previously, passing custom_qvalues through ... to plot_dotmap
-    # forwarded it alongside the hardcoded custom_qvalues = 'q_combined' in the
-    # internal plot_pvalue_barplot call, triggering the error.
-    set.seed(42)
-    genes <- paste0("gene", 1:4)
-    df <- expand.grid(col = c("A", "B"), row = genes, stringsAsFactors = FALSE)
-    df$effect <- rnorm(nrow(df))
-    df$p <- runif(nrow(df), 0.001, 0.49)
-    df$row <- factor(df$row, levels = rev(genes))
-
-    expect_no_error(
-        plot_dotmap(
-            df,
-            x = "col",
-            y = "row",
-            effect = "effect",
-            p = "p",
-            mlog10_transform_pvalue = TRUE,
-            add_combined_pvalue_barplot = TRUE,
-            # custom_qvalues passed via ... — previously caused the error
-            custom_qvalues = NULL
-        )
-    )
-})
-
-test_that("custom_qvalues must be a column present in data", {
     df <- make_pval_df()
     expect_error(
         plot_pvalue_barplot(

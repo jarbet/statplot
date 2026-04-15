@@ -293,8 +293,11 @@ plot_pvalue_barplot <- function(
         if (mlog10_transform_pvalue) {
             pvals <- 10^(-b)
             labs <- trimws(formatC(pvals, digits = 2, format = "g"))
-            # Add < sign for the smallest p-value threshold
-            labs[pvals == 0.001] <- paste0("<", labs[pvals == 0.001])
+            # Add < sign to the smallest p-value threshold (largest -log10 value)
+            smallest_idx <- which.max(b)
+            if (length(smallest_idx) > 0) {
+                labs[smallest_idx] <- paste0("<", labs[smallest_idx])
+            }
             labs
         } else {
             b
