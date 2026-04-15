@@ -42,6 +42,13 @@
   against the number of shape levels and provide clearer legend
   overrides when `color_col` and/or `shape_col` are used.
 
+
+* `plot_2_categorical_vars`: added `inside_bar_text_bold` argument to allow
+  inside-bar labels to be drawn in bold when requested; documentation and
+  examples updated to demonstrate `yvar_text_colors` combined with the new
+  bold-text option.
+* `plot_2_categorical_vars`: updated examples
+
 ## Fixed
 
 * `plot_covariate_heatmap`: removed whitespace padding between covariate bars and plot borders by applying `expand = ggplot2::expansion(0)` to both applicable scales in vertical and horizontal layouts.

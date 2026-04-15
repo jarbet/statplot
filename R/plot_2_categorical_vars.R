@@ -11,11 +11,20 @@
 #' @param xvar_label Optional character scalar to use for the x axis label.
 #' @param yvar_label Optional character scalar to use for the legend label.
 #' @param title Optional character scalar for the plot title.
-#' @param title_nchar_wrap Integer scalar. Maximum number of characters per line of title.
+#' @param title_nchar_wrap Optional integer scalar. Maximum number of characters per line of title.
+#'   If NULL (default), no wrapping is applied.
 #' @param show_effect_size Logical; if TRUE the subtitle will include Cramer's V and p-value.
 #' @param yvar_colors Optional character vector of colours to use for the y-variable levels.
-#'   Must be length equal to `nlevels(d[[yvar]])`. Provide colour names (e.g. "red") or hex
-#'   codes (e.g. "#FF0000"). If NULL (default) ggplot2's default palette is used.
+#'   Can be either:
+#'   - An unnamed vector of length equal to `nlevels(d[[yvar]])` (positional mapping)
+#'   - A named character vector with names corresponding to `yvar` levels (partial or complete mapping)
+#'
+#'   Provide colour names (e.g. "red") or hex codes (e.g. "#FF0000").
+#'   If using a named vector, unmapped levels will be filled with ggplot2's default palette.
+#'   If NULL (default), ggplot2's default palette is used for all levels.
+#' @param yvar_text_colors Optional named character vector of colors for the text inside bars.
+#'   Names should correspond to the levels of `yvar`. If a level is not included in the vector,
+#'   the text color defaults to black. If NULL (default), all text is black.
 #' @param n_pct_size Numeric scalar. Point size used for the percent labels inside
 #'   the stacked bars and for the group N labels above bars. Must be a single
 #'   positive numeric value.
@@ -23,13 +32,13 @@
 #'   printed inside the stacked bars. One of `"pct"` (default; shows within-group
 #'   percentage), `"n"` (shows count only), `"pct_and_n"` (shows percentage with
 #'   count in parentheses, e.g. "12% (34)"), or `"none"` (no labels inside bars).
+#' @param inside_bar_text_bold Logical scalar (default FALSE). If TRUE, the text
+#'   inside the bars will be displayed in bold.
 #' @param pct_digits Integer scalar (default 0). Number of decimal places to show
 #'   for the within-group percent labels (e.g. 0 => "12%", 1 => "12.3%"). Must be
 #'   a single non-negative numeric value.
 #' @param flip Logical scalar (default FALSE). If TRUE the plot is flipped to show
 #'   horizontal bars.
-#' @param plot_horizontal Logical scalar. Deprecated/alias for `flip`. If TRUE the plot
-#'   will be shown with horizontal bars. Prefer using `flip`.
 #' @param xaxis_labels_nchar_wrap Integer scalar. Maximum number of characters
 #'   per line for x-axis group labels. Longer labels will be wrapped to multiple lines.
 #' @param y_max Numeric scalar. Maximum y-axis limit for the plot.
@@ -46,14 +55,132 @@
 #' data(mtcars)
 #' mtcars$cyl <- factor(mtcars$cyl)
 #' mtcars$gear <- factor(mtcars$gear)
+#'
+#' # Default usage
 #' p <- plot_2_categorical_vars(
 #'   d = mtcars,
 #'   xvar = "cyl",
 #'   yvar = "gear",
-#'   xvar_label = 'Cylinders',
-#'   yvar_label = 'Gears'
+#'   xvar_label = "Cylinders",
+#'   yvar_label = "Gears"
 #' )
 #' p$ggplot
+#'
+#' # Show both percent and count inside bars
+#' p_pct_n <- plot_2_categorical_vars(
+#'   d = mtcars,
+#'   xvar = "cyl",
+#'   yvar = "gear",
+#'   inside_bar_stats = "pct_and_n",
+#'   pct_digits = 1
+#' )
+#' p_pct_n$ggplot
+#'
+#' # Include a pooled 'Overall' bar on the left
+#' p_overall <- plot_2_categorical_vars(
+#'   d = mtcars,
+#'   xvar = "cyl",
+#'   yvar = "gear",
+#'   include_overall_bar = TRUE
+#' )
+#' p_overall$ggplot
+#'
+#' # Horizontal bars using `flip = TRUE`
+#' p_horiz <- plot_2_categorical_vars(
+#'   d = mtcars,
+#'   xvar = "cyl",
+#'   yvar = "gear",
+#'   flip = TRUE,
+#'   inside_bar_stats = "pct_and_n"
+#' )
+#' p_horiz$ggplot
+#'
+#' # Customize text colors by yvar level, and use bold text inside bars
+#' p_text_colors <- plot_2_categorical_vars(
+#'   d = mtcars,
+#'   xvar = "cyl",
+#'   yvar = "gear",
+#'   yvar_colors = c("3" = "lightgrey", "4" = "darkgrey", "5" = "black"),
+#'   yvar_text_colors = c("3" = "black", "4" = "black", "5" = "white"),
+#'   inside_bar_stats = "pct_and_n",
+#'   inside_bar_text_bold = TRUE
+#' )
+#' p_text_colors$ggplot
+#'
+#' ######### Combine stacked barchart with a horizontal covariate bar
+#' # The covariate heatmap is designed for group-level annotations where each
+#' # x-axis group has exactly one value per covariate (e.g. treatment arms with
+#' # fixed properties). Here we use simulated group-level covariates.
+#' ggplot2::theme_set(theme_bw2())
+#'
+#' # Create the main stacked barchart
+#' p <- plot_2_categorical_vars(
+#'   d = mtcars,
+#'   xvar = "cyl",
+#'   yvar = "gear",
+#'   xvar_label = "Cylinders",
+#'   yvar_label = "Gears",
+#'   inside_bar_stats = "pct_and_n"
+#' )
+#'
+#' # Simulated group-level covariates: one row per cylinder group, in the same
+#' # order as the barplot x-axis (i.e. factor level order).
+#' cov_data <- data.frame(
+#'   cyl       = factor(c("4",     "6",        "8")),
+#'   fuel_type = factor(c("Electric", "Gasoline", "Gasoline")),
+#'   origin    = factor(c("A", "B", "C"))
+#' )
+#'
+#' # Verify x-axis labels match before hiding the barplot x-axis.
+#' # patchwork's axes = "collect_x" cannot reach into a nested patchwork,
+#' # so we suppress the duplicate axis manually.
+#' barplot_xlabels <- levels(mtcars[["cyl"]])
+#' covbar_xlabels  <- as.character(cov_data[["cyl"]])
+#' stopifnot(
+#'   "x-axis labels of barplot and covariate bar must be identical" =
+#'     identical(barplot_xlabels, covbar_xlabels)
+#' )
+#' p$ggplot <- p$ggplot +
+#'   ggplot2::theme(
+#'     axis.title.x = ggplot2::element_blank(),
+#'     axis.text.x  = ggplot2::element_blank(),
+#'     axis.ticks.x = ggplot2::element_blank()
+#'   )
+#'
+#' # Create horizontal covariate bar.
+#' # Use collect_guides = FALSE so the outer wrap_plots() can collect all
+#' # legends together; if collect_guides = TRUE (the default) the inner
+#' # patchwork absorbs the guides before the outer composition sees them.
+#' cov_bar <- plot_covariate_heatmap(
+#'   dataset = cov_data,
+#'   color_map = list(
+#'     fuel_type = c("Electric" = "#619CBA", "Gasoline" = "#F39C12"),
+#'     origin    = c("A" = "#9B59B6", "B" = "#2ECC71", "C" = "#E67E22")
+#'   ),
+#'   row_id_var = "cyl",
+#'   show_column_names = TRUE,
+#'   show_row_names = TRUE,
+#'   horizontal = TRUE,
+#'   collect_guides = FALSE,
+#'   x_title = "Cylinders"
+#' ) &
+#'   ggplot2::scale_x_discrete(expand = ggplot2::expansion(add = 0.6)) &
+#'   ggplot2::theme(panel.border = ggplot2::element_blank())
+#'
+#' # Combine plots vertically with collected legends
+#' patchwork::wrap_plots(
+#'   p$ggplot +
+#'     ggplot2::scale_y_continuous(
+#'       limits = c(0, 110),
+#'       breaks = seq(0, 100, by = 25),
+#'       labels = scales::label_number(suffix = "%"),
+#'       expand = ggplot2::expansion(add = c(0, 0))
+#'     ),
+#'   cov_bar,
+#'   ncol = 1,
+#'   heights = c(0.85, 0.15),
+#'   guides = "collect"
+#' ) & ggplot2::theme(legend.position = "right")
 #'
 #' @export
 plot_2_categorical_vars <- function(
@@ -63,13 +190,14 @@ plot_2_categorical_vars <- function(
     xvar_label = NULL,
     yvar_label = NULL,
     yvar_colors = NULL,
+    yvar_text_colors = NULL,
     title = NULL,
-    title_nchar_wrap = 30,
+    title_nchar_wrap = NULL,
     show_effect_size = TRUE,
     n_pct_size = 3.5,
     inside_bar_stats = c('pct', 'n', 'pct_and_n', 'none'),
+    inside_bar_text_bold = FALSE,
     pct_digits = 0,
-    plot_horizontal = FALSE,
     flip = FALSE,
     xaxis_labels_nchar_wrap = 20,
     y_max = 110,
@@ -103,7 +231,27 @@ plot_2_categorical_vars <- function(
         is.null(yvar_colors) |
             (is.vector(yvar_colors) &
                 is.character(yvar_colors) &
-                length(yvar_colors) == yvar_nlevels)
+                (length(yvar_colors) == yvar_nlevels |
+                    !is.null(names(yvar_colors))))
+    )
+    if (!is.null(yvar_text_colors)) {
+        stopifnot(
+            is.vector(yvar_text_colors) &
+                is.character(yvar_text_colors)
+        )
+        if (
+            is.null(names(yvar_text_colors)) ||
+                any(!nzchar(names(yvar_text_colors))) ||
+                any(is.na(names(yvar_text_colors)))
+        ) {
+            stop(
+                "`yvar_text_colors` must be a *named* character vector with ",
+                "non-empty, non-NA names corresponding to `yvar` levels."
+            )
+        }
+    }
+    stopifnot(
+        length(inside_bar_text_bold) == 1 & is.logical(inside_bar_text_bold)
     )
 
     stopifnot(
@@ -125,9 +273,10 @@ plot_2_categorical_vars <- function(
         length(overall_label) == 1 & is.character(overall_label)
     )
     stopifnot(
-        length(title_nchar_wrap) == 1 &
-            is.numeric(title_nchar_wrap) &
-            title_nchar_wrap > 0
+        is.null(title_nchar_wrap) |
+            (length(title_nchar_wrap) == 1 &
+                is.numeric(title_nchar_wrap) &
+                title_nchar_wrap > 0)
     )
 
     # --- added: validate yvar_colors when supplied ---
@@ -281,20 +430,64 @@ plot_2_categorical_vars <- function(
             y = "Percent",
             fill = yvar_label
         ) +
-        ggplot2::theme_bw()
+        statplot::theme_bw2()
 
     # inside-bar stats labels
     if (inside_bar_stats != 'none') {
-        p <- p +
-            ggplot2::geom_text(
-                ggplot2::aes(label = bar_label),
-                position = ggplot2::position_stack(vjust = 0.5),
-                size = n_pct_size
+        if (is.null(yvar_text_colors)) {
+            # Default: all text is black, no color aesthetic or scale
+            p <- p +
+                ggplot2::geom_text(
+                    ggplot2::aes(label = bar_label),
+                    color = 'black',
+                    position = ggplot2::position_stack(vjust = 0.5),
+                    size = n_pct_size,
+                    fontface = ifelse(inside_bar_text_bold, 'bold', 'plain'),
+                    show.legend = FALSE
+                )
+        } else {
+            # Custom text colors: map color aesthetic to yvar and use manual scale
+            yvar_levels <- levels(plot_data[[yvar]])
+            # Use provided colors where available, default to black otherwise
+            text_color_map <- ifelse(
+                yvar_levels %in% names(yvar_text_colors),
+                yvar_text_colors[yvar_levels],
+                'black'
             )
+            names(text_color_map) <- yvar_levels
+
+            p <- p +
+                ggplot2::geom_text(
+                    ggplot2::aes(label = bar_label, color = .data[[yvar]]),
+                    position = ggplot2::position_stack(vjust = 0.5),
+                    size = n_pct_size,
+                    fontface = ifelse(inside_bar_text_bold, 'bold', 'plain'),
+                    show.legend = FALSE
+                ) +
+                ggplot2::scale_color_manual(values = text_color_map)
+        }
     }
 
     # --- added: apply supplied colors if provided (otherwise use ggplot defaults) ---
     if (!is.null(yvar_colors)) {
+        # If yvar_colors is a named vector, fill in unmapped levels with defaults
+        if (!is.null(names(yvar_colors))) {
+            yvar_levels <- levels(plot_data[[yvar]])
+            unmapped_levels <- setdiff(yvar_levels, names(yvar_colors))
+
+            if (length(unmapped_levels) > 0) {
+                # Use ggplot2's default scale to get colors for unmapped levels
+                n_unmapped <- length(unmapped_levels)
+                default_colors <- scales::hue_pal()(n_unmapped)
+
+                # Create a complete color mapping
+                complete_colors <- c(yvar_colors)
+                for (i in seq_along(unmapped_levels)) {
+                    complete_colors[unmapped_levels[i]] <- default_colors[i]
+                }
+                yvar_colors <- complete_colors
+            }
+        }
         p <- p + ggplot2::scale_fill_manual(values = yvar_colors)
     }
 
@@ -321,9 +514,15 @@ plot_2_categorical_vars <- function(
     if (!show_effect_size) {
         pval_text <- NULL
     }
+    # Apply title wrapping only if title_nchar_wrap is specified
+    title_label <- if (is.null(title_nchar_wrap)) {
+        title
+    } else {
+        stringr::str_wrap(title, width = title_nchar_wrap)
+    }
     p <- p +
         ggplot2::ggtitle(
-            stringr::str_wrap(title, width = title_nchar_wrap),
+            title_label,
             subtitle = pval_text
         ) +
         ggplot2::theme(

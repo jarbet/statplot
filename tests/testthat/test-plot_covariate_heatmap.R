@@ -208,3 +208,40 @@ test_that("merge_legends = FALSE (default) with duplicate categorical color maps
         )
     )
 })
+
+# ---------------------------------------------------------------------------
+# collect_guides
+# ---------------------------------------------------------------------------
+
+test_that("collect_guides = FALSE returns a patchwork without internal guide collection", {
+    df <- make_cov_df()
+    result <- plot_covariate_heatmap(
+        dataset = df,
+        color_map = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
+        row_id_var = "sample",
+        collect_guides = FALSE
+    )
+    expect_s3_class(result, "patchwork")
+    # The patchwork layout should not contain guides = "collect"
+    layout <- result$patches$layout
+    expect_false(isTRUE(layout$guides == "collect"))
+})
+
+test_that("collect_guides = FALSE allows outer patchwork to collect guides", {
+    df <- make_cov_df()
+    cov <- plot_covariate_heatmap(
+        dataset = df,
+        color_map = list(group = c(G1 = "#1b9e77", G2 = "#d95f02")),
+        row_id_var = "sample",
+        collect_guides = FALSE,
+        horizontal = TRUE
+    )
+    dummy <- ggplot2::ggplot(
+        data.frame(x = 1:2, y = c(G1 = "#1b9e77", G2 = "#d95f02")),
+        ggplot2::aes(x, x, fill = y)
+    ) +
+        ggplot2::geom_col()
+    expect_no_error(
+        patchwork::wrap_plots(dummy, cov, ncol = 1, guides = "collect")
+    )
+})

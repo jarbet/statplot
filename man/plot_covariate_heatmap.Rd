@@ -17,6 +17,8 @@ plot_covariate_heatmap(
   column_labels_side = "bottom",
   horizontal = FALSE,
   merge_legends = FALSE,
+  collect_guides = TRUE,
+  x_title = NULL,
   return_details = FALSE
 )
 }
@@ -77,6 +79,20 @@ plot can be combined below a main ggplot. Default \code{FALSE}.}
 same color mapping show a legend only on the first occurrence; that
 legend's title joins the covariate names with \code{"\\n"}. Default
 \code{FALSE}.}
+
+\item{collect_guides}{Logical. When \code{TRUE} (default), legends from all
+strips are collected inside the returned patchwork using
+\code{plot_layout(guides = "collect")} and positioned according to
+\code{legend_side}. Set to \code{FALSE} when you intend to embed the
+result inside an outer \pkg{patchwork} composition that performs its own
+guide collection (e.g.
+\code{wrap_plots(..., guides = "collect")}); this prevents the nested
+\code{plot_layout(guides = "collect")} from blocking the outer collection.}
+
+\item{x_title}{Character scalar or NULL. When \code{horizontal = TRUE},
+sets the x-axis title on the bottom-most strip only. Use this instead of
+\code{\& ggplot2::labs(x = ...)} which would apply the title to every
+strip. Default \code{NULL} (no x-axis title).}
 
 \item{return_details}{Logical. If \code{TRUE}, returns a named list with
 elements \code{ht} (the \code{patchwork} object) and \code{final_colors}
