@@ -2,6 +2,20 @@
 
 ## Added
 
+...
+
+## Changed
+
+...
+
+## Fixed
+
+...
+
+# statplot 0.6.0 - 2026-04-15
+
+## Added
+
 * `table_basic`: new function for creating clean, formatted tables using
   tinytable. Supports column-level rounding control via named lists or vectors,
   optional comma formatting for large numbers, and configurable handling of
@@ -52,6 +66,9 @@
   examples updated to demonstrate `yvar_text_colors` combined with the new
   bold-text option.
 * `plot_2_categorical_vars`: updated examples
+
+* All roxygen2 examples for plot functions now begin with `ggplot2::theme_set(theme_bw2())`
+  to apply the package theme consistently across all example code blocks.
 
 ## Fixed
 
