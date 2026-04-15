@@ -43,24 +43,90 @@
 #' @return A `ggplot2` plot object.
 #' @examples
 #' set.seed(123)
-#' n <- 4
+#' n <- 6
 #' example_df <- tibble::tibble(
 #'   cell_line = paste0("Cell", sprintf("%02d", 1:n)),
-#'   pvalue = 10^(-runif(n, 0.2, 2.8)),
-#'   group = rep(c("A", "B"), length.out = n)
+#'   pvalue = 10^(-runif(n, 0.2, 3.5)),
+#'   group = rep(c("GroupA", "GroupB", "GroupC"), length.out = n)
 #' )
 #' example_df$cell_line <- factor(
 #'   example_df$cell_line,
 #'   levels = rev(example_df$cell_line)
 #' )
+#'
+#' # Example 1: Default behavior - overlay p-values and q-values (FDR-adjusted)
 #' plot_pvalue_barplot(
 #'   data = example_df,
 #'   x = "pvalue",
 #'   y = "cell_line",
-#'   fill = NULL,
+#'   mlog10_transform_pvalue = TRUE,
+#'   also_show_qvalue = TRUE,
+#'   show_y_labels = TRUE,
+#'   color_pvalue = "black",
+#'   color_qvalue = "lightgrey"
+#' )
+#'
+#' # Example 2: Basic -log10 transformed p-value barplot with significance line
+#' plot_pvalue_barplot(
+#'   data = example_df,
+#'   x = "pvalue",
+#'   y = "cell_line",
 #'   mlog10_transform_pvalue = TRUE,
 #'   show_y_labels = TRUE,
-#'   also_show_qvalue = TRUE
+#'   vline = TRUE,
+#'   alpha = 0.05,
+#'   also_show_qvalue = FALSE
+#' )
+#'
+#' # Example 3: Raw p-value scale (no transformation) without significance line
+#' plot_pvalue_barplot(
+#'   data = example_df,
+#'   x = "pvalue",
+#'   y = "cell_line",
+#'   mlog10_transform_pvalue = FALSE,
+#'   show_y_labels = TRUE,
+#'   vline = FALSE,
+#'   also_show_qvalue = FALSE
+#' )
+#'
+#' # Example 4: Colored bars by group using fill mapping
+#' plot_pvalue_barplot(
+#'   data = example_df,
+#'   x = "pvalue",
+#'   y = "cell_line",
+#'   fill = "group",
+#'   mlog10_transform_pvalue = TRUE,
+#'   show_y_labels = TRUE,
+#'   vline = TRUE,
+#'   vline_legend = TRUE,
+#'   also_show_qvalue = FALSE
+#' )
+#'
+#' # Example 5: Custom significance threshold and vline styling
+#' plot_pvalue_barplot(
+#'   data = example_df,
+#'   x = "pvalue",
+#'   y = "cell_line",
+#'   mlog10_transform_pvalue = TRUE,
+#'   alpha = 0.01,
+#'   vline = TRUE,
+#'   vline_color = "blue",
+#'   vline_linetype = "solid",
+#'   vline_legend = TRUE,
+#'   show_y_labels = TRUE,
+#'   also_show_qvalue = FALSE
+#' )
+#'
+#' # Example 6: Custom q-values
+#' example_df$custom_qvalue <- c(0.001, 0.005, 0.05, 0.1, 0.2, 0.5)
+#' plot_pvalue_barplot(
+#'   data = example_df,
+#'   x = "pvalue",
+#'   y = "cell_line",
+#'   mlog10_transform_pvalue = TRUE,
+#'   also_show_qvalue = TRUE,
+#'   custom_qvalues = "custom_qvalue",
+#'   show_y_labels = TRUE
 #' )
 #' @importFrom rlang sym
 #' @importFrom ggplot2 ggplot aes geom_col scale_x_continuous scale_y_discrete scale_fill_manual labs geom_vline theme element_text element_rect theme_bw margin
@@ -301,7 +367,12 @@ plot_pvalue_barplot <- function(
                     fill = !!fill_sym
                 )
             ) +
-                ggplot2::geom_col(width = width)
+                ggplot2::geom_col(width = width) +
+                ggplot2::guides(
+                    fill = ggplot2::guide_legend(
+                        override.aes = list(linetype = 0)
+                    )
+                )
         }
     }
 
