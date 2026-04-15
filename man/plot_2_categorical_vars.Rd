@@ -13,10 +13,11 @@ plot_2_categorical_vars(
   yvar_colors = NULL,
   yvar_text_colors = NULL,
   title = NULL,
-  title_nchar_wrap = 30,
+  title_nchar_wrap = NULL,
   show_effect_size = TRUE,
   n_pct_size = 3.5,
   inside_bar_stats = c("pct", "n", "pct_and_n", "none"),
+  inside_bar_text_bold = FALSE,
   pct_digits = 0,
   flip = FALSE,
   xaxis_labels_nchar_wrap = 20,
@@ -38,8 +39,15 @@ plot_2_categorical_vars(
 \item{yvar_label}{Optional character scalar to use for the legend label.}
 
 \item{yvar_colors}{Optional character vector of colours to use for the y-variable levels.
-Must be length equal to \code{nlevels(d[[yvar]])}. Provide colour names (e.g. "red") or hex
-codes (e.g. "#FF0000"). If NULL (default) ggplot2's default palette is used.}
+Can be either:
+\itemize{
+\item An unnamed vector of length equal to \code{nlevels(d[[yvar]])} (positional mapping)
+\item A named character vector with names corresponding to \code{yvar} levels (partial or complete mapping)
+}
+
+Provide colour names (e.g. "red") or hex codes (e.g. "#FF0000").
+If using a named vector, unmapped levels will be filled with ggplot2's default palette.
+If NULL (default), ggplot2's default palette is used for all levels.}
 
 \item{yvar_text_colors}{Optional named character vector of colors for the text inside bars.
 Names should correspond to the levels of \code{yvar}. If a level is not included in the vector,
@@ -47,7 +55,8 @@ the text color defaults to black. If NULL (default), all text is black.}
 
 \item{title}{Optional character scalar for the plot title.}
 
-\item{title_nchar_wrap}{Integer scalar. Maximum number of characters per line of title.}
+\item{title_nchar_wrap}{Optional integer scalar. Maximum number of characters per line of title.
+If NULL (default), no wrapping is applied.}
 
 \item{show_effect_size}{Logical; if TRUE the subtitle will include Cramer's V and p-value.}
 
@@ -59,6 +68,9 @@ positive numeric value.}
 printed inside the stacked bars. One of \code{"pct"} (default; shows within-group
 percentage), \code{"n"} (shows count only), \code{"pct_and_n"} (shows percentage with
 count in parentheses, e.g. "12\% (34)"), or \code{"none"} (no labels inside bars).}
+
+\item{inside_bar_text_bold}{Logical scalar (default FALSE). If TRUE, the text
+inside the bars will be displayed in bold.}
 
 \item{pct_digits}{Integer scalar (default 0). Number of decimal places to show
 for the within-group percent labels (e.g. 0 => "12\%", 1 => "12.3\%"). Must be
@@ -135,14 +147,15 @@ p_horiz <- plot_2_categorical_vars(
 )
 p_horiz$ggplot
 
-# Customize text colors by yvar level
+# Customize text colors by yvar level, and use bold text inside bars
 p_text_colors <- plot_2_categorical_vars(
   d = mtcars,
   xvar = "cyl",
   yvar = "gear",
   yvar_colors = c("3" = "lightgrey", "4" = "darkgrey", "5" = "black"),
   yvar_text_colors = c("3" = "black", "4" = "black", "5" = "white"),
-  inside_bar_stats = "pct_and_n"
+  inside_bar_stats = "pct_and_n",
+  inside_bar_text_bold = TRUE
 )
 p_text_colors$ggplot
 

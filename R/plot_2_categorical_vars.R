@@ -11,11 +11,17 @@
 #' @param xvar_label Optional character scalar to use for the x axis label.
 #' @param yvar_label Optional character scalar to use for the legend label.
 #' @param title Optional character scalar for the plot title.
-#' @param title_nchar_wrap Integer scalar. Maximum number of characters per line of title.
+#' @param title_nchar_wrap Optional integer scalar. Maximum number of characters per line of title.
+#'   If NULL (default), no wrapping is applied.
 #' @param show_effect_size Logical; if TRUE the subtitle will include Cramer's V and p-value.
 #' @param yvar_colors Optional character vector of colours to use for the y-variable levels.
-#'   Must be length equal to `nlevels(d[[yvar]])`. Provide colour names (e.g. "red") or hex
-#'   codes (e.g. "#FF0000"). If NULL (default) ggplot2's default palette is used.
+#'   Can be either:
+#'   - An unnamed vector of length equal to `nlevels(d[[yvar]])` (positional mapping)
+#'   - A named character vector with names corresponding to `yvar` levels (partial or complete mapping)
+#'
+#'   Provide colour names (e.g. "red") or hex codes (e.g. "#FF0000").
+#'   If using a named vector, unmapped levels will be filled with ggplot2's default palette.
+#'   If NULL (default), ggplot2's default palette is used for all levels.
 #' @param yvar_text_colors Optional named character vector of colors for the text inside bars.
 #'   Names should correspond to the levels of `yvar`. If a level is not included in the vector,
 #'   the text color defaults to black. If NULL (default), all text is black.
@@ -111,7 +117,7 @@ plot_2_categorical_vars <- function(
     yvar_colors = NULL,
     yvar_text_colors = NULL,
     title = NULL,
-    title_nchar_wrap = 30,
+    title_nchar_wrap = NULL,
     show_effect_size = TRUE,
     n_pct_size = 3.5,
     inside_bar_stats = c('pct', 'n', 'pct_and_n', 'none'),
@@ -153,12 +159,22 @@ plot_2_categorical_vars <- function(
                 (length(yvar_colors) == yvar_nlevels |
                     !is.null(names(yvar_colors))))
     )
-    stopifnot(
-        is.null(yvar_text_colors) |
-            (is.vector(yvar_text_colors) &
-                is.character(yvar_text_colors) &
-                !is.null(names(yvar_text_colors)))
-    )
+    if (!is.null(yvar_text_colors)) {
+        stopifnot(
+            is.vector(yvar_text_colors) &
+                is.character(yvar_text_colors)
+        )
+        if (
+            is.null(names(yvar_text_colors)) ||
+                any(!nzchar(names(yvar_text_colors))) ||
+                any(is.na(names(yvar_text_colors)))
+        ) {
+            stop(
+                "`yvar_text_colors` must be a *named* character vector with ",
+                "non-empty, non-NA names corresponding to `yvar` levels."
+            )
+        }
+    }
     stopifnot(
         length(inside_bar_text_bold) == 1 & is.logical(inside_bar_text_bold)
     )
@@ -182,9 +198,10 @@ plot_2_categorical_vars <- function(
         length(overall_label) == 1 & is.character(overall_label)
     )
     stopifnot(
-        length(title_nchar_wrap) == 1 &
-            is.numeric(title_nchar_wrap) &
-            title_nchar_wrap > 0
+        is.null(title_nchar_wrap) |
+            (length(title_nchar_wrap) == 1 &
+                is.numeric(title_nchar_wrap) &
+                title_nchar_wrap > 0)
     )
 
     # --- added: validate yvar_colors when supplied ---
@@ -342,34 +359,60 @@ plot_2_categorical_vars <- function(
 
     # inside-bar stats labels
     if (inside_bar_stats != 'none') {
-        # Create a data frame with color mapping for each yvar level
-        yvar_levels <- levels(plot_data[[yvar]])
         if (is.null(yvar_text_colors)) {
-            # Default: all text is black
-            text_color_map <- rep('black', length(yvar_levels))
+            # Default: all text is black, no color aesthetic or scale
+            p <- p +
+                ggplot2::geom_text(
+                    ggplot2::aes(label = bar_label),
+                    color = 'black',
+                    position = ggplot2::position_stack(vjust = 0.5),
+                    size = n_pct_size,
+                    fontface = ifelse(inside_bar_text_bold, 'bold', 'plain'),
+                    show.legend = FALSE
+                )
         } else {
+            # Custom text colors: map color aesthetic to yvar and use manual scale
+            yvar_levels <- levels(plot_data[[yvar]])
             # Use provided colors where available, default to black otherwise
             text_color_map <- ifelse(
                 yvar_levels %in% names(yvar_text_colors),
                 yvar_text_colors[yvar_levels],
                 'black'
             )
-        }
-        names(text_color_map) <- yvar_levels
+            names(text_color_map) <- yvar_levels
 
-        p <- p +
-            ggplot2::geom_text(
-                ggplot2::aes(label = bar_label, color = .data[[yvar]]),
-                position = ggplot2::position_stack(vjust = 0.5),
-                size = n_pct_size,
-                fontface = ifelse(inside_bar_text_bold, 'bold', 'plain'),
-                show.legend = FALSE
-            ) +
-            ggplot2::scale_color_manual(values = text_color_map)
+            p <- p +
+                ggplot2::geom_text(
+                    ggplot2::aes(label = bar_label, color = .data[[yvar]]),
+                    position = ggplot2::position_stack(vjust = 0.5),
+                    size = n_pct_size,
+                    fontface = ifelse(inside_bar_text_bold, 'bold', 'plain'),
+                    show.legend = FALSE
+                ) +
+                ggplot2::scale_color_manual(values = text_color_map)
+        }
     }
 
     # --- added: apply supplied colors if provided (otherwise use ggplot defaults) ---
     if (!is.null(yvar_colors)) {
+        # If yvar_colors is a named vector, fill in unmapped levels with defaults
+        if (!is.null(names(yvar_colors))) {
+            yvar_levels <- levels(plot_data[[yvar]])
+            unmapped_levels <- setdiff(yvar_levels, names(yvar_colors))
+
+            if (length(unmapped_levels) > 0) {
+                # Use ggplot2's default scale to get colors for unmapped levels
+                n_unmapped <- length(unmapped_levels)
+                default_colors <- scales::hue_pal()(n_unmapped)
+
+                # Create a complete color mapping
+                complete_colors <- c(yvar_colors)
+                for (i in seq_along(unmapped_levels)) {
+                    complete_colors[unmapped_levels[i]] <- default_colors[i]
+                }
+                yvar_colors <- complete_colors
+            }
+        }
         p <- p + ggplot2::scale_fill_manual(values = yvar_colors)
     }
 
@@ -396,9 +439,15 @@ plot_2_categorical_vars <- function(
     if (!show_effect_size) {
         pval_text <- NULL
     }
+    # Apply title wrapping only if title_nchar_wrap is specified
+    title_label <- if (is.null(title_nchar_wrap)) {
+        title
+    } else {
+        stringr::str_wrap(title, width = title_nchar_wrap)
+    }
     p <- p +
         ggplot2::ggtitle(
-            stringr::str_wrap(title, width = title_nchar_wrap),
+            title_label,
             subtitle = pval_text
         ) +
         ggplot2::theme(

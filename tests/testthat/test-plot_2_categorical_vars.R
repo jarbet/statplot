@@ -392,7 +392,57 @@ test_that("yvar_text_colors must be a character vector", {
     )
 })
 
-test_that("yvar_text_colors unmapped levels default to black", {
+test_that("yvar_text_colors rejects empty string names", {
+    d <- make_cat_df()
+    # Create vector with empty string name programmatically
+    test_vec <- c("red", "black")
+    names(test_vec) <- c("", "3")
+    expect_error(
+        plot_2_categorical_vars(
+            d,
+            "cyl",
+            "gear",
+            yvar_text_colors = test_vec,
+            inside_bar_stats = "pct"
+        ),
+        "non-empty, non-NA names"
+    )
+})
+
+test_that("yvar_text_colors rejects NA names", {
+    d <- make_cat_df()
+    # Create vector with NA name
+    test_vec <- c("red", "black")
+    names(test_vec) <- c(NA_character_, "3")
+    expect_error(
+        plot_2_categorical_vars(
+            d,
+            "cyl",
+            "gear",
+            yvar_text_colors = test_vec,
+            inside_bar_stats = "pct"
+        ),
+        "non-empty, non-NA names"
+    )
+})
+
+test_that("yvar_text_colors = NULL (default) does not add color scale", {
+    d <- make_cat_df()
+    res <- plot_2_categorical_vars(
+        d,
+        "cyl",
+        "gear",
+        yvar_text_colors = NULL,
+        inside_bar_stats = "pct"
+    )
+    color_scales <- Filter(
+        function(s) "colour" %in% s$aesthetics,
+        res$ggplot$scales$scales
+    )
+    expect_length(color_scales, 0L)
+})
+
+test_that("yvar_text_colors with values adds color scale", {
     d <- make_cat_df()
     res <- plot_2_categorical_vars(
         d,
