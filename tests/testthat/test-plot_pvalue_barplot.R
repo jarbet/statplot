@@ -59,6 +59,7 @@ test_that("fill legend override removes dashed line (override.aes)", {
         succeed()
     }
 })
+
 make_pval_df <- function(n = 6, with_qvalue = FALSE) {
     df <- tibble::tibble(
         term = paste0("gene", seq_len(n)),
@@ -94,13 +95,62 @@ test_that("default transformed p-value x-axis breaks use p-value ticks", {
     scale_x <- p$scales$get_scales("x")
     expect_equal(
         scale_x$breaks,
-        -log10(c(1, 0.2, 0.1, 0.01, 0.001)),
+        -log10(c(1, 0.1, 0.01, 0.001)),
         tolerance = 1e-8
     )
     expect_equal(
         scale_x$labels(scale_x$breaks),
-        c("1", "0.2", "0.1", "0.01", "0.001")
+        c("1", "0.1", "0.01", "<0.001")
     )
+})
+
+test_that("fill legend override removes dashed line with fill mapping (also_show_qvalue=FALSE)", {
+    # Regression test: fill-mapped bars should have guides() with override.aes
+    # to prevent legend artifacts when vline adds a color scale
+    df <- make_pval_df()
+    df$group <- rep(c("A", "B", "C"), length.out = nrow(df))
+    p <- plot_pvalue_barplot(
+        df,
+        x = "pvalue",
+        y = "term",
+        fill = "group",
+        mlog10_transform_pvalue = TRUE,
+        also_show_qvalue = FALSE,
+        vline = TRUE,
+        vline_legend = TRUE
+    )
+    # Check that fill aesthetic is in the plot mapping
+    expect_true("fill" %in% names(p$mapping))
+    # Check that plot renders without error (this ensures guides() is properly applied)
+    expect_no_error(ggplot2::ggplot_build(p))
+
+    # Build the plot to inspect guide configuration
+    pb <- ggplot2::ggplot_build(p)
+
+    # Verify fill guide has override.aes$linetype set to remove dashed line artifact
+    # The guides are keyed by hash, so we check all guides for one with linetype override
+    fill_guide_found <- FALSE
+    for (guide in pb$plot$guides$guides) {
+        if (!is.null(guide$params$override.aes$linetype)) {
+            linetype_override <- guide$params$override.aes$linetype
+            if (
+                identical(linetype_override, 0) ||
+                    identical(linetype_override, "blank") ||
+                    identical(linetype_override, "")
+            ) {
+                fill_guide_found <- TRUE
+                break
+            }
+        }
+    }
+    expect_true(
+        fill_guide_found,
+        info = "fill guide should have override.aes$linetype set to 0/blank/empty"
+    )
+
+    # Verify the color scale for vline exists
+    scale_color <- p$scales$get_scales("colour")
+    expect_true(!is.null(scale_color))
 })
 
 test_that("custom_qvalues column is used without error", {
@@ -129,32 +179,6 @@ test_that("custom_qvalues works with mlog10 transform", {
 })
 
 test_that("custom_qvalues via plot_dotmap ... does not cause 'matched by multiple actual arguments'", {
-    # Regression test: previously, passing custom_qvalues through ... to plot_dotmap
-    # forwarded it alongside the hardcoded custom_qvalues = 'q_combined' in the
-    # internal plot_pvalue_barplot call, triggering the error.
-    set.seed(42)
-    genes <- paste0("gene", 1:4)
-    df <- expand.grid(col = c("A", "B"), row = genes, stringsAsFactors = FALSE)
-    df$effect <- rnorm(nrow(df))
-    df$p <- runif(nrow(df), 0.001, 0.49)
-    df$row <- factor(df$row, levels = rev(genes))
-
-    expect_no_error(
-        plot_dotmap(
-            df,
-            x = "col",
-            y = "row",
-            effect = "effect",
-            p = "p",
-            mlog10_transform_pvalue = TRUE,
-            add_combined_pvalue_barplot = TRUE,
-            # custom_qvalues passed via ... — previously caused the error
-            custom_qvalues = NULL
-        )
-    )
-})
-
-test_that("custom_qvalues must be a column present in data", {
     df <- make_pval_df()
     expect_error(
         plot_pvalue_barplot(

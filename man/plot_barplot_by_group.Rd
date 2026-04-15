@@ -123,9 +123,10 @@ df <- data.frame(
     p_value   = c(0.004, 0.004, 0.18, 0.18)
 )
 df$condition <- factor(df$condition, levels = c("Exercise", "Control"))
+ggplot2::theme_set(theme_bw2())
+
 # Default: auto-formatted p-value label (text shown if p < 0.05)
-plot_barplot_by_group(df, y_label = "Performance score", p_cutoff = 0.05) +
-    ggplot2::theme_bw()
+plot_barplot_by_group(df, y_label = "Performance score", p_cutoff = 0.05)
 
 # Custom bracket label from a column
 df$label <- ifelse(
@@ -134,22 +135,21 @@ df$label <- ifelse(
     NA
 )
 plot_barplot_by_group(df, y_label = "Performance score", label_col = "label", p_cutoff = 0.05) +
-    ggplot2::coord_cartesian(ylim = c(0, 20)) +
-    ggplot2::theme_bw()
+    ggplot2::coord_cartesian(ylim = c(0, 20))
 
 # Show text for specific groups only (Group B shown even though p = 0.18)
 plot_barplot_by_group(
     df,
     y_label = "Performance score",
     show_text_groups = "Group B"
-) + ggplot2::theme_bw()
+)
 
 # Show text for all groups by setting p_cutoff = 1
 plot_barplot_by_group(
     df,
     y_label = "Performance score",
     p_cutoff = 1
-) + ggplot2::theme_bw()
+)
 
 # Position strip below x-axis labels
 plot_barplot_by_group(
@@ -158,7 +158,6 @@ plot_barplot_by_group(
     p_cutoff = 1,
     strip_position = "bottom"
 ) +
-    ggplot2::theme_bw() +
     ggplot2::theme(
         axis.text.x = ggplot2::element_text(margin = ggplot2::margin(b = 5)),
         strip.placement = "outside"

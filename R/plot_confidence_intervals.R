@@ -68,6 +68,7 @@
 #' @export
 #'
 #' @examples
+#' ggplot2::theme_set(theme_bw2())
 #' df <- data.frame(
 #'   cell_line = factor(c("A", "B", "C", "A", "B", "C"), levels = c('A', 'B', 'C')),
 #'   est       = c(0.2, -0.1, 0.5, 0.35, 0.05, 0.3),
@@ -459,7 +460,6 @@ plot_confidence_intervals <- function(
             expand = c(0, 0)
         ) +
         ggplot2::labs(x = "Estimate", y = NULL) +
-        ggplot2::theme_bw() +
         ggplot2::theme(axis.text.y = ggplot2::element_text(face = "bold"))
 
     # Add shape legend overrides when using shape_col

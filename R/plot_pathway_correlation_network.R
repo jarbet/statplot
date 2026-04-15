@@ -69,6 +69,7 @@
 #'   genes are present in `expr` or no gene pairs pass `cor_thresh`.
 #'
 #' @examples
+#' ggplot2::theme_set(theme_bw2())
 #' data(ex_expr_pathway)
 #' data(ex_log2fc_pathway)
 #' data(hallmark_t2g)
@@ -274,6 +275,8 @@ plot_pathway_correlation_network <- function(
         ) +
         ggplot2::theme_void() +
         ggplot2::theme(
+            plot.title = ggplot2::element_text(face = "bold"),
+            legend.title = ggplot2::element_text(face = "bold"),
             plot.margin = ggplot2::margin(
                 t = plot_margin[1],
                 r = plot_margin[2],

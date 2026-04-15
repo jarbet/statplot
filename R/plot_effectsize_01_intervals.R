@@ -19,6 +19,7 @@
 #' @param dot_size numeric(1): size of the points (default 3). Use smaller values to make points less prominent relative to CI lines.
 #' @return A ggplot object (horizontal interval plot).
 #' @examples
+#' ggplot2::theme_set(theme_bw2())
 #' df <- data.frame(
 #'   effect = paste0("Effect ", LETTERS[1:5]),
 #'   estimate = c(0.12, 0.35, 0.58, 0.74, 0.91),

@@ -42,6 +42,7 @@ Create a grouped bar plot (geom_col) from a data frame. Reorders factor levels o
 color vector; unnamed vectors must match the number of groups.
 }
 \examples{
+ggplot2::theme_set(theme_bw2())
 dat <- data.frame(group = c("A", "B", "C"), score = c(5, 3, 8))
 plot_bars(dat, yvar = "score", xvar = "group", sort = "desc")
 }
