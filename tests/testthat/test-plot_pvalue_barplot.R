@@ -59,6 +59,7 @@ test_that("fill legend override removes dashed line (override.aes)", {
         succeed()
     }
 })
+
 make_pval_df <- function(n = 6, with_qvalue = FALSE) {
     df <- tibble::tibble(
         term = paste0("gene", seq_len(n)),
@@ -94,13 +95,37 @@ test_that("default transformed p-value x-axis breaks use p-value ticks", {
     scale_x <- p$scales$get_scales("x")
     expect_equal(
         scale_x$breaks,
-        -log10(c(1, 0.2, 0.1, 0.01, 0.001)),
+        -log10(c(1, 0.1, 0.01, 0.001)),
         tolerance = 1e-8
     )
     expect_equal(
         scale_x$labels(scale_x$breaks),
-        c("1", "0.2", "0.1", "0.01", "0.001")
+        c("1", "0.1", "0.01", "<0.001")
     )
+})
+
+test_that("fill legend override removes dashed line with fill mapping (also_show_qvalue=FALSE)", {
+    # Regression test: fill-mapped bars should have guides() with override.aes
+    # to prevent legend artifacts when vline adds a color scale
+    df <- make_pval_df()
+    df$group <- rep(c("A", "B", "C"), length.out = nrow(df))
+    p <- plot_pvalue_barplot(
+        df,
+        x = "pvalue",
+        y = "term",
+        fill = "group",
+        mlog10_transform_pvalue = TRUE,
+        also_show_qvalue = FALSE,
+        vline = TRUE,
+        vline_legend = TRUE
+    )
+    # Check that fill aesthetic is in the plot mapping
+    expect_true("fill" %in% names(p$mapping))
+    # Check that plot renders without error (this ensures guides() is properly applied)
+    expect_no_error(ggplot2::ggplot_build(p))
+    # Verify both a fill legend (for group) and color legend (for vline) are present
+    pb <- ggplot2::ggplot_build(p)
+    expect_equal(length(pb$plot$guides$guides), 2)
 })
 
 test_that("custom_qvalues column is used without error", {

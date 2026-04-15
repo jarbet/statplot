@@ -268,8 +268,8 @@ plot_pvalue_barplot <- function(
     }
     if (is.null(xbreaks)) {
         if (mlog10_transform_pvalue) {
-            # Default p-value breaks: 1, 0.2, 0.1, 0.01, 0.001 -> -log10 scale
-            xbreaks <- -log10(c(1, 0.2, 0.1, 0.01, 0.001))
+            # Default p-value breaks: 1, 0.1, 0.01, 0.001 -> -log10 scale
+            xbreaks <- -log10(c(1, 0.1, 0.01, 0.001))
         } else {
             xbreaks <- pretty(xlim, n = 5)
         }
@@ -292,6 +292,8 @@ plot_pvalue_barplot <- function(
         if (mlog10_transform_pvalue) {
             pvals <- 10^(-b)
             labs <- trimws(formatC(pvals, digits = 2, format = "g"))
+            # Add < sign for the smallest p-value threshold
+            labs[pvals == 0.001] <- paste0("<", labs[pvals == 0.001])
             labs
         } else {
             b

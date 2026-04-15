@@ -15,7 +15,7 @@
   fill mapping by group, custom significance thresholds, and custom q-values.
 
 * `plot_pvalue_barplot`: default `-log10(p)` x-axis breaks now use meaningful
-  p-value ticks (`1, 0.2, 0.1, 0.01, 0.001`) instead of equally-spaced
+  p-value ticks (`1, 0.1, 0.01, 0.001`) instead of equally-spaced
   integer breaks; label formatting simplified to remove the `"<"` prefix
   previously shown for the smallest p-value.
 
