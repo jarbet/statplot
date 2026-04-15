@@ -30,8 +30,10 @@
 
 * `plot_pvalue_barplot`: default `-log10(p)` x-axis breaks now use meaningful
   p-value ticks (`1, 0.1, 0.01, 0.001`) instead of equally-spaced
-  integer breaks; label formatting simplified to remove the `"<"` prefix
-  previously shown for the smallest p-value.
+  integer breaks; the smallest p-value tick is labeled with a `"<"` prefix
+  (e.g., `"<0.001"`) to indicate that values below this threshold are represented,
+  and the label is determined by the largest break on the -log10 scale
+  (not hard-coded to `0.001`) for robust support of custom breaks.
 
 * `plot_pathways`: default `color_low`, `color_mid`, and `color_high` changed
   from `NULL` to `"blue"`, `"white"`, and `"red"`, respectively, providing a
