@@ -10,6 +10,10 @@
 
 ## Changed
 
+* `plot_pvalue_barplot`: expanded examples to demonstrate 6 use cases including
+  default p/q-value overlay, basic transformation with vline, raw p-value scale,
+  fill mapping by group, custom significance thresholds, and custom q-values.
+
 * `plot_pvalue_barplot`: default `-log10(p)` x-axis breaks now use meaningful
   p-value ticks (`1, 0.2, 0.1, 0.01, 0.001`) instead of equally-spaced
   integer breaks; label formatting simplified to remove the `"<"` prefix
@@ -50,6 +54,10 @@
 * `plot_2_categorical_vars`: updated examples
 
 ## Fixed
+
+* `plot_pvalue_barplot`: fixed legend linetype to remove unwanted line rendering
+  for fill-mapped bars by applying `override.aes = list(linetype = 0)` to the
+  fill legend so legend keys display as solid/filled swatches.
 
 * `plot_covariate_heatmap`: removed whitespace padding between covariate bars and plot borders by applying `expand = ggplot2::expansion(0)` to both applicable scales in vertical and horizontal layouts.
 
