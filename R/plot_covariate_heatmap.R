@@ -53,6 +53,14 @@
 #'   same color mapping show a legend only on the first occurrence; that
 #'   legend's title joins the covariate names with \code{"\\n"}. Default
 #'   \code{FALSE}.
+#' @param collect_guides Logical. When \code{TRUE} (default), legends from all
+#'   strips are collected inside the returned patchwork using
+#'   \code{plot_layout(guides = "collect")} and positioned according to
+#'   \code{legend_side}. Set to \code{FALSE} when you intend to embed the
+#'   result inside an outer \pkg{patchwork} composition that performs its own
+#'   guide collection (e.g.
+#'   \code{wrap_plots(..., guides = "collect")}); this prevents the nested
+#'   \code{plot_layout(guides = "collect")} from blocking the outer collection.
 #' @param return_details Logical. If \code{TRUE}, returns a named list with
 #'   elements \code{ht} (the \code{patchwork} object) and \code{final_colors}
 #'   (the resolved color map). Default \code{FALSE}.
@@ -123,6 +131,7 @@ plot_covariate_heatmap <- function(
     column_labels_side = "bottom",
     horizontal = FALSE,
     merge_legends = FALSE,
+    collect_guides = TRUE,
     return_details = FALSE
 ) {
     # ---- input checks -------------------------------------------------------
@@ -463,9 +472,13 @@ plot_covariate_heatmap <- function(
     } else {
         patchwork::wrap_plots(plots, nrow = 1L)
     }
-    combined <- base +
-        patchwork::plot_layout(guides = "collect") &
-        ggplot2::theme(legend.position = legend_side)
+    if (isTRUE(collect_guides)) {
+        combined <- base +
+            patchwork::plot_layout(guides = "collect") +
+            ggplot2::theme(legend.position = legend_side)
+    } else {
+        combined <- base
+    }
 
     if (isTRUE(return_details)) {
         return(list(ht = combined, final_colors = final_colors))

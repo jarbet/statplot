@@ -159,4 +159,43 @@ p_text_colors <- plot_2_categorical_vars(
 )
 p_text_colors$ggplot
 
+######### Combine stacked barchart with a horizontal covariate bar
+mtcars$am <- factor(mtcars$am, labels = c("Automatic", "Manual"))
+
+# Create the main stacked barchart
+p <- plot_2_categorical_vars(
+  d = mtcars,
+  xvar = "cyl",
+  yvar = "gear",
+  xvar_label = "Cylinders",
+  yvar_label = "Gears",
+  inside_bar_stats = "pct_and_n"
+)
+
+# Prepare covariate data for horizontal bar
+cov_data <- mtcars[, c("cyl", "am")] |>
+  dplyr::distinct() |>
+  dplyr::arrange(cyl)
+
+# Create horizontal covariate bar
+cov_bar <- plot_covariate_heatmap(
+  dataset = cov_data,
+  color_map = list(am = c("Automatic" = "#F8766D", "Manual" = "#00BA38")),
+  row_id_var = "cyl",
+  show_column_names = FALSE,
+  show_row_names = FALSE,
+  horizontal = TRUE
+) &
+  ggplot2::scale_x_discrete(expand = ggplot2::expansion(add = 0.6)) &
+  ggplot2::theme(panel.border = ggplot2::element_blank())
+
+# Combine plots vertically
+patchwork::wrap_plots(
+  p$ggplot +
+    ggplot2::scale_y_continuous(expand = ggplot2::expansion(add = c(0, 0))),
+  cov_bar,
+  ncol = 1,
+  heights = c(0.9, 0.1)
+)
+
 }

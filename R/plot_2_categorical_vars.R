@@ -107,6 +107,73 @@
 #' )
 #' p_text_colors$ggplot
 #'
+#' ######### Combine stacked barchart with a horizontal covariate bar
+#' mtcars$am <- factor(mtcars$am, labels = c("Automatic", "Manual"))
+#'
+#' # Create the main stacked barchart
+#' p <- plot_2_categorical_vars(
+#'   d = mtcars,
+#'   xvar = "cyl",
+#'   yvar = "gear",
+#'   xvar_label = "Cylinders",
+#'   yvar_label = "Gears",
+#'   inside_bar_stats = "pct_and_n"
+#' )
+#'
+#' # Prepare covariate data: one row per unique xvar level, in the same order
+#' # as the barplot x-axis (i.e. factor level order).
+#' cov_data <- mtcars[, c("cyl", "am")] |>
+#'   dplyr::distinct(cyl, .keep_all = TRUE) |>
+#'   dplyr::arrange(cyl)
+#'
+#' # Verify x-axis labels match before hiding the barplot x-axis.
+#' # patchwork's axes = "collect_x" cannot reach into a nested patchwork,
+#' # so we suppress the duplicate axis manually.
+#' barplot_xlabels <- levels(mtcars[["cyl"]])
+#' covbar_xlabels  <- as.character(cov_data[["cyl"]])
+#' stopifnot(
+#'   "x-axis labels of barplot and covariate bar must be identical" =
+#'     identical(barplot_xlabels, covbar_xlabels)
+#' )
+#' p$ggplot <- p$ggplot +
+#'   ggplot2::theme(
+#'     axis.title.x = ggplot2::element_blank(),
+#'     axis.text.x  = ggplot2::element_blank(),
+#'     axis.ticks.x = ggplot2::element_blank()
+#'   )
+#'
+#' # Create horizontal covariate bar.
+#' # Use collect_guides = FALSE so the outer wrap_plots() can collect all
+#' # legends together; if collect_guides = TRUE (the default) the inner
+#' # patchwork absorbs the guides before the outer composition sees them.
+#' cov_bar <- plot_covariate_heatmap(
+#'   dataset = cov_data,
+#'   color_map = list(am = c("Automatic" = "#619CBA", "Manual" = "#F39C12")),
+#'   row_id_var = "cyl",
+#'   show_column_names = FALSE,
+#'   show_row_names = TRUE,
+#'   horizontal = TRUE,
+#'   collect_guides = FALSE
+#' ) &
+#'   ggplot2::scale_x_discrete(expand = ggplot2::expansion(add = 0.6)) &
+#'   ggplot2::labs(x = "Cylinders") &
+#'   ggplot2::theme(panel.border = ggplot2::element_blank())
+#'
+#' # Combine plots vertically with collected legends
+#' patchwork::wrap_plots(
+#'   p$ggplot +
+#'     ggplot2::scale_y_continuous(
+#'       limits = c(0, 110),
+#'       breaks = seq(0, 100, by = 25),
+#'       labels = scales::label_number(suffix = "%"),
+#'       expand = ggplot2::expansion(add = c(0, 0))
+#'     ),
+#'   cov_bar,
+#'   ncol = 1,
+#'   heights = c(0.9, 0.1),
+#'   guides = "collect"
+#' ) & ggplot2::theme(legend.position = "right")
+#'
 #' @export
 plot_2_categorical_vars <- function(
     d,
@@ -355,7 +422,7 @@ plot_2_categorical_vars <- function(
             y = "Percent",
             fill = yvar_label
         ) +
-        ggplot2::theme_bw()
+        statplot::theme_bw2()
 
     # inside-bar stats labels
     if (inside_bar_stats != 'none') {
