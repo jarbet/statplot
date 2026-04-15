@@ -42,6 +42,7 @@ A ggplot object
 Build an upset plot from a named list of sets
 }
 \examples{
+ggplot2::theme_set(theme_bw2())
 list_input <- list(
   A = c(1, 2, 3, 5, 7, 8, 11, 12, 13),
   B = c(1, 2, 4, 5, 10),

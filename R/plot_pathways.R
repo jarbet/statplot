@@ -113,6 +113,7 @@
 #' @return A ggplot2 object.
 #'
 #' @examples
+#' ggplot2::theme_set(theme_bw2())
 #' # hallmark_t2g is bundled with the package (columns: term, gene)
 #' data(hallmark_t2g)
 #' set.seed(1)
@@ -504,6 +505,8 @@ plot_pathways <- function(
         ggplot2::ggtitle(title) +
         ggplot2::labs(subtitle = subtitle) +
         ggplot2::theme(
+            plot.title = ggplot2::element_text(face = "bold"),
+            legend.title = ggplot2::element_text(face = "bold"),
             plot.margin = ggplot2::margin(
                 t = plot_margin[1],
                 r = plot_margin[2],

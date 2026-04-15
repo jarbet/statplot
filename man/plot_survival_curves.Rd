@@ -57,6 +57,7 @@ a Cox model and annotates hazard ratio (95\% CI) and p-value; if more than two g
 it displays only the log‑rank p-value.
 }
 \examples{
+ggplot2::theme_set(theme_bw2())
 data(cancer, package = "survival")
 
 # Example with two groups

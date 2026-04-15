@@ -16,6 +16,7 @@
 #' @importFrom rlang sym
 #' @importFrom ggplot2 ggplot aes geom_tile scale_fill_manual scale_x_discrete scale_y_discrete labs theme_minimal theme element_text element_blank element_rect margin
 #' @examples
+#' ggplot2::theme_set(theme_bw2())
 #' avail <- data.frame(
 #'   data_type = rep(c("SNV", "mRNA", "Proteomics", "CNA", "Methylation"), each = 3),
 #'   group = rep(c("GroupA", "GroupB", "GroupC"), times = 5),

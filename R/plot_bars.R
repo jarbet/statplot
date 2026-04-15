@@ -15,6 +15,7 @@
 #' @param yvar_label Optional character label for y variable. If NULL the label is obtained using labelled::get_variable_labels().
 #' @param show_legend Logical. Whether to show the legend for fill colors. Default is FALSE.
 #' @examples
+#' ggplot2::theme_set(theme_bw2())
 #' dat <- data.frame(group = c("A", "B", "C"), score = c(5, 3, 8))
 #' plot_bars(dat, yvar = "score", xvar = "group", sort = "desc")
 #' @export

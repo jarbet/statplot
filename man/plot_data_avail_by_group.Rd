@@ -42,6 +42,7 @@ A ggplot object (tile plot).
 Create a tile plot showing availability (0/1) of data types across groups.
 }
 \examples{
+ggplot2::theme_set(theme_bw2())
 avail <- data.frame(
   data_type = rep(c("SNV", "mRNA", "Proteomics", "CNA", "Methylation"), each = 3),
   group = rep(c("GroupA", "GroupB", "GroupC"), times = 5),

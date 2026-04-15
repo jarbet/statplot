@@ -112,6 +112,7 @@ Displays one vertical strip per covariate using
 Only categorical (named-vector colors) covariates are supported.
 }
 \examples{
+ggplot2::theme_set(theme_bw2())
 data(ex_data_heatmap)
 
 # Build a one-row-per-sample metadata frame

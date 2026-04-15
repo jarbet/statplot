@@ -42,6 +42,7 @@
 #'   Default is 'Bar type'.
 #' @return A `ggplot2` plot object.
 #' @examples
+#' ggplot2::theme_set(theme_bw2())
 #' set.seed(123)
 #' n <- 6
 #' example_df <- tibble::tibble(

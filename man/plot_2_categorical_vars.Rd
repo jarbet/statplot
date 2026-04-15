@@ -104,6 +104,7 @@ sample sizes above each bar, and (optionally) a subtitle showing Cramer's V and
 the test p-value.
 }
 \examples{
+ggplot2::theme_set(theme_bw2())
 data(mtcars)
 mtcars$cyl <- factor(mtcars$cyl)
 mtcars$gear <- factor(mtcars$gear)
@@ -163,7 +164,6 @@ p_text_colors$ggplot
 # The covariate heatmap is designed for group-level annotations where each
 # x-axis group has exactly one value per covariate (e.g. treatment arms with
 # fixed properties). Here we use simulated group-level covariates.
-ggplot2::theme_set(theme_bw2())
 
 # Create the main stacked barchart
 p <- plot_2_categorical_vars(

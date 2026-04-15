@@ -65,6 +65,7 @@ numeric variable split by a factor. The function expects the grouping column
 to be a factor and the outcome to be numeric.
 }
 \examples{
+ggplot2::theme_set(theme_bw2())
 data(mtcars)
 mtcars$gear <- factor(mtcars$gear)
 p <- plot_numeric_by_3plusgroups(

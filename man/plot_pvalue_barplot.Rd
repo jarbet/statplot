@@ -95,6 +95,7 @@ Create a horizontal barplot of p-values (optionally -log10 transformed) with an
 optional significance vertical line and optional fill mapping.
 }
 \examples{
+ggplot2::theme_set(theme_bw2())
 set.seed(123)
 n <- 6
 example_df <- tibble::tibble(

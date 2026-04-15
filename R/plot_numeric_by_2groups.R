@@ -15,6 +15,7 @@
 #'   \item{wilcox}{A tibble with the Wilcoxon test results (from broom::tidy).}
 #' }
 #' @examples
+#' ggplot2::theme_set(theme_bw2())
 #' mtcars$am <- factor(mtcars$am)
 #' res <- plot_numeric_by_2groups("mpg", "am", mtcars)
 #' res$ggplot
