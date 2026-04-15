@@ -47,6 +47,8 @@
 <li><p><code>combine_pvalues</code>: now allows p-values equal to 1 (previously rejected); validation changed from <code>p &gt; 0 &amp; p &lt; 1</code> to <code>p &gt; 0 &amp; p &lt;= 1</code>.</p></li>
 <li><p><code>plot_confidence_intervals</code>: refactor — replace the monolithic <code>style</code> parameter with independent arguments for visual encoding and layout: <code>color_col</code>, <code>color_values</code>, <code>shape_col</code>, and <code>point_shapes</code> (for shape-based grouping), plus separator and reference-line controls (<code>show_separators</code>, <code>sep_linetype</code>, <code>sep_linewidth</code>, <code>sep_color</code>, <code>vline_xintercept</code>, <code>vline_linetype</code>, <code>vline_color</code>) and <code>dodge_width</code>. This makes styling explicit and composable and simplifies legend handling.</p></li>
 <li><p><code>plot_confidence_intervals</code>: ensure <code>shape_col</code> is coerced to a factor with a stable, sorted level ordering; validate <code>point_shapes</code> length against the number of shape levels and provide clearer legend overrides when <code>color_col</code> and/or <code>shape_col</code> are used.</p></li>
+<li><p><code>plot_2_categorical_vars</code>: added <code>inside_bar_text_bold</code> argument to allow inside-bar labels to be drawn in bold when requested; documentation and examples updated to demonstrate <code>yvar_text_colors</code> combined with the new bold-text option.</p></li>
+<li><p><code>plot_2_categorical_vars</code>: updated examples</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>

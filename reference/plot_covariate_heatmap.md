@@ -25,6 +25,8 @@ plot_covariate_heatmap(
   column_labels_side = "bottom",
   horizontal = FALSE,
   merge_legends = FALSE,
+  collect_guides = TRUE,
+  x_title = NULL,
   return_details = FALSE
 )
 ```
@@ -106,6 +108,23 @@ plot_covariate_heatmap(
   Logical. When `TRUE`, strips sharing the exact same color mapping show
   a legend only on the first occurrence; that legend's title joins the
   covariate names with `"\n"`. Default `FALSE`.
+
+- collect_guides:
+
+  Logical. When `TRUE` (default), legends from all strips are collected
+  inside the returned patchwork using `plot_layout(guides = "collect")`
+  and positioned according to `legend_side`. Set to `FALSE` when you
+  intend to embed the result inside an outer patchwork composition that
+  performs its own guide collection (e.g.
+  `wrap_plots(..., guides = "collect")`); this prevents the nested
+  `plot_layout(guides = "collect")` from blocking the outer collection.
+
+- x_title:
+
+  Character scalar or NULL. When `horizontal = TRUE`, sets the x-axis
+  title on the bottom-most strip only. Use this instead of
+  `\& ggplot2::labs(x = ...)` which would apply the title to every
+  strip. Default `NULL` (no x-axis title).
 
 - return_details:
 
