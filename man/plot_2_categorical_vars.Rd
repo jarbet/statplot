@@ -11,13 +11,13 @@ plot_2_categorical_vars(
   xvar_label = NULL,
   yvar_label = NULL,
   yvar_colors = NULL,
+  yvar_text_colors = NULL,
   title = NULL,
   title_nchar_wrap = 30,
   show_effect_size = TRUE,
   n_pct_size = 3.5,
   inside_bar_stats = c("pct", "n", "pct_and_n", "none"),
   pct_digits = 0,
-  plot_horizontal = FALSE,
   flip = FALSE,
   xaxis_labels_nchar_wrap = 20,
   y_max = 110,
@@ -41,6 +41,10 @@ plot_2_categorical_vars(
 Must be length equal to \code{nlevels(d[[yvar]])}. Provide colour names (e.g. "red") or hex
 codes (e.g. "#FF0000"). If NULL (default) ggplot2's default palette is used.}
 
+\item{yvar_text_colors}{Optional named character vector of colors for the text inside bars.
+Names should correspond to the levels of \code{yvar}. If a level is not included in the vector,
+the text color defaults to black. If NULL (default), all text is black.}
+
 \item{title}{Optional character scalar for the plot title.}
 
 \item{title_nchar_wrap}{Integer scalar. Maximum number of characters per line of title.}
@@ -59,9 +63,6 @@ count in parentheses, e.g. "12\% (34)"), or \code{"none"} (no labels inside bars
 \item{pct_digits}{Integer scalar (default 0). Number of decimal places to show
 for the within-group percent labels (e.g. 0 => "12\%", 1 => "12.3\%"). Must be
 a single non-negative numeric value.}
-
-\item{plot_horizontal}{Logical scalar. Deprecated/alias for \code{flip}. If TRUE the plot
-will be shown with horizontal bars. Prefer using \code{flip}.}
 
 \item{flip}{Logical scalar (default FALSE). If TRUE the plot is flipped to show
 horizontal bars.}
@@ -94,13 +95,55 @@ the test p-value.
 data(mtcars)
 mtcars$cyl <- factor(mtcars$cyl)
 mtcars$gear <- factor(mtcars$gear)
+
+# Default usage
 p <- plot_2_categorical_vars(
   d = mtcars,
   xvar = "cyl",
   yvar = "gear",
-  xvar_label = 'Cylinders',
-  yvar_label = 'Gears'
+  xvar_label = "Cylinders",
+  yvar_label = "Gears"
 )
 p$ggplot
+
+# Show both percent and count inside bars
+p_pct_n <- plot_2_categorical_vars(
+  d = mtcars,
+  xvar = "cyl",
+  yvar = "gear",
+  inside_bar_stats = "pct_and_n",
+  pct_digits = 1
+)
+p_pct_n$ggplot
+
+# Include a pooled 'Overall' bar on the left
+p_overall <- plot_2_categorical_vars(
+  d = mtcars,
+  xvar = "cyl",
+  yvar = "gear",
+  include_overall_bar = TRUE
+)
+p_overall$ggplot
+
+# Horizontal bars using `flip = TRUE`
+p_horiz <- plot_2_categorical_vars(
+  d = mtcars,
+  xvar = "cyl",
+  yvar = "gear",
+  flip = TRUE,
+  inside_bar_stats = "pct_and_n"
+)
+p_horiz$ggplot
+
+# Customize text colors by yvar level
+p_text_colors <- plot_2_categorical_vars(
+  d = mtcars,
+  xvar = "cyl",
+  yvar = "gear",
+  yvar_colors = c("3" = "lightgrey", "4" = "darkgrey", "5" = "black"),
+  yvar_text_colors = c("3" = "black", "4" = "black", "5" = "white"),
+  inside_bar_stats = "pct_and_n"
+)
+p_text_colors$ggplot
 
 }

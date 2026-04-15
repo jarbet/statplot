@@ -16,6 +16,9 @@
 #' @param yvar_colors Optional character vector of colours to use for the y-variable levels.
 #'   Must be length equal to `nlevels(d[[yvar]])`. Provide colour names (e.g. "red") or hex
 #'   codes (e.g. "#FF0000"). If NULL (default) ggplot2's default palette is used.
+#' @param yvar_text_colors Optional named character vector of colors for the text inside bars.
+#'   Names should correspond to the levels of `yvar`. If a level is not included in the vector,
+#'   the text color defaults to black. If NULL (default), all text is black.
 #' @param n_pct_size Numeric scalar. Point size used for the percent labels inside
 #'   the stacked bars and for the group N labels above bars. Must be a single
 #'   positive numeric value.
@@ -23,13 +26,13 @@
 #'   printed inside the stacked bars. One of `"pct"` (default; shows within-group
 #'   percentage), `"n"` (shows count only), `"pct_and_n"` (shows percentage with
 #'   count in parentheses, e.g. "12% (34)"), or `"none"` (no labels inside bars).
+#' @param inside_bar_text_bold Logical scalar (default FALSE). If TRUE, the text
+#'   inside the bars will be displayed in bold.
 #' @param pct_digits Integer scalar (default 0). Number of decimal places to show
 #'   for the within-group percent labels (e.g. 0 => "12%", 1 => "12.3%"). Must be
 #'   a single non-negative numeric value.
 #' @param flip Logical scalar (default FALSE). If TRUE the plot is flipped to show
 #'   horizontal bars.
-#' @param plot_horizontal Logical scalar. Deprecated/alias for `flip`. If TRUE the plot
-#'   will be shown with horizontal bars. Prefer using `flip`.
 #' @param xaxis_labels_nchar_wrap Integer scalar. Maximum number of characters
 #'   per line for x-axis group labels. Longer labels will be wrapped to multiple lines.
 #' @param y_max Numeric scalar. Maximum y-axis limit for the plot.
@@ -46,14 +49,57 @@
 #' data(mtcars)
 #' mtcars$cyl <- factor(mtcars$cyl)
 #' mtcars$gear <- factor(mtcars$gear)
+#'
+#' # Default usage
 #' p <- plot_2_categorical_vars(
 #'   d = mtcars,
 #'   xvar = "cyl",
 #'   yvar = "gear",
-#'   xvar_label = 'Cylinders',
-#'   yvar_label = 'Gears'
+#'   xvar_label = "Cylinders",
+#'   yvar_label = "Gears"
 #' )
 #' p$ggplot
+#'
+#' # Show both percent and count inside bars
+#' p_pct_n <- plot_2_categorical_vars(
+#'   d = mtcars,
+#'   xvar = "cyl",
+#'   yvar = "gear",
+#'   inside_bar_stats = "pct_and_n",
+#'   pct_digits = 1
+#' )
+#' p_pct_n$ggplot
+#'
+#' # Include a pooled 'Overall' bar on the left
+#' p_overall <- plot_2_categorical_vars(
+#'   d = mtcars,
+#'   xvar = "cyl",
+#'   yvar = "gear",
+#'   include_overall_bar = TRUE
+#' )
+#' p_overall$ggplot
+#'
+#' # Horizontal bars using `flip = TRUE`
+#' p_horiz <- plot_2_categorical_vars(
+#'   d = mtcars,
+#'   xvar = "cyl",
+#'   yvar = "gear",
+#'   flip = TRUE,
+#'   inside_bar_stats = "pct_and_n"
+#' )
+#' p_horiz$ggplot
+#'
+#' # Customize text colors by yvar level, and use bold text inside bars
+#' p_text_colors <- plot_2_categorical_vars(
+#'   d = mtcars,
+#'   xvar = "cyl",
+#'   yvar = "gear",
+#'   yvar_colors = c("3" = "lightgrey", "4" = "darkgrey", "5" = "black"),
+#'   yvar_text_colors = c("3" = "black", "4" = "black", "5" = "white"),
+#'   inside_bar_stats = "pct_and_n",
+#'   inside_bar_text_bold = TRUE
+#' )
+#' p_text_colors$ggplot
 #'
 #' @export
 plot_2_categorical_vars <- function(
@@ -63,13 +109,14 @@ plot_2_categorical_vars <- function(
     xvar_label = NULL,
     yvar_label = NULL,
     yvar_colors = NULL,
+    yvar_text_colors = NULL,
     title = NULL,
     title_nchar_wrap = 30,
     show_effect_size = TRUE,
     n_pct_size = 3.5,
     inside_bar_stats = c('pct', 'n', 'pct_and_n', 'none'),
+    inside_bar_text_bold = FALSE,
     pct_digits = 0,
-    plot_horizontal = FALSE,
     flip = FALSE,
     xaxis_labels_nchar_wrap = 20,
     y_max = 110,
@@ -103,7 +150,17 @@ plot_2_categorical_vars <- function(
         is.null(yvar_colors) |
             (is.vector(yvar_colors) &
                 is.character(yvar_colors) &
-                length(yvar_colors) == yvar_nlevels)
+                (length(yvar_colors) == yvar_nlevels |
+                    !is.null(names(yvar_colors))))
+    )
+    stopifnot(
+        is.null(yvar_text_colors) |
+            (is.vector(yvar_text_colors) &
+                is.character(yvar_text_colors) &
+                !is.null(names(yvar_text_colors)))
+    )
+    stopifnot(
+        length(inside_bar_text_bold) == 1 & is.logical(inside_bar_text_bold)
     )
 
     stopifnot(
@@ -285,12 +342,30 @@ plot_2_categorical_vars <- function(
 
     # inside-bar stats labels
     if (inside_bar_stats != 'none') {
+        # Create a data frame with color mapping for each yvar level
+        yvar_levels <- levels(plot_data[[yvar]])
+        if (is.null(yvar_text_colors)) {
+            # Default: all text is black
+            text_color_map <- rep('black', length(yvar_levels))
+        } else {
+            # Use provided colors where available, default to black otherwise
+            text_color_map <- ifelse(
+                yvar_levels %in% names(yvar_text_colors),
+                yvar_text_colors[yvar_levels],
+                'black'
+            )
+        }
+        names(text_color_map) <- yvar_levels
+
         p <- p +
             ggplot2::geom_text(
-                ggplot2::aes(label = bar_label),
+                ggplot2::aes(label = bar_label, color = .data[[yvar]]),
                 position = ggplot2::position_stack(vjust = 0.5),
-                size = n_pct_size
-            )
+                size = n_pct_size,
+                fontface = ifelse(inside_bar_text_bold, 'bold', 'plain'),
+                show.legend = FALSE
+            ) +
+            ggplot2::scale_color_manual(values = text_color_map)
     }
 
     # --- added: apply supplied colors if provided (otherwise use ggplot defaults) ---

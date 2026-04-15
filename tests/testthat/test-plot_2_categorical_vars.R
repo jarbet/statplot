@@ -348,3 +348,192 @@ test_that("overall_label must be a character scalar", {
         )
     )
 })
+
+# ---------------------------------------------------------------------------
+# yvar_text_colors
+# ---------------------------------------------------------------------------
+
+test_that("yvar_text_colors accepts a named character vector", {
+    d <- make_cat_df()
+    expect_no_error(
+        plot_2_categorical_vars(
+            d,
+            "cyl",
+            "gear",
+            yvar_text_colors = c("3" = "black", "4" = "white"),
+            inside_bar_stats = "pct"
+        )
+    )
+})
+
+test_that("yvar_text_colors must have names", {
+    d <- make_cat_df()
+    expect_error(
+        plot_2_categorical_vars(
+            d,
+            "cyl",
+            "gear",
+            yvar_text_colors = c("black", "white"),
+            inside_bar_stats = "pct"
+        )
+    )
+})
+
+test_that("yvar_text_colors must be a character vector", {
+    d <- make_cat_df()
+    expect_error(
+        plot_2_categorical_vars(
+            d,
+            "cyl",
+            "gear",
+            yvar_text_colors = c("3" = 1, "4" = 2),
+            inside_bar_stats = "pct"
+        )
+    )
+})
+
+test_that("yvar_text_colors unmapped levels default to black", {
+    d <- make_cat_df()
+    res <- plot_2_categorical_vars(
+        d,
+        "cyl",
+        "gear",
+        yvar_text_colors = c("3" = "red"),
+        inside_bar_stats = "pct"
+    )
+    color_scales <- Filter(
+        function(s) "colour" %in% s$aesthetics,
+        res$ggplot$scales$scales
+    )
+    expect_length(color_scales, 1L)
+    # gear has 3 levels; only "3" is specified as red, others should be black
+    palette <- unname(color_scales[[1]]$palette(3))
+    expect_equal(palette[1], "red")
+    expect_equal(palette[2], "black")
+    expect_equal(palette[3], "black")
+})
+
+test_that("yvar_text_colors only applies when inside_bar_stats != 'none'", {
+    d <- make_cat_df()
+    # inside_bar_stats = 'none' should not have color scale for text
+    res <- plot_2_categorical_vars(
+        d,
+        "cyl",
+        "gear",
+        yvar_text_colors = c("3" = "red", "4" = "blue"),
+        inside_bar_stats = "none"
+    )
+    color_scales <- Filter(
+        function(s) "colour" %in% s$aesthetics,
+        res$ggplot$scales$scales
+    )
+    expect_length(color_scales, 0L)
+})
+
+# ---------------------------------------------------------------------------
+# inside_bar_text_bold
+# ---------------------------------------------------------------------------
+
+test_that("inside_bar_text_bold = TRUE runs without error", {
+    d <- make_cat_df()
+    expect_no_error(
+        plot_2_categorical_vars(
+            d,
+            "cyl",
+            "gear",
+            inside_bar_stats = "pct",
+            inside_bar_text_bold = TRUE
+        )
+    )
+})
+
+test_that("inside_bar_text_bold = FALSE (default) runs without error", {
+    d <- make_cat_df()
+    expect_no_error(
+        plot_2_categorical_vars(
+            d,
+            "cyl",
+            "gear",
+            inside_bar_stats = "pct",
+            inside_bar_text_bold = FALSE
+        )
+    )
+})
+
+test_that("inside_bar_text_bold must be logical", {
+    d <- make_cat_df()
+    expect_error(
+        plot_2_categorical_vars(
+            d,
+            "cyl",
+            "gear",
+            inside_bar_stats = "pct",
+            inside_bar_text_bold = "yes"
+        )
+    )
+})
+
+test_that("inside_bar_text_bold = TRUE applies bold fontface", {
+    d <- make_cat_df()
+    res <- plot_2_categorical_vars(
+        d,
+        "cyl",
+        "gear",
+        inside_bar_stats = "pct",
+        inside_bar_text_bold = TRUE
+    )
+    # Find the geom_text layer for inside-bar labels
+    text_layers <- Filter(
+        function(l) class(l$geom)[1] == "GeomText",
+        res$ggplot$layers
+    )
+    expect_length(text_layers, 2L) # one for inside bars, one for group N labels
+    # The second text layer (index 2) should have bold fontface for the bar stats
+    expect_equal(text_layers[[2]]$aes_params$fontface, "bold")
+})
+
+test_that("inside_bar_text_bold = FALSE applies plain fontface", {
+    d <- make_cat_df()
+    res <- plot_2_categorical_vars(
+        d,
+        "cyl",
+        "gear",
+        inside_bar_stats = "pct",
+        inside_bar_text_bold = FALSE
+    )
+    text_layers <- Filter(
+        function(l) class(l$geom)[1] == "GeomText",
+        res$ggplot$layers
+    )
+    expect_length(text_layers, 2L)
+    # The second text layer (index 2) should have plain fontface for the bar stats
+    expect_equal(text_layers[[2]]$aes_params$fontface, "plain")
+})
+
+# ---------------------------------------------------------------------------
+# yvar_colors with named vectors
+# ---------------------------------------------------------------------------
+
+test_that("yvar_colors accepts named character vector", {
+    d <- make_cat_df()
+    expect_no_error(
+        plot_2_categorical_vars(
+            d,
+            "cyl",
+            "gear",
+            yvar_colors = c("3" = "lightgrey", "4" = "grey", "5" = "black")
+        )
+    )
+})
+
+test_that("yvar_colors accepts unnamed vector (positional)", {
+    d <- make_cat_df()
+    expect_no_error(
+        plot_2_categorical_vars(
+            d,
+            "cyl",
+            "gear",
+            yvar_colors = c("lightgrey", "grey", "black")
+        )
+    )
+})
