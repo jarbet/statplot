@@ -4,6 +4,20 @@
 
 ### Added
 
+…
+
+### Changed
+
+…
+
+### Fixed
+
+…
+
+## statplot 0.6.0 - 2026-04-15
+
+### Added
+
 - `table_basic`: new function for creating clean, formatted tables using
   tinytable. Supports column-level rounding control via named lists or
   vectors, optional comma formatting for large numbers, and configurable
@@ -12,10 +26,18 @@
 
 ### Changed
 
+- `plot_pvalue_barplot`: expanded examples to demonstrate 6 use cases
+  including default p/q-value overlay, basic transformation with vline,
+  raw p-value scale, fill mapping by group, custom significance
+  thresholds, and custom q-values.
+
 - `plot_pvalue_barplot`: default `-log10(p)` x-axis breaks now use
-  meaningful p-value ticks (`1, 0.2, 0.1, 0.01, 0.001`) instead of
-  equally-spaced integer breaks; label formatting simplified to remove
-  the `"<"` prefix previously shown for the smallest p-value.
+  meaningful p-value ticks (`1, 0.1, 0.01, 0.001`) instead of
+  equally-spaced integer breaks; the smallest p-value tick is labeled
+  with a `"<"` prefix (e.g., `"<0.001"`) to indicate that values below
+  this threshold are represented, and the label is determined by the
+  largest break on the -log10 scale (not hard-coded to `0.001`) for
+  robust support of custom breaks.
 
 - `plot_pathways`: default `color_low`, `color_mid`, and `color_high`
   changed from `NULL` to `"blue"`, `"white"`, and `"red"`, respectively,
@@ -53,7 +75,16 @@
 
 - `plot_2_categorical_vars`: updated examples
 
+- All roxygen2 examples for plot functions now begin with
+  `ggplot2::theme_set(theme_bw2())` to apply the package theme
+  consistently across all example code blocks.
+
 ### Fixed
+
+- `plot_pvalue_barplot`: fixed legend linetype to remove unwanted line
+  rendering for fill-mapped bars by applying
+  `override.aes = list(linetype = 0)` to the fill legend so legend keys
+  display as solid/filled swatches.
 
 - `plot_covariate_heatmap`: removed whitespace padding between covariate
   bars and plot borders by applying `expand = ggplot2::expansion(0)` to

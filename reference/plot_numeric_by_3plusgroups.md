@@ -104,6 +104,7 @@ A list with components:
 ## Examples
 
 ``` r
+ggplot2::theme_set(theme_bw2())
 data(mtcars)
 mtcars$gear <- factor(mtcars$gear)
 p <- plot_numeric_by_3plusgroups(

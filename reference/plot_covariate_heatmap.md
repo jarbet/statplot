@@ -142,6 +142,7 @@ Invisibly returns a
 ## Examples
 
 ``` r
+ggplot2::theme_set(theme_bw2())
 data(ex_data_heatmap)
 
 # Build a one-row-per-sample metadata frame

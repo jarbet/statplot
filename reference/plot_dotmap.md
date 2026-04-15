@@ -203,6 +203,7 @@ plot_pvalue_barplot, combine_pvalues
 ## Examples
 
 ``` r
+ggplot2::theme_set(theme_bw2())
 set.seed(42)
 genes <- paste0("gene", 1:6)
 df <- expand.grid(col = c("A", "B", "C"), row = genes, stringsAsFactors = FALSE)

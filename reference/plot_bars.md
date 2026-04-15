@@ -68,6 +68,7 @@ plot_bars(
 ## Examples
 
 ``` r
+ggplot2::theme_set(theme_bw2())
 dat <- data.frame(group = c("A", "B", "C"), score = c(5, 3, 8))
 plot_bars(dat, yvar = "score", xvar = "group", sort = "desc")
 ```

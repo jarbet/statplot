@@ -94,6 +94,7 @@ A ggplot object (horizontal interval plot).
 ## Examples
 
 ``` r
+ggplot2::theme_set(theme_bw2())
 df <- data.frame(
   effect = paste0("Effect ", LETTERS[1:5]),
   estimate = c(0.12, 0.35, 0.58, 0.74, 0.91),

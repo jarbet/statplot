@@ -168,6 +168,7 @@ pathway.
 ## Examples
 
 ``` r
+ggplot2::theme_set(theme_bw2())
 data(ex_expr_pathway)
 data(ex_log2fc_pathway)
 data(hallmark_t2g)

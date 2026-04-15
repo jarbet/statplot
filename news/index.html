@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">statplot</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,12 +36,28 @@
 <h2 class="pkg-version" data-toc-text="development version" id="statplot-development-version">statplot (development version)<a class="anchor" aria-label="anchor" href="#statplot-development-version"></a></h2>
 <div class="section level3">
 <h3 id="added-development-version">Added<a class="anchor" aria-label="anchor" href="#added-development-version"></a></h3>
+<p>…</p>
+</div>
+<div class="section level3">
+<h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
+<p>…</p>
+</div>
+<div class="section level3">
+<h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
+<p>…</p>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.0" id="statplot-060---2026-04-15">statplot 0.6.0 - 2026-04-15<a class="anchor" aria-label="anchor" href="#statplot-060---2026-04-15"></a></h2>
+<div class="section level3">
+<h3 id="added-0-6-0">Added<a class="anchor" aria-label="anchor" href="#added-0-6-0"></a></h3>
 <ul><li>
 <code>table_basic</code>: new function for creating clean, formatted tables using tinytable. Supports column-level rounding control via named lists or vectors, optional comma formatting for large numbers, and configurable handling of missing values. By default uses bold header rows and can respect column <code>label</code> attributes.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
-<ul><li><p><code>plot_pvalue_barplot</code>: default <code>-log10(p)</code> x-axis breaks now use meaningful p-value ticks (<code>1, 0.2, 0.1, 0.01, 0.001</code>) instead of equally-spaced integer breaks; label formatting simplified to remove the <code>"&lt;"</code> prefix previously shown for the smallest p-value.</p></li>
+<h3 id="changed-0-6-0">Changed<a class="anchor" aria-label="anchor" href="#changed-0-6-0"></a></h3>
+<ul><li><p><code>plot_pvalue_barplot</code>: expanded examples to demonstrate 6 use cases including default p/q-value overlay, basic transformation with vline, raw p-value scale, fill mapping by group, custom significance thresholds, and custom q-values.</p></li>
+<li><p><code>plot_pvalue_barplot</code>: default <code>-log10(p)</code> x-axis breaks now use meaningful p-value ticks (<code>1, 0.1, 0.01, 0.001</code>) instead of equally-spaced integer breaks; the smallest p-value tick is labeled with a <code>"&lt;"</code> prefix (e.g., <code>"&lt;0.001"</code>) to indicate that values below this threshold are represented, and the label is determined by the largest break on the -log10 scale (not hard-coded to <code>0.001</code>) for robust support of custom breaks.</p></li>
 <li><p><code>plot_pathways</code>: default <code>color_low</code>, <code>color_mid</code>, and <code>color_high</code> changed from <code>NULL</code> to <code>"blue"</code>, <code>"white"</code>, and <code>"red"</code>, respectively, providing a sensible default diverging color palette without requiring explicit user specification.</p></li>
 <li><p><code>plot_pathways</code>, <code>plot_dotmap</code>: new <code>legend_position</code> argument (default <code>"right"</code>) allows users to control the legend position via <code>ggplot2::theme(legend.position = ...)</code>. Common values include <code>"right"</code>, <code>"left"</code>, <code>"top"</code>, <code>"bottom"</code>, or <code>"none"</code> to hide the legend.</p></li>
 <li><p><code>combine_pvalues</code>: now allows p-values equal to 1 (previously rejected); validation changed from <code>p &gt; 0 &amp; p &lt; 1</code> to <code>p &gt; 0 &amp; p &lt;= 1</code>.</p></li>
@@ -49,11 +65,12 @@
 <li><p><code>plot_confidence_intervals</code>: ensure <code>shape_col</code> is coerced to a factor with a stable, sorted level ordering; validate <code>point_shapes</code> length against the number of shape levels and provide clearer legend overrides when <code>color_col</code> and/or <code>shape_col</code> are used.</p></li>
 <li><p><code>plot_2_categorical_vars</code>: added <code>inside_bar_text_bold</code> argument to allow inside-bar labels to be drawn in bold when requested; documentation and examples updated to demonstrate <code>yvar_text_colors</code> combined with the new bold-text option.</p></li>
 <li><p><code>plot_2_categorical_vars</code>: updated examples</p></li>
+<li><p>All roxygen2 examples for plot functions now begin with <code>ggplot2::theme_set(theme_bw2())</code> to apply the package theme consistently across all example code blocks.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
-<ul><li>
-<code>plot_covariate_heatmap</code>: removed whitespace padding between covariate bars and plot borders by applying <code>expand = ggplot2::expansion(0)</code> to both applicable scales in vertical and horizontal layouts.</li>
+<h3 id="fixed-0-6-0">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-6-0"></a></h3>
+<ul><li><p><code>plot_pvalue_barplot</code>: fixed legend linetype to remove unwanted line rendering for fill-mapped bars by applying <code>override.aes = list(linetype = 0)</code> to the fill legend so legend keys display as solid/filled swatches.</p></li>
+<li><p><code>plot_covariate_heatmap</code>: removed whitespace padding between covariate bars and plot borders by applying <code>expand = ggplot2::expansion(0)</code> to both applicable scales in vertical and horizontal layouts.</p></li>
 </ul></div>
 </div>
     <div class="section level2">

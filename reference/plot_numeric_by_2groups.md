@@ -62,6 +62,7 @@ A list with elements:
 ## Examples
 
 ``` r
+ggplot2::theme_set(theme_bw2())
 mtcars$am <- factor(mtcars$am)
 res <- plot_numeric_by_2groups("mpg", "am", mtcars)
 #> Warning: cannot compute exact p-value with ties

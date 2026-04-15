@@ -88,6 +88,7 @@ A ggplot object (ggsurvfit).
 ## Examples
 
 ``` r
+ggplot2::theme_set(theme_bw2())
 data(cancer, package = "survival")
 
 # Example with two groups

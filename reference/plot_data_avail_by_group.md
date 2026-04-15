@@ -67,6 +67,7 @@ A ggplot object (tile plot).
 ## Examples
 
 ``` r
+ggplot2::theme_set(theme_bw2())
 avail <- data.frame(
   data_type = rep(c("SNV", "mRNA", "Proteomics", "CNA", "Methylation"), each = 3),
   group = rep(c("GroupA", "GroupB", "GroupC"), times = 5),

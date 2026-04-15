@@ -177,6 +177,7 @@ supplied.
 ## Examples
 
 ``` r
+ggplot2::theme_set(theme_bw2())
 df <- data.frame(
   cell_line = factor(c("A", "B", "C", "A", "B", "C"), levels = c('A', 'B', 'C')),
   est       = c(0.2, -0.1, 0.5, 0.35, 0.05, 0.3),

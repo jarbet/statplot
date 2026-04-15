@@ -240,6 +240,7 @@ A ggplot2 object.
 ## Examples
 
 ``` r
+ggplot2::theme_set(theme_bw2())
 # hallmark_t2g is bundled with the package (columns: term, gene)
 data(hallmark_t2g)
 set.seed(1)

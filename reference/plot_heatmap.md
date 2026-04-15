@@ -180,6 +180,7 @@ when `return_details = TRUE`.
 ## Examples
 
 ``` r
+ggplot2::theme_set(theme_bw2())
 data(ex_data_heatmap)
 
 ht_cols_small <- circlize::colorRamp2(
