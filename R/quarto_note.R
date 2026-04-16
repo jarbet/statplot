@@ -25,8 +25,29 @@ quarto_note <- function(text, color = "Green", style = "Comment") {
     if (!is.character(color) || length(color) != 1) {
         stop("`color` must be a length-one character string", call. = FALSE)
     }
+    # Validate color to prevent CSS/LaTeX injection
+    if (
+        !grepl(
+            "^(#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?([0-9a-fA-F]{2})?|[a-zA-Z][a-zA-Z0-9-]*)$",
+            color
+        )
+    ) {
+        stop(
+            "`color` must be a valid CSS color (hex or named color), received: ",
+            dQuote(color),
+            call. = FALSE
+        )
+    }
     if (!is.character(style) || length(style) != 1) {
         stop("`style` must be a length-one character string", call. = FALSE)
+    }
+    # Validate style to prevent quote injection and invalid attributes
+    if (!grepl("^[a-zA-Z0-9 -]+$", style)) {
+        stop(
+            "`style` must contain only alphanumeric characters, spaces, and hyphens, received: ",
+            dQuote(style),
+            call. = FALSE
+        )
     }
 
     if (knitr::is_html_output()) {
@@ -39,14 +60,16 @@ quarto_note <- function(text, color = "Green", style = "Comment") {
         knitr::asis_output(sprintf(
             "\\textbf{\\textcolor{%s}{%s}}",
             color,
-            text
+            knitr:::escape_latex(text)
         ))
     } else {
+        # Escape ::: sequences to prevent prematurely closing the fenced div
+        sanitized_text <- gsub(":::", "\\:\\:\\:", text, fixed = TRUE)
         # Wrap in a paragraph div with custom style for Word
         knitr::asis_output(sprintf(
             '::: {custom-style="%s"}\n\n%s\n\n:::',
             style,
-            text
+            sanitized_text
         ))
     }
 }
