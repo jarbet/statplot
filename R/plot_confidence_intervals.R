@@ -456,7 +456,7 @@ plot_confidence_intervals <- function(
         ggplot2::scale_y_continuous(
             breaks = seq_len(n_units),
             labels = rev(units), # y=1 is bottom, so rev() maps units back correctly
-            limits = c(min(d$y_pos) - 0.5, max(d$y_pos) + 0.5),
+            limits = c(0.5, n_units + 0.5),
             expand = c(0, 0)
         ) +
         ggplot2::labs(x = "Estimate", y = NULL) +
