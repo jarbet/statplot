@@ -80,6 +80,8 @@ pak::pak("jarbet/statplot")
   : Build an upset plot from a named list of sets
 - [`quarto_html_tabset_list()`](https://github.com/jarbet/statplot/reference/quarto_html_tabset_list.md)
   : Render a named list as a Quarto tabset
+- [`quarto_note()`](https://github.com/jarbet/statplot/reference/quarto_note.md)
+  : Render a collaborator comment for Quarto output
 - [`run_gsea()`](https://github.com/jarbet/statplot/reference/run_gsea.md)
   : Run Gene Set Enrichment Analysis (GSEA)
 - [`table_basic()`](https://github.com/jarbet/statplot/reference/table_basic.md)

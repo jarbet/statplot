@@ -4,7 +4,10 @@
 
 ### Added
 
-…
+- `quarto_note`: new function to render colored reviewer or collaborator
+  notes in Quarto documents. Produces colored text in HTML, colored
+  LaTeX in PDF, and custom paragraph styles in Word documents. Supports
+  customizable text color and Word style names.
 
 ### Changed
 
