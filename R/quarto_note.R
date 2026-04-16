@@ -63,13 +63,12 @@ quarto_note <- function(text, color = "Green", style = "Comment") {
             knitr:::escape_latex(text)
         ))
     } else {
-        # Escape ::: sequences to prevent prematurely closing the fenced div
-        sanitized_text <- gsub(":::", "\\:\\:\\:", text, fixed = TRUE)
-        # Wrap in a paragraph div with custom style for Word
+        # Use inline bracketed span syntax for Word output
+        # This works correctly inline and applies the custom-style attribute
         knitr::asis_output(sprintf(
-            '::: {custom-style="%s"}\n\n%s\n\n:::',
-            style,
-            sanitized_text
+            '[%s]{custom-style="%s"}',
+            text,
+            style
         ))
     }
 }

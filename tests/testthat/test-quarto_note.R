@@ -240,40 +240,40 @@ test_that("quarto_note generates Word output", {
     )
 })
 
-test_that("quarto_note escapes ::: in Word/Quarto output", {
+test_that("quarto_note handles ::: in Word/Quarto output", {
     with_mocked_bindings(
         is_html_output = function() FALSE,
         is_latex_output = function() FALSE,
         .package = "knitr",
         {
-            # Text containing ::: should be escaped to prevent div closure
-            result <- quarto_note("This is :::: note", style = "Comment")
+            # Text containing ::: is passed through unchanged in inline span syntax
+            result <- quarto_note("This is ::: note", style = "Comment")
             output <- as.character(result)
-            # The ::: should be escaped to \:\:\:
-            expect_match(output, "\\:\\:\\:", fixed = TRUE)
-            # Verify it's within the div, not the closing delimiter
-            expect_match(output, "This is \\:\\:\\:: note", fixed = TRUE)
+            # Should use inline span syntax with custom-style attribute
+            expect_match(
+                output,
+                "[This is ::: note]{custom-style=\"Comment\"}",
+                fixed = TRUE
+            )
         }
     )
 })
 
-test_that("quarto_note prevents Word document malformation", {
+test_that("quarto_note uses inline span syntax", {
     with_mocked_bindings(
         is_html_output = function() FALSE,
         is_latex_output = function() FALSE,
         .package = "knitr",
         {
-            # Multiple ::: sequences should all be escaped
+            # Multiple ::: sequences are passed through in inline span syntax
             result <- quarto_note("Start ::: middle ::: end", style = "Note")
             output <- as.character(result)
-            # Both ::: in the text should be escaped
+            # Should use inline span syntax without escaping
             expect_match(
                 output,
-                "Start \\:\\:\\: middle \\:\\:\\: end",
+                "[Start ::: middle ::: end]{custom-style=\"Note\"}",
                 fixed = TRUE
             )
-            # Should end with the closing :::
-            expect_match(output, "\\n:::\\n?$", fixed = FALSE)
         }
     )
 })
