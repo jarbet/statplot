@@ -605,7 +605,7 @@ plot_confidence_intervals <- function(
                 limits = rev(units),
                 expand = c(0, 0)
             ) +
-            ggplot2::coord_cartesian(ylim = c(0.5, n_units + 0.5)) +
+            ggplot2::coord_cartesian(ylim = y_limits) +
             # p-value panel margin (top, right, bottom, left) in points
             ggplot2::theme(
                 plot.margin = ggplot2::margin(
