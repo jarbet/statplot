@@ -529,6 +529,31 @@ plot_confidence_intervals <- function(
                     is.null(fill_arg) ||
                     fill_arg == id
             )
+            # When group_col is NULL, fill column must be constant within each id group
+            if (is.null(group_col) && !is.null(fill_arg) && fill_arg != id) {
+                fill_non_constant <- vapply(
+                    units,
+                    function(u) {
+                        vals <- d[[fill_arg]][as.character(d[[id]]) == u]
+                        vals <- vals[!is.na(vals)]
+                        length(unique(vals)) > 1
+                    },
+                    logical(1)
+                )
+
+                if (any(fill_non_constant)) {
+                    bad <- units[fill_non_constant]
+                    stop(
+                        "fill column '",
+                        fill_arg,
+                        "' must be constant within each ",
+                        id,
+                        " group. ",
+                        "Non-constant values found in: ",
+                        paste(bad, collapse = ", ")
+                    )
+                }
+            }
         }
 
         p <- p +
@@ -540,9 +565,16 @@ plot_confidence_intervals <- function(
         # Build data for p-value barplot
         # When group_col is specified, compute combined p-values across groups for each id
         # Otherwise, extract one p-value per id unit
+        # Also carry through any fill column if provided and constant within id groups
+        fill_arg <- if (!is.null(dots$fill)) dots$fill else NULL
+
         if (!is.null(group_col)) {
             # Compute combined p-values by id across groups
-            pv_data <- d |>
+            subset_cols <- c(id, pvalue_col)
+            if (!is.null(fill_arg) && fill_arg != id) {
+                subset_cols <- c(subset_cols, fill_arg)
+            }
+            pv_data <- d[, subset_cols, drop = FALSE] |>
                 dplyr::group_by(.data[[id]]) |>
                 dplyr::summarise(
                     p_combined = combine_pvalues(
@@ -551,6 +583,13 @@ plot_confidence_intervals <- function(
                     ),
                     .groups = "drop"
                 )
+            # If fill was provided and not id, add it back (should be constant within id)
+            if (!is.null(fill_arg) && fill_arg != id) {
+                fill_values <- lapply(units, function(u) {
+                    unique(d[[fill_arg]][as.character(d[[id]]) == u])
+                })
+                pv_data[[fill_arg]] <- unlist(fill_values)
+            }
             pv_data[[id]] <- factor(
                 pv_data[[id]],
                 levels = units
@@ -580,11 +619,17 @@ plot_confidence_intervals <- function(
                 )
             }
 
+            # Build subset of columns to extract
+            subset_cols <- c(id, pvalue_col)
+            if (!is.null(fill_arg) && fill_arg != id) {
+                subset_cols <- c(subset_cols, fill_arg)
+            }
+
             pv_data <- do.call(
                 rbind,
                 lapply(units, function(u) {
                     rows <- d[as.character(d[[id]]) == u, , drop = FALSE]
-                    rows[1, c(id, pvalue_col), drop = FALSE]
+                    rows[1, subset_cols, drop = FALSE]
                 })
             )
             pv_data[[id]] <- factor(
