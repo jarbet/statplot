@@ -21,31 +21,31 @@ patchwork_rowtitle(
 )
 }
 \arguments{
-\item{label}{Character string for the row title label.}
+\item{label}{Character string for the row title label. Must be a single value.}
 
-\item{x}{Numeric x position of text (0 to 1). Default: 0.5 (center).}
+\item{x}{Numeric x position of text. Must be between 0 and 1. Default: 0.5 (center).}
 
-\item{y}{Numeric y position of text (0 to 1). Default: 0.5 (center).}
+\item{y}{Numeric y position of text. Must be between 0 and 1. Default: 0.5 (center).}
 
-\item{size}{Numeric text size. Default: 5.5.}
+\item{size}{Numeric text size. Must be positive. Default: 5.5.}
 
-\item{hjust}{Numeric horizontal justification (0 to 1). Default: 0.5 (center).}
+\item{hjust}{Numeric horizontal justification. Must be between 0 and 1. Default: 0.5 (center).}
 
-\item{vjust}{Numeric vertical justification (0 to 1). Default: 0.5 (center).}
+\item{vjust}{Numeric vertical justification. Must be between 0 and 1. Default: 0.5 (center).}
 
-\item{fill}{Character color for plot background. Default: "grey92".}
+\item{fill}{Character color for plot background. Must be a single value. Default: "grey92".}
 
-\item{color}{Character color for plot border. Default: "black".}
+\item{color}{Character color for plot border. Must be a single value. Default: "black".}
 
-\item{linewidth}{Numeric width of plot border. Default: 1.5.}
+\item{linewidth}{Numeric width of plot border. Must be positive. Default: 1.5.}
 
-\item{margin_top}{Numeric top margin in points. Default: 6.}
+\item{margin_top}{Numeric top margin in points. Must be non-negative. Default: 6.}
 
-\item{margin_right}{Numeric right margin in points. Default: 0.}
+\item{margin_right}{Numeric right margin in points. Must be non-negative. Default: 0.}
 
-\item{margin_bottom}{Numeric bottom margin in points. Default: 0.}
+\item{margin_bottom}{Numeric bottom margin in points. Must be non-negative. Default: 0.}
 
-\item{margin_left}{Numeric left margin in points. Default: 0.}
+\item{margin_left}{Numeric left margin in points. Must be non-negative. Default: 0.}
 }
 \value{
 A ggplot object suitable for use in a patchwork composition.
@@ -56,6 +56,8 @@ title in a multi-row patchwork composition. The plot has a minimal theme
 with a customizable background and bold text.
 }
 \examples{
+ggplot2::theme_set(theme_bw2())
+
 # Create sample plots
 p1 <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
   ggplot2::geom_point() +

@@ -4,23 +4,25 @@
 #' title in a multi-row patchwork composition. The plot has a minimal theme
 #' with a customizable background and bold text.
 #'
-#' @param label Character string for the row title label.
-#' @param x Numeric x position of text (0 to 1). Default: 0.5 (center).
-#' @param y Numeric y position of text (0 to 1). Default: 0.5 (center).
-#' @param size Numeric text size. Default: 5.5.
-#' @param hjust Numeric horizontal justification (0 to 1). Default: 0.5 (center).
-#' @param vjust Numeric vertical justification (0 to 1). Default: 0.5 (center).
-#' @param fill Character color for plot background. Default: "grey92".
-#' @param color Character color for plot border. Default: "black".
-#' @param linewidth Numeric width of plot border. Default: 1.5.
-#' @param margin_top Numeric top margin in points. Default: 6.
-#' @param margin_right Numeric right margin in points. Default: 0.
-#' @param margin_bottom Numeric bottom margin in points. Default: 0.
-#' @param margin_left Numeric left margin in points. Default: 0.
+#' @param label Character string for the row title label. Must be a single value.
+#' @param x Numeric x position of text. Must be between 0 and 1. Default: 0.5 (center).
+#' @param y Numeric y position of text. Must be between 0 and 1. Default: 0.5 (center).
+#' @param size Numeric text size. Must be positive. Default: 5.5.
+#' @param hjust Numeric horizontal justification. Must be between 0 and 1. Default: 0.5 (center).
+#' @param vjust Numeric vertical justification. Must be between 0 and 1. Default: 0.5 (center).
+#' @param fill Character color for plot background. Must be a single value. Default: "grey92".
+#' @param color Character color for plot border. Must be a single value. Default: "black".
+#' @param linewidth Numeric width of plot border. Must be positive. Default: 1.5.
+#' @param margin_top Numeric top margin in points. Must be non-negative. Default: 6.
+#' @param margin_right Numeric right margin in points. Must be non-negative. Default: 0.
+#' @param margin_bottom Numeric bottom margin in points. Must be non-negative. Default: 0.
+#' @param margin_left Numeric left margin in points. Must be non-negative. Default: 0.
 #'
 #' @return A ggplot object suitable for use in a patchwork composition.
 #'
 #' @examples
+#' ggplot2::theme_set(theme_bw2())
+#'
 #' # Create sample plots
 #' p1 <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
 #'   ggplot2::geom_point() +
@@ -71,6 +73,74 @@ patchwork_rowtitle <- function(
     margin_bottom = 0,
     margin_left = 0
 ) {
+    # Validate arguments
+    stopifnot(
+        is.character(label),
+        length(label) == 1
+    )
+    stopifnot(
+        is.numeric(x),
+        length(x) == 1,
+        x >= 0,
+        x <= 1
+    )
+    stopifnot(
+        is.numeric(y),
+        length(y) == 1,
+        y >= 0,
+        y <= 1
+    )
+    stopifnot(
+        is.numeric(hjust),
+        length(hjust) == 1,
+        hjust >= 0,
+        hjust <= 1
+    )
+    stopifnot(
+        is.numeric(vjust),
+        length(vjust) == 1,
+        vjust >= 0,
+        vjust <= 1
+    )
+    stopifnot(
+        is.numeric(size),
+        length(size) == 1,
+        size > 0
+    )
+    stopifnot(
+        is.numeric(linewidth),
+        length(linewidth) == 1,
+        linewidth > 0
+    )
+    stopifnot(
+        is.character(fill),
+        length(fill) == 1
+    )
+    stopifnot(
+        is.character(color),
+        length(color) == 1
+    )
+    stopifnot(
+        is.numeric(margin_top),
+        length(margin_top) == 1,
+        margin_top >= 0
+    )
+    stopifnot(
+        is.numeric(margin_right),
+        length(margin_right) == 1,
+        margin_right >= 0
+    )
+    stopifnot(
+        is.numeric(margin_bottom),
+        length(margin_bottom) == 1,
+        margin_bottom >= 0
+    )
+    stopifnot(
+        is.numeric(margin_left),
+        length(margin_left) == 1,
+        margin_left >= 0
+    )
+
     ggplot2::ggplot() +
         ggplot2::annotate(
             "text",
