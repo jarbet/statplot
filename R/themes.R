@@ -38,7 +38,7 @@ theme_bw2 <- function() {
 
 #' Bold-styled Classic Theme
 #'
-#' A modified ggplot2 classic theme with bold text elements and centered title.
+#' A modified ggplot2 classic theme with bold text elements.
 #'
 #' @return A ggplot2 theme object
 #' @export
