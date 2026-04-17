@@ -471,13 +471,18 @@ plot_confidence_intervals <- function(
     }
 
     # ---- scales & theme ----
+    # Calculate y-axis limits accounting for dodge_width offsets
+    # When group_col is set, offsets range from ±dodge_width/2, so we pad the limits accordingly
+    y_padding <- if (!is.null(group_col)) dodge_width / 2 else 0
+    y_limits <- c(0.5 - y_padding, n_units + 0.5 + y_padding)
+
     p <- p +
         ggplot2::scale_y_continuous(
             breaks = seq_len(n_units),
             labels = rev(units), # y=1 is bottom, so rev() maps units back correctly
-            limits = c(0.5, n_units + 0.5),
             expand = c(0, 0)
         ) +
+        ggplot2::coord_cartesian(ylim = y_limits) +
         ggplot2::labs(x = "Estimate", y = NULL) +
         ggplot2::theme(axis.text.y = ggplot2::element_text(face = "bold"))
 
