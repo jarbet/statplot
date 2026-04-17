@@ -20,11 +20,13 @@ plot_pvalue_barplot(
   vline_legend = TRUE,
   show_y_labels = FALSE,
   mlog10_transform_pvalue = TRUE,
+  exponentiate_labels = FALSE,
   also_show_qvalue = TRUE,
   custom_qvalues = NULL,
   color_qvalue = "grey",
   color_pvalue = "black",
-  legend_title = "Bar type"
+  legend_title = "Bar type",
+  fill_colors = NULL
 )
 }
 \arguments{
@@ -64,6 +66,9 @@ significance line (default \code{TRUE}). When \code{TRUE} a legend key showing t
 \item{mlog10_transform_pvalue}{Logical; when TRUE compute -log10(p) for plotting/order and
 format x-axis tick labels as p-values (10^-x).}
 
+\item{exponentiate_labels}{Logical; when TRUE and mlog10_transform_pvalue = TRUE, format x-axis
+labels as expressions with superscripts (e.g., 1, 10^-1, 10^-2, ...) instead of decimal notation.}
+
 \item{also_show_qvalue}{Logical; when TRUE compute FDR-adjusted q-values (Benjamini-Hochberg)
 (or use custom_qvalues if supplied) and draw two overlapping bars per row: both p and q
 are shown. Note on drawing order:
@@ -86,6 +91,10 @@ q-value bar for that row.}
 
 \item{legend_title}{Character, title for the legend when also_show_qvalue = TRUE.
 Default is 'Bar type'.}
+
+\item{fill_colors}{Named character vector or NULL. When provided along with \code{fill},
+specifies custom colors for the fill mapping. Names should match unique values in
+the fill column, e.g., c("GroupA" = "red", "GroupB" = "blue", "GroupC" = "green").}
 }
 \value{
 A \code{ggplot2} plot object.
@@ -132,7 +141,21 @@ plot_pvalue_barplot(
   also_show_qvalue = FALSE
 )
 
-# Example 3: Raw p-value scale (no transformation) without significance line
+# Example 3: -log10 transformed p-values with exponential notation labels (1, 10^-1, 10^-2, ...)
+plot_pvalue_barplot(
+  data = example_df,
+  x = "pvalue",
+  y = "cell_line",
+  mlog10_transform_pvalue = TRUE,
+  exponentiate_labels = TRUE,
+  xlim = c(0, 4),
+  xbreaks = 0:4,
+  show_y_labels = TRUE,
+  vline = TRUE,
+  also_show_qvalue = FALSE
+)
+
+# Example 4: Raw p-value scale (no transformation) without significance line
 plot_pvalue_barplot(
   data = example_df,
   x = "pvalue",
@@ -143,12 +166,13 @@ plot_pvalue_barplot(
   also_show_qvalue = FALSE
 )
 
-# Example 4: Colored bars by group using fill mapping
+# Example 5: Colored bars by group using fill mapping
 plot_pvalue_barplot(
   data = example_df,
   x = "pvalue",
   y = "cell_line",
   fill = "group",
+  fill_colors = c("GroupA" = "#FF6B6B", "GroupB" = "#4ECDC4", "GroupC" = "#FFE66D"),
   mlog10_transform_pvalue = TRUE,
   show_y_labels = TRUE,
   vline = TRUE,
@@ -156,7 +180,7 @@ plot_pvalue_barplot(
   also_show_qvalue = FALSE
 )
 
-# Example 5: Custom significance threshold and vline styling
+# Example 6: Custom significance threshold and vline styling
 plot_pvalue_barplot(
   data = example_df,
   x = "pvalue",
@@ -171,7 +195,7 @@ plot_pvalue_barplot(
   also_show_qvalue = FALSE
 )
 
-# Example 6: Custom q-values
+# Example 7: Custom q-values
 example_df$custom_qvalue <- c(0.001, 0.005, 0.05, 0.1, 0.2, 0.5)
 plot_pvalue_barplot(
   data = example_df,

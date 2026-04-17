@@ -24,6 +24,8 @@
 #' @param show_y_labels Logical, whether to show y-axis labels (default FALSE).
 #' @param mlog10_transform_pvalue Logical; when TRUE compute -log10(p) for plotting/order and
 #'   format x-axis tick labels as p-values (10^-x).
+#' @param exponentiate_labels Logical; when TRUE and mlog10_transform_pvalue = TRUE, format x-axis
+#'   labels as expressions with superscripts (e.g., 1, 10^-1, 10^-2, ...) instead of decimal notation.
 #' @param also_show_qvalue Logical; when TRUE compute FDR-adjusted q-values (Benjamini-Hochberg)
 #'   (or use custom_qvalues if supplied) and draw two overlapping bars per row: both p and q
 #'   are shown. Note on drawing order:
@@ -40,6 +42,9 @@
 #' @param color_pvalue Character, color for p-value bars when also_show_qvalue = TRUE.
 #' @param legend_title Character, title for the legend when also_show_qvalue = TRUE.
 #'   Default is 'Bar type'.
+#' @param fill_colors Named character vector or NULL. When provided along with `fill`,
+#'   specifies custom colors for the fill mapping. Names should match unique values in
+#'   the fill column, e.g., c("GroupA" = "red", "GroupB" = "blue", "GroupC" = "green").
 #' @return A `ggplot2` plot object.
 #' @examples
 #' ggplot2::theme_set(theme_bw2())
@@ -79,7 +84,21 @@
 #'   also_show_qvalue = FALSE
 #' )
 #'
-#' # Example 3: Raw p-value scale (no transformation) without significance line
+#' # Example 3: -log10 transformed p-values with exponential notation labels (1, 10^-1, 10^-2, ...)
+#' plot_pvalue_barplot(
+#'   data = example_df,
+#'   x = "pvalue",
+#'   y = "cell_line",
+#'   mlog10_transform_pvalue = TRUE,
+#'   exponentiate_labels = TRUE,
+#'   xlim = c(0, 4),
+#'   xbreaks = 0:4,
+#'   show_y_labels = TRUE,
+#'   vline = TRUE,
+#'   also_show_qvalue = FALSE
+#' )
+#'
+#' # Example 4: Raw p-value scale (no transformation) without significance line
 #' plot_pvalue_barplot(
 #'   data = example_df,
 #'   x = "pvalue",
@@ -90,12 +109,13 @@
 #'   also_show_qvalue = FALSE
 #' )
 #'
-#' # Example 4: Colored bars by group using fill mapping
+#' # Example 5: Colored bars by group using fill mapping
 #' plot_pvalue_barplot(
 #'   data = example_df,
 #'   x = "pvalue",
 #'   y = "cell_line",
 #'   fill = "group",
+#'   fill_colors = c("GroupA" = "#FF6B6B", "GroupB" = "#4ECDC4", "GroupC" = "#FFE66D"),
 #'   mlog10_transform_pvalue = TRUE,
 #'   show_y_labels = TRUE,
 #'   vline = TRUE,
@@ -103,7 +123,7 @@
 #'   also_show_qvalue = FALSE
 #' )
 #'
-#' # Example 5: Custom significance threshold and vline styling
+#' # Example 6: Custom significance threshold and vline styling
 #' plot_pvalue_barplot(
 #'   data = example_df,
 #'   x = "pvalue",
@@ -118,7 +138,7 @@
 #'   also_show_qvalue = FALSE
 #' )
 #'
-#' # Example 6: Custom q-values
+#' # Example 7: Custom q-values
 #' example_df$custom_qvalue <- c(0.001, 0.005, 0.05, 0.1, 0.2, 0.5)
 #' plot_pvalue_barplot(
 #'   data = example_df,
@@ -150,11 +170,13 @@ plot_pvalue_barplot <- function(
     vline_legend = TRUE,
     show_y_labels = FALSE, # whether to show y-axis labels (default FALSE)
     mlog10_transform_pvalue = TRUE, # when TRUE compute -log10(p) for plotting/order
+    exponentiate_labels = FALSE, # when TRUE and mlog10_transform_pvalue = TRUE, use expression labels with superscripts
     also_show_qvalue = TRUE, # when TRUE compute q-values (FDR) and draw p-values (grey, behind) plus q-values (black, on top) per row
     custom_qvalues = NULL, # column name in `data` containing user-supplied q-values
     color_qvalue = 'grey',
     color_pvalue = 'black',
-    legend_title = 'Bar type'
+    legend_title = 'Bar type',
+    fill_colors = NULL # named character vector for custom fill colors
 ) {
     # ---- simple argument checks ----
     stopifnot(is.data.frame(data))
@@ -181,6 +203,12 @@ plot_pvalue_barplot <- function(
         is.logical(mlog10_transform_pvalue),
         length(mlog10_transform_pvalue) == 1
     )
+    stopifnot(is.logical(exponentiate_labels), length(exponentiate_labels) == 1)
+    if (exponentiate_labels && !mlog10_transform_pvalue) {
+        warning(
+            "Argument 'exponentiate_labels = TRUE' has no effect when mlog10_transform_pvalue = FALSE."
+        )
+    }
     stopifnot(is.logical(also_show_qvalue), length(also_show_qvalue) == 1)
     stopifnot(
         is.null(custom_qvalues) ||
@@ -200,6 +228,18 @@ plot_pvalue_barplot <- function(
     stopifnot(is.character(color_pvalue), length(color_pvalue) == 1)
     stopifnot(is.character(legend_title), length(legend_title) == 1)
     stopifnot(is.logical(also_show_qvalue), length(also_show_qvalue) == 1)
+    stopifnot(
+        is.null(fill_colors) ||
+            (is.character(fill_colors) && !is.null(names(fill_colors)))
+    )
+    if (!is.null(fill_colors) && is.null(fill)) {
+        warning("Argument 'fill_colors' is ignored when fill = NULL.")
+    }
+    if (!is.null(fill_colors) && also_show_qvalue) {
+        warning(
+            "Argument 'fill_colors' is ignored when also_show_qvalue = TRUE."
+        )
+    }
     if (!is.null(custom_qvalues)) {
         stopifnot(is.numeric(data[[custom_qvalues]]))
         .cq_non_na <- data[[custom_qvalues]][!is.na(data[[custom_qvalues]])]
@@ -291,14 +331,30 @@ plot_pvalue_barplot <- function(
     # x-axis label function: if plotting -log10(p) show p on ticks (10^-x); otherwise show raw values
     x_label_fun <- function(b) {
         if (mlog10_transform_pvalue) {
-            pvals <- 10^(-b)
-            labs <- trimws(formatC(pvals, digits = 2, format = "g"))
-            # Add < sign to the smallest p-value threshold (largest -log10 value)
-            smallest_idx <- which.max(b)
-            if (length(smallest_idx) > 0) {
-                labs[smallest_idx] <- paste0("<", labs[smallest_idx])
+            if (exponentiate_labels) {
+                # Create expression labels with superscripts: 1, 10^-1, 10^-2, etc.
+                # b is -log10(p), so exponents are -b
+                exponents <- -b
+                max_idx <- which.max(b)
+                labels <- lapply(seq_along(exponents), function(i) {
+                    exp_val <- exponents[i]
+                    if (i == max_idx) {
+                        bquote("<" * 10^.(exp_val))
+                    } else {
+                        bquote(10^.(exp_val))
+                    }
+                })
+                return(as.expression(labels))
+            } else {
+                pvals <- 10^(-b)
+                labs <- trimws(formatC(pvals, digits = 2, format = "g"))
+                # Add < sign to the smallest p-value threshold (largest -log10 value)
+                smallest_idx <- which.max(b)
+                if (length(smallest_idx) > 0) {
+                    labs[smallest_idx] <- paste0("<", labs[smallest_idx])
+                }
+                labs
             }
-            labs
         } else {
             b
         }
@@ -373,7 +429,14 @@ plot_pvalue_barplot <- function(
                     fill = !!fill_sym
                 )
             ) +
-                ggplot2::geom_col(width = width) +
+                ggplot2::geom_col(width = width)
+
+            if (!is.null(fill_colors)) {
+                p <- p +
+                    ggplot2::scale_fill_manual(values = fill_colors)
+            }
+
+            p <- p +
                 ggplot2::guides(
                     fill = ggplot2::guide_legend(
                         override.aes = list(linetype = 0)
