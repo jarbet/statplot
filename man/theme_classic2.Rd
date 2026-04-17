@@ -16,5 +16,6 @@ A modified ggplot2 classic theme with bold text elements and centered title.
 library(ggplot2)
 ggplot(mtcars, aes(x = wt, y = mpg)) +
   geom_point() +
+  labs(tag = "A") +
   theme_classic2()
 }

@@ -29,6 +29,7 @@ theme_base <- function() {
 #' library(ggplot2)
 #' ggplot(mtcars, aes(x = wt, y = mpg)) +
 #'   geom_point() +
+#'   labs(tag = "A") +
 #'   theme_bw2()
 theme_bw2 <- function() {
     ggplot2::theme_bw() +
@@ -46,6 +47,7 @@ theme_bw2 <- function() {
 #' library(ggplot2)
 #' ggplot(mtcars, aes(x = wt, y = mpg)) +
 #'   geom_point() +
+#'   labs(tag = "A") +
 #'   theme_classic2()
 theme_classic2 <- function() {
     ggplot2::theme_classic() +
