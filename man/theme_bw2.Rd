@@ -16,5 +16,6 @@ A modified ggplot2 black and white theme with bold text elements.
 library(ggplot2)
 ggplot(mtcars, aes(x = wt, y = mpg)) +
   geom_point() +
+  labs(tag = "A") +
   theme_bw2()
 }
