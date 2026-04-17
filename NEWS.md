@@ -6,7 +6,11 @@
 
 ## Changed
 
-...
+* `plot_pvalue_barplot`: new `exponentiate_labels` argument (default `FALSE`) allows formatting
+  x-axis labels with exponential notation and superscripts (e.g., 1, 10^-1, 10^-2, 10^-3, <10^-x)
+  when `mlog10_transform_pvalue = TRUE`. Uses R expressions via `bquote()` for proper rendering of
+  mathematical notation in plots. When `exponentiate_labels = TRUE` without `mlog10_transform_pvalue = TRUE`,
+  a warning is issued.
 
 ## Fixed
 
