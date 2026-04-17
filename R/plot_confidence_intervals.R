@@ -61,7 +61,9 @@
 #'   `c(5.5, 12, 5.5, 0)` which increases right margin so x-axis labels are
 #'   not clipped when the panel is appended to the right.
 #' @param ... Additional arguments passed to [plot_pvalue_barplot()] when
-#'   `pvalue_col` is supplied.
+#'   `pvalue_col` is supplied. The `fill` parameter can be used to color the
+#'   p-value bars. When `group_col` is specified, `fill` must be `NULL` or equal
+#'   to the `id` column name (since p-values are combined across groups).
 #'
 #' @return A `ggplot2` object, or a `patchwork` object when `pvalue_col` is
 #'   supplied.

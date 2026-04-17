@@ -109,7 +109,9 @@ panel plot margin in points: \code{c(top, right, bottom, left)}. Default
 not clipped when the panel is appended to the right.}
 
 \item{...}{Additional arguments passed to \code{\link[=plot_pvalue_barplot]{plot_pvalue_barplot()}} when
-\code{pvalue_col} is supplied.}
+\code{pvalue_col} is supplied. The \code{fill} parameter can be used to color the
+p-value bars. When \code{group_col} is specified, \code{fill} must be \code{NULL} or equal
+to the \code{id} column name (since p-values are combined across groups).}
 }
 \value{
 A \code{ggplot2} object, or a \code{patchwork} object when \code{pvalue_col} is
@@ -211,5 +213,22 @@ plot_confidence_intervals(
   id = "cell_line",
   pvalue_col = "pvalue",
   mlog10_transform_pvalue = TRUE
+)
+
+# Color by label and shapes by group, with p-values colored by label
+plot_confidence_intervals(
+  df,
+  effect_size = "est",
+  ci_low = "conf.low",
+  ci_high = "conf.high",
+  id = "cell_line",
+  group_col = "group",
+  shape_col = "group",
+  color_col = "cell_line",
+  pvalue_col = "pvalue",
+  combine_pvalue_method = "fisher",
+  mlog10_transform_pvalue = TRUE,
+  fill = "cell_line",
+  also_show_qvalue = FALSE
 )
 }
