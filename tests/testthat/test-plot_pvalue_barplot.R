@@ -1,5 +1,4 @@
 library(testthat)
-library(ggplot2)
 
 set.seed(1)
 df <- tibble::tibble(
