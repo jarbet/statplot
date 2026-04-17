@@ -66,7 +66,7 @@ significance line (default \code{TRUE}). When \code{TRUE} a legend key showing t
 format x-axis tick labels as p-values (10^-x).}
 
 \item{exponentiate_labels}{Logical; when TRUE and mlog10_transform_pvalue = TRUE, format x-axis
-labels as expressions with superscripts (e.g., 1, 10^-1, 10^-2, ...) instead of decimal notation.}
+labels as expressions with superscripts (e.g., 10^0, 10^-1, 10^-2, ...) instead of decimal notation.}
 
 \item{also_show_qvalue}{Logical; when TRUE compute FDR-adjusted q-values (Benjamini-Hochberg)
 (or use custom_qvalues if supplied) and draw two overlapping bars per row: both p and q
