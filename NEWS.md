@@ -6,6 +6,10 @@
 
 ## Changed
 
+* `theme_bw2` and `theme_classic2`: refactored to use an internal `theme_base()` helper function
+  that consolidates common bold styling (titles, axis labels, legend titles, and plot tags).
+  Both themes now apply `theme_base()` consistently, reducing code duplication.
+
 * `plot_pvalue_barplot`: new `exponentiate_labels` argument (default `FALSE`) allows formatting
   x-axis labels with exponential notation and superscripts (e.g., 1, 10^-1, 10^-2, 10^-3, <10^-x)
   when `mlog10_transform_pvalue = TRUE`. Uses R expressions via `bquote()` for proper rendering of
