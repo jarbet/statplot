@@ -158,6 +158,23 @@
 #'   pvalue_col = "pvalue",
 #'   mlog10_transform_pvalue = TRUE
 #' )
+#'
+#' # Color by label and shapes by group, with p-values colored by label
+#' plot_confidence_intervals(
+#'   df,
+#'   effect_size = "est",
+#'   ci_low = "conf.low",
+#'   ci_high = "conf.high",
+#'   id = "cell_line",
+#'   group_col = "group",
+#'   shape_col = "group",
+#'   color_col = "cell_line",
+#'   pvalue_col = "pvalue",
+#'   combine_pvalue_method = "fisher",
+#'   mlog10_transform_pvalue = TRUE,
+#'   fill = "cell_line",
+#'   also_show_qvalue = FALSE
+#' )
 plot_confidence_intervals <- function(
     data,
     effect_size,
@@ -491,6 +508,22 @@ plot_confidence_intervals <- function(
             stop("Package 'patchwork' is required when pvalue_col is supplied.")
         }
 
+        # Validate fill argument if supplied via ...
+        # Check if fill is in the ... arguments
+        dots <- list(...)
+        if (!is.null(dots$fill)) {
+            fill_arg <- dots$fill
+            stopifnot(
+                "fill must be NULL or a column in data" = is.null(fill_arg) ||
+                    fill_arg %in% names(data),
+                "When group_col is specified, fill should be NULL or match the id column" = is.null(
+                    group_col
+                ) ||
+                    is.null(fill_arg) ||
+                    fill_arg == id
+            )
+        }
+
         p <- p +
             ggplot2::theme(
                 legend.position = "left",
@@ -513,7 +546,7 @@ plot_confidence_intervals <- function(
                 )
             pv_data[[id]] <- factor(
                 pv_data[[id]],
-                levels = rev(units)
+                levels = units
             )
             pv_col_name <- "p_combined"
         } else {
@@ -549,7 +582,7 @@ plot_confidence_intervals <- function(
             )
             pv_data[[id]] <- factor(
                 pv_data[[id]],
-                levels = rev(units)
+                levels = units
             )
             pv_col_name <- pvalue_col
         }
