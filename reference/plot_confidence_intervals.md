@@ -167,7 +167,10 @@ plot_confidence_intervals(
 
   Additional arguments passed to
   [`plot_pvalue_barplot()`](https://github.com/jarbet/statplot/reference/plot_pvalue_barplot.md)
-  when `pvalue_col` is supplied.
+  when `pvalue_col` is supplied. The `fill` parameter can be used to
+  color the p-value bars. When `group_col` is specified, `fill` must be
+  `NULL` or equal to the `id` column name (since p-values are combined
+  across groups).
 
 ## Value
 
@@ -276,6 +279,26 @@ plot_confidence_intervals(
   id = "cell_line",
   pvalue_col = "pvalue",
   mlog10_transform_pvalue = TRUE
+)
+#> Scale for y is already present.
+#> Adding another scale for y, which will replace the existing scale.
+
+
+# Color by label and shapes by group, with p-values colored by label
+plot_confidence_intervals(
+  df,
+  effect_size = "est",
+  ci_low = "conf.low",
+  ci_high = "conf.high",
+  id = "cell_line",
+  group_col = "group",
+  shape_col = "group",
+  color_col = "cell_line",
+  pvalue_col = "pvalue",
+  combine_pvalue_method = "fisher",
+  mlog10_transform_pvalue = TRUE,
+  fill = "cell_line",
+  also_show_qvalue = FALSE
 )
 #> Scale for y is already present.
 #> Adding another scale for y, which will replace the existing scale.

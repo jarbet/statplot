@@ -15,7 +15,12 @@
 
 ### Fixed
 
-…
+- `plot_confidence_intervals`: fixed y-axis alignment when displaying
+  grouped data with a p-value barplot. Previously, the y-axis limits of
+  the confidence interval plot were calculated based on the dodged
+  `y_pos` values, causing misalignment with the p-value plot’s fixed
+  limits. Now uses fixed y-axis limits that match the p-value panel,
+  ensuring perfect alignment of tick marks regardless of dodging.
 
 ## statplot 0.6.0 - 2026-04-15
 
