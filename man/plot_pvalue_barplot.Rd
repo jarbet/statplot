@@ -25,7 +25,8 @@ plot_pvalue_barplot(
   custom_qvalues = NULL,
   color_qvalue = "grey",
   color_pvalue = "black",
-  legend_title = "Bar type"
+  legend_title = "Bar type",
+  fill_colors = NULL
 )
 }
 \arguments{
@@ -90,6 +91,10 @@ q-value bar for that row.}
 
 \item{legend_title}{Character, title for the legend when also_show_qvalue = TRUE.
 Default is 'Bar type'.}
+
+\item{fill_colors}{Named character vector or NULL. When provided along with \code{fill},
+specifies custom colors for the fill mapping. Names should match unique values in
+the fill column, e.g., c("GroupA" = "red", "GroupB" = "blue", "GroupC" = "green").}
 }
 \value{
 A \code{ggplot2} plot object.
@@ -167,6 +172,7 @@ plot_pvalue_barplot(
   x = "pvalue",
   y = "cell_line",
   fill = "group",
+  fill_colors = c("GroupA" = "#FF6B6B", "GroupB" = "#4ECDC4", "GroupC" = "#FFE66D"),
   mlog10_transform_pvalue = TRUE,
   show_y_labels = TRUE,
   vline = TRUE,

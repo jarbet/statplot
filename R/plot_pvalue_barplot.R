@@ -42,6 +42,9 @@
 #' @param color_pvalue Character, color for p-value bars when also_show_qvalue = TRUE.
 #' @param legend_title Character, title for the legend when also_show_qvalue = TRUE.
 #'   Default is 'Bar type'.
+#' @param fill_colors Named character vector or NULL. When provided along with `fill`,
+#'   specifies custom colors for the fill mapping. Names should match unique values in
+#'   the fill column, e.g., c("GroupA" = "red", "GroupB" = "blue", "GroupC" = "green").
 #' @return A `ggplot2` plot object.
 #' @examples
 #' ggplot2::theme_set(theme_bw2())
@@ -112,6 +115,7 @@
 #'   x = "pvalue",
 #'   y = "cell_line",
 #'   fill = "group",
+#'   fill_colors = c("GroupA" = "#FF6B6B", "GroupB" = "#4ECDC4", "GroupC" = "#FFE66D"),
 #'   mlog10_transform_pvalue = TRUE,
 #'   show_y_labels = TRUE,
 #'   vline = TRUE,
@@ -171,7 +175,8 @@ plot_pvalue_barplot <- function(
     custom_qvalues = NULL, # column name in `data` containing user-supplied q-values
     color_qvalue = 'grey',
     color_pvalue = 'black',
-    legend_title = 'Bar type'
+    legend_title = 'Bar type',
+    fill_colors = NULL # named character vector for custom fill colors
 ) {
     # ---- simple argument checks ----
     stopifnot(is.data.frame(data))
@@ -223,6 +228,18 @@ plot_pvalue_barplot <- function(
     stopifnot(is.character(color_pvalue), length(color_pvalue) == 1)
     stopifnot(is.character(legend_title), length(legend_title) == 1)
     stopifnot(is.logical(also_show_qvalue), length(also_show_qvalue) == 1)
+    stopifnot(
+        is.null(fill_colors) ||
+            (is.character(fill_colors) && !is.null(names(fill_colors)))
+    )
+    if (!is.null(fill_colors) && is.null(fill)) {
+        warning("Argument 'fill_colors' is ignored when fill = NULL.")
+    }
+    if (!is.null(fill_colors) && also_show_qvalue) {
+        warning(
+            "Argument 'fill_colors' is ignored when also_show_qvalue = TRUE."
+        )
+    }
     if (!is.null(custom_qvalues)) {
         stopifnot(is.numeric(data[[custom_qvalues]]))
         .cq_non_na <- data[[custom_qvalues]][!is.na(data[[custom_qvalues]])]
@@ -412,7 +429,14 @@ plot_pvalue_barplot <- function(
                     fill = !!fill_sym
                 )
             ) +
-                ggplot2::geom_col(width = width) +
+                ggplot2::geom_col(width = width)
+
+            if (!is.null(fill_colors)) {
+                p <- p +
+                    ggplot2::scale_fill_manual(values = fill_colors)
+            }
+
+            p <- p +
                 ggplot2::guides(
                     fill = ggplot2::guide_legend(
                         override.aes = list(linetype = 0)
