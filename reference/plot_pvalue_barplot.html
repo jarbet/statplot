@@ -58,11 +58,13 @@ optional significance vertical line and optional fill mapping.</p>
 <span>  vline_legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_y_labels <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  exponentiate_labels <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  also_show_qvalue <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  custom_qvalues <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  color_qvalue <span class="op">=</span> <span class="st">"grey"</span>,</span>
 <span>  color_pvalue <span class="op">=</span> <span class="st">"black"</span>,</span>
-<span>  legend_title <span class="op">=</span> <span class="st">"Bar type"</span></span>
+<span>  legend_title <span class="op">=</span> <span class="st">"Bar type"</span>,</span>
+<span>  fill_colors <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -136,6 +138,11 @@ significance line (default <code>TRUE</code>). When <code>TRUE</code> a legend k
 format x-axis tick labels as p-values (10^-x).</p></dd>
 
 
+<dt id="arg-exponentiate-labels">exponentiate_labels<a class="anchor" aria-label="anchor" href="#arg-exponentiate-labels"></a></dt>
+<dd><p>Logical; when TRUE and mlog10_transform_pvalue = TRUE, format x-axis
+labels as expressions with superscripts (e.g., 1, 10^-1, 10^-2, ...) instead of decimal notation.</p></dd>
+
+
 <dt id="arg-also-show-qvalue">also_show_qvalue<a class="anchor" aria-label="anchor" href="#arg-also-show-qvalue"></a></dt>
 <dd><p>Logical; when TRUE compute FDR-adjusted q-values (Benjamini-Hochberg)
 (or use custom_qvalues if supplied) and draw two overlapping bars per row: both p and q
@@ -165,6 +172,12 @@ q-value bar for that row.</p></dd>
 <dt id="arg-legend-title">legend_title<a class="anchor" aria-label="anchor" href="#arg-legend-title"></a></dt>
 <dd><p>Character, title for the legend when also_show_qvalue = TRUE.
 Default is 'Bar type'.</p></dd>
+
+
+<dt id="arg-fill-colors">fill_colors<a class="anchor" aria-label="anchor" href="#arg-fill-colors"></a></dt>
+<dd><p>Named character vector or NULL. When provided along with <code>fill</code>,
+specifies custom colors for the fill mapping. Names should match unique values in
+the fill column, e.g., c("GroupA" = "red", "GroupB" = "blue", "GroupC" = "green").</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -213,7 +226,22 @@ Default is 'Bar type'.</p></dd>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot_pvalue_barplot-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Example 3: Raw p-value scale (no transformation) without significance line</span></span></span>
+<span class="r-in"><span><span class="co"># Example 3: -log10 transformed p-values with exponential notation labels (1, 10^-1, 10^-2, ...)</span></span></span>
+<span class="r-in"><span><span class="fu">plot_pvalue_barplot</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">example_df</span>,</span></span>
+<span class="r-in"><span>  x <span class="op">=</span> <span class="st">"pvalue"</span>,</span></span>
+<span class="r-in"><span>  y <span class="op">=</span> <span class="st">"cell_line"</span>,</span></span>
+<span class="r-in"><span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  exponentiate_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  xbreaks <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">4</span>,</span></span>
+<span class="r-in"><span>  show_y_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  vline <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  also_show_qvalue <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot_pvalue_barplot-3.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example 4: Raw p-value scale (no transformation) without significance line</span></span></span>
 <span class="r-in"><span><span class="fu">plot_pvalue_barplot</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">example_df</span>,</span></span>
 <span class="r-in"><span>  x <span class="op">=</span> <span class="st">"pvalue"</span>,</span></span>
@@ -223,23 +251,24 @@ Default is 'Bar type'.</p></dd>
 <span class="r-in"><span>  vline <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
 <span class="r-in"><span>  also_show_qvalue <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="plot_pvalue_barplot-3.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot_pvalue_barplot-4.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Example 4: Colored bars by group using fill mapping</span></span></span>
+<span class="r-in"><span><span class="co"># Example 5: Colored bars by group using fill mapping</span></span></span>
 <span class="r-in"><span><span class="fu">plot_pvalue_barplot</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">example_df</span>,</span></span>
 <span class="r-in"><span>  x <span class="op">=</span> <span class="st">"pvalue"</span>,</span></span>
 <span class="r-in"><span>  y <span class="op">=</span> <span class="st">"cell_line"</span>,</span></span>
 <span class="r-in"><span>  fill <span class="op">=</span> <span class="st">"group"</span>,</span></span>
+<span class="r-in"><span>  fill_colors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GroupA"</span> <span class="op">=</span> <span class="st">"#FF6B6B"</span>, <span class="st">"GroupB"</span> <span class="op">=</span> <span class="st">"#4ECDC4"</span>, <span class="st">"GroupC"</span> <span class="op">=</span> <span class="st">"#FFE66D"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  mlog10_transform_pvalue <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  show_y_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  vline <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  vline_legend <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  also_show_qvalue <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="plot_pvalue_barplot-4.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot_pvalue_barplot-5.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Example 5: Custom significance threshold and vline styling</span></span></span>
+<span class="r-in"><span><span class="co"># Example 6: Custom significance threshold and vline styling</span></span></span>
 <span class="r-in"><span><span class="fu">plot_pvalue_barplot</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">example_df</span>,</span></span>
 <span class="r-in"><span>  x <span class="op">=</span> <span class="st">"pvalue"</span>,</span></span>
@@ -253,9 +282,9 @@ Default is 'Bar type'.</p></dd>
 <span class="r-in"><span>  show_y_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  also_show_qvalue <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="plot_pvalue_barplot-5.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot_pvalue_barplot-6.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Example 6: Custom q-values</span></span></span>
+<span class="r-in"><span><span class="co"># Example 7: Custom q-values</span></span></span>
 <span class="r-in"><span><span class="va">example_df</span><span class="op">$</span><span class="va">custom_qvalue</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.001</span>, <span class="fl">0.005</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.5</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">plot_pvalue_barplot</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">example_df</span>,</span></span>
@@ -266,7 +295,7 @@ Default is 'Bar type'.</p></dd>
 <span class="r-in"><span>  custom_qvalues <span class="op">=</span> <span class="st">"custom_qvalue"</span>,</span></span>
 <span class="r-in"><span>  show_y_labels <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="plot_pvalue_barplot-6.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot_pvalue_barplot-7.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
