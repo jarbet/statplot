@@ -3,6 +3,7 @@
 export(combine_pvalues)
 export(comma)
 export(format_pvalue)
+export(patchwork_rowtitle)
 export(plot_2_categorical_vars)
 export(plot_barplot_by_group)
 export(plot_bars)
