@@ -718,3 +718,107 @@ test_that("plot_confidence_intervals works with shape_col as character and color
     )
     expect_s3_class(p, "ggplot")
 })
+
+test_that("plot_confidence_intervals works with color_col = cell_line, shape_col = group, and pvalue barplot", {
+    skip_if_not_installed("patchwork")
+
+    df <- data.frame(
+        cell_line = factor(
+            c("A", "B", "C", "A", "B", "C"),
+            levels = c("A", "B", "C")
+        ),
+        est = c(0.2, -0.1, 0.5, 0.35, 0.05, 0.3),
+        conf.low = c(0.0, -0.3, 0.2, 0.10, -0.10, 0.1),
+        conf.high = c(0.4, 0.1, 0.8, 0.60, 0.20, 0.5),
+        group = factor(
+            c("g1", "g1", "g1", "g2", "g2", "g2"),
+            levels = c("g1", "g2")
+        ),
+        pvalue = c(0.01, 0.4, 0.001, 0.02, 0.3, 0.0001)
+    )
+
+    p <- plot_confidence_intervals(
+        df,
+        effect_size = "est",
+        ci_low = "conf.low",
+        ci_high = "conf.high",
+        id = "cell_line",
+        group_col = "group",
+        shape_col = "group",
+        color_col = "cell_line",
+        pvalue_col = "pvalue",
+        combine_pvalue_method = "fisher",
+        mlog10_transform_pvalue = TRUE,
+        fill = "cell_line",
+        also_show_qvalue = FALSE
+    )
+    expect_true(inherits(p, "patchwork") || inherits(p, "gg"))
+})
+
+test_that("plot_confidence_intervals validates fill matches id when group_col is supplied", {
+    skip_if_not_installed("patchwork")
+
+    df <- data.frame(
+        cell_line = factor(
+            c("A", "B", "C", "A", "B", "C"),
+            levels = c("A", "B", "C")
+        ),
+        est = c(0.2, -0.1, 0.5, 0.35, 0.05, 0.3),
+        conf.low = c(0.0, -0.3, 0.2, 0.10, -0.10, 0.1),
+        conf.high = c(0.4, 0.1, 0.8, 0.60, 0.20, 0.5),
+        group = factor(
+            c("g1", "g1", "g1", "g2", "g2", "g2"),
+            levels = c("g1", "g2")
+        ),
+        pvalue = c(0.01, 0.4, 0.001, 0.02, 0.3, 0.0001)
+    )
+
+    # fill = "group" should fail when group_col is supplied with pvalue_col
+    expect_error(
+        plot_confidence_intervals(
+            df,
+            effect_size = "est",
+            ci_low = "conf.low",
+            ci_high = "conf.high",
+            id = "cell_line",
+            group_col = "group",
+            pvalue_col = "pvalue",
+            fill = "group"
+        ),
+        "fill should be NULL or match the id column"
+    )
+})
+
+test_that("plot_confidence_intervals accepts fill = NULL with group_col and pvalue_col", {
+    skip_if_not_installed("patchwork")
+
+    df <- data.frame(
+        cell_line = factor(
+            c("A", "B", "C", "A", "B", "C"),
+            levels = c("A", "B", "C")
+        ),
+        est = c(0.2, -0.1, 0.5, 0.35, 0.05, 0.3),
+        conf.low = c(0.0, -0.3, 0.2, 0.10, -0.10, 0.1),
+        conf.high = c(0.4, 0.1, 0.8, 0.60, 0.20, 0.5),
+        group = factor(
+            c("g1", "g1", "g1", "g2", "g2", "g2"),
+            levels = c("g1", "g2")
+        ),
+        pvalue = c(0.01, 0.4, 0.001, 0.02, 0.3, 0.0001)
+    )
+
+    p <- plot_confidence_intervals(
+        df,
+        effect_size = "est",
+        ci_low = "conf.low",
+        ci_high = "conf.high",
+        id = "cell_line",
+        group_col = "group",
+        pvalue_col = "pvalue",
+        combine_pvalue_method = "fisher",
+        mlog10_transform_pvalue = TRUE,
+        fill = NULL,
+        also_show_qvalue = FALSE
+    )
+    expect_true(inherits(p, "patchwork") || inherits(p, "gg"))
+})

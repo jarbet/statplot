@@ -61,7 +61,9 @@
 #'   `c(5.5, 12, 5.5, 0)` which increases right margin so x-axis labels are
 #'   not clipped when the panel is appended to the right.
 #' @param ... Additional arguments passed to [plot_pvalue_barplot()] when
-#'   `pvalue_col` is supplied.
+#'   `pvalue_col` is supplied. The `fill` parameter can be used to color the
+#'   p-value bars. When `group_col` is specified, `fill` must be `NULL` or equal
+#'   to the `id` column name (since p-values are combined across groups).
 #'
 #' @return A `ggplot2` object, or a `patchwork` object when `pvalue_col` is
 #'   supplied.
@@ -157,6 +159,23 @@
 #'   id = "cell_line",
 #'   pvalue_col = "pvalue",
 #'   mlog10_transform_pvalue = TRUE
+#' )
+#'
+#' # Color by label and shapes by group, with p-values colored by label
+#' plot_confidence_intervals(
+#'   df,
+#'   effect_size = "est",
+#'   ci_low = "conf.low",
+#'   ci_high = "conf.high",
+#'   id = "cell_line",
+#'   group_col = "group",
+#'   shape_col = "group",
+#'   color_col = "cell_line",
+#'   pvalue_col = "pvalue",
+#'   combine_pvalue_method = "fisher",
+#'   mlog10_transform_pvalue = TRUE,
+#'   fill = "cell_line",
+#'   also_show_qvalue = FALSE
 #' )
 plot_confidence_intervals <- function(
     data,
@@ -452,13 +471,18 @@ plot_confidence_intervals <- function(
     }
 
     # ---- scales & theme ----
+    # Calculate y-axis limits accounting for dodge_width offsets
+    # When group_col is set, offsets range from ±dodge_width/2, so we pad the limits accordingly
+    y_padding <- if (!is.null(group_col)) dodge_width / 2 else 0
+    y_limits <- c(0.5 - y_padding, n_units + 0.5 + y_padding)
+
     p <- p +
         ggplot2::scale_y_continuous(
             breaks = seq_len(n_units),
             labels = rev(units), # y=1 is bottom, so rev() maps units back correctly
-            limits = c(min(d$y_pos) - 0.5, max(d$y_pos) + 0.5),
             expand = c(0, 0)
         ) +
+        ggplot2::coord_cartesian(ylim = y_limits) +
         ggplot2::labs(x = "Estimate", y = NULL) +
         ggplot2::theme(axis.text.y = ggplot2::element_text(face = "bold"))
 
@@ -491,6 +515,47 @@ plot_confidence_intervals <- function(
             stop("Package 'patchwork' is required when pvalue_col is supplied.")
         }
 
+        # Validate fill argument if supplied via ...
+        # Check if fill is in the ... arguments
+        dots <- list(...)
+        if (!is.null(dots$fill)) {
+            fill_arg <- dots$fill
+            stopifnot(
+                "fill must be NULL or a column in data" = is.null(fill_arg) ||
+                    fill_arg %in% names(data),
+                "When group_col is specified, fill should be NULL or match the id column" = is.null(
+                    group_col
+                ) ||
+                    is.null(fill_arg) ||
+                    fill_arg == id
+            )
+            # When group_col is NULL, fill column must be constant within each id group
+            if (is.null(group_col) && !is.null(fill_arg) && fill_arg != id) {
+                fill_non_constant <- vapply(
+                    units,
+                    function(u) {
+                        vals <- d[[fill_arg]][as.character(d[[id]]) == u]
+                        vals <- vals[!is.na(vals)]
+                        length(unique(vals)) > 1
+                    },
+                    logical(1)
+                )
+
+                if (any(fill_non_constant)) {
+                    bad <- units[fill_non_constant]
+                    stop(
+                        "fill column '",
+                        fill_arg,
+                        "' must be constant within each ",
+                        id,
+                        " group. ",
+                        "Non-constant values found in: ",
+                        paste(bad, collapse = ", ")
+                    )
+                }
+            }
+        }
+
         p <- p +
             ggplot2::theme(
                 legend.position = "left",
@@ -500,9 +565,16 @@ plot_confidence_intervals <- function(
         # Build data for p-value barplot
         # When group_col is specified, compute combined p-values across groups for each id
         # Otherwise, extract one p-value per id unit
+        # Also carry through any fill column if provided and constant within id groups
+        fill_arg <- if (!is.null(dots$fill)) dots$fill else NULL
+
         if (!is.null(group_col)) {
             # Compute combined p-values by id across groups
-            pv_data <- d |>
+            subset_cols <- c(id, pvalue_col)
+            if (!is.null(fill_arg) && fill_arg != id) {
+                subset_cols <- c(subset_cols, fill_arg)
+            }
+            pv_data <- d[, subset_cols, drop = FALSE] |>
                 dplyr::group_by(.data[[id]]) |>
                 dplyr::summarise(
                     p_combined = combine_pvalues(
@@ -511,9 +583,16 @@ plot_confidence_intervals <- function(
                     ),
                     .groups = "drop"
                 )
+            # If fill was provided and not id, add it back (should be constant within id)
+            if (!is.null(fill_arg) && fill_arg != id) {
+                fill_values <- lapply(units, function(u) {
+                    unique(d[[fill_arg]][as.character(d[[id]]) == u])
+                })
+                pv_data[[fill_arg]] <- unlist(fill_values)
+            }
             pv_data[[id]] <- factor(
                 pv_data[[id]],
-                levels = rev(units)
+                levels = units
             )
             pv_col_name <- "p_combined"
         } else {
@@ -540,16 +619,22 @@ plot_confidence_intervals <- function(
                 )
             }
 
+            # Build subset of columns to extract
+            subset_cols <- c(id, pvalue_col)
+            if (!is.null(fill_arg) && fill_arg != id) {
+                subset_cols <- c(subset_cols, fill_arg)
+            }
+
             pv_data <- do.call(
                 rbind,
                 lapply(units, function(u) {
                     rows <- d[as.character(d[[id]]) == u, , drop = FALSE]
-                    rows[1, c(id, pvalue_col), drop = FALSE]
+                    rows[1, subset_cols, drop = FALSE]
                 })
             )
             pv_data[[id]] <- factor(
                 pv_data[[id]],
-                levels = rev(units)
+                levels = units
             )
             pv_col_name <- pvalue_col
         }
@@ -565,7 +650,7 @@ plot_confidence_intervals <- function(
                 limits = rev(units),
                 expand = c(0, 0)
             ) +
-            ggplot2::coord_cartesian(ylim = c(0.5, n_units + 0.5)) +
+            ggplot2::coord_cartesian(ylim = y_limits) +
             # p-value panel margin (top, right, bottom, left) in points
             ggplot2::theme(
                 plot.margin = ggplot2::margin(
