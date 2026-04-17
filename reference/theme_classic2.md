@@ -1,7 +1,6 @@
 # Bold-styled Classic Theme
 
-A modified ggplot2 classic theme with bold text elements and centered
-title.
+A modified ggplot2 classic theme with bold text elements.
 
 ## Usage
 
@@ -19,5 +18,6 @@ A ggplot2 theme object
 library(ggplot2)
 ggplot(mtcars, aes(x = wt, y = mpg)) +
   geom_point() +
+  labs(tag = "A") +
   theme_classic2()
 ```

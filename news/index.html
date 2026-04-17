@@ -41,8 +41,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
-<ul><li>
-<code>plot_pvalue_barplot</code>: new <code>exponentiate_labels</code> argument (default <code>FALSE</code>) allows formatting x-axis labels with exponential notation and superscripts (e.g., 1, 10^-1, 10^-2, 10^-3, &lt;10^-x) when <code>mlog10_transform_pvalue = TRUE</code>. Uses R expressions via <code><a href="https://rdrr.io/r/base/bquote.html" class="external-link">bquote()</a></code> for proper rendering of mathematical notation in plots. When <code>exponentiate_labels = TRUE</code> without <code>mlog10_transform_pvalue = TRUE</code>, a warning is issued.</li>
+<ul><li><p><code>theme_bw2</code> and <code>theme_classic2</code>: refactored to use an internal <code><a href="../reference/theme_base.html">theme_base()</a></code> helper function that consolidates common bold styling (titles, axis labels, legend titles, and plot tags). Both themes now apply <code><a href="../reference/theme_base.html">theme_base()</a></code> consistently, reducing code duplication.</p></li>
+<li><p><code>plot_pvalue_barplot</code>: new <code>exponentiate_labels</code> argument (default <code>FALSE</code>) allows formatting x-axis labels with exponential notation and superscripts (e.g., 1, 10^-1, 10^-2, 10^-3, &lt;10^-x) when <code>mlog10_transform_pvalue = TRUE</code>. Uses R expressions via <code><a href="https://rdrr.io/r/base/bquote.html" class="external-link">bquote()</a></code> for proper rendering of mathematical notation in plots. When <code>exponentiate_labels = TRUE</code> without <code>mlog10_transform_pvalue = TRUE</code>, a warning is issued.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>

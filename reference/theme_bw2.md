@@ -18,5 +18,6 @@ A ggplot2 theme object
 library(ggplot2)
 ggplot(mtcars, aes(x = wt, y = mpg)) +
   geom_point() +
+  labs(tag = "A") +
   theme_bw2()
 ```
