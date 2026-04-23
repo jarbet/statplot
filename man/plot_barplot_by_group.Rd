@@ -6,34 +6,29 @@
 \usage{
 plot_barplot_by_group(
   df,
-  group_col = "group",
-  condition_col = "condition",
-  mean_col = "mean",
-  error_col = "se",
-  error_direction = "up",
-  p_col = "p_value",
+  condition_col,
+  mean_col,
+  error_col,
+  p_col,
+  facet_cols = NULL,
   label_col = NULL,
+  error_direction = "up",
   condition_order = NULL,
   p_cutoff = 0.05,
-  show_text_groups = NULL,
   y_label = "Outcome",
   bar_colors = c("black", "grey70"),
   bar_width = 0.4,
   bar_gap = 0.6,
   bar_padding = 0.5,
   text_size = 3.5,
-  bracket_offset = 1,
+  bracket_offset = 0.05,
   bracket_gap = 0.04,
-  bracket_text_gap = 1,
-  strip_position = "top"
+  bracket_text_gap = 0.05
 )
 }
 \arguments{
-\item{df}{Data frame in \strong{long format} - one row per group x condition
-combination.}
-
-\item{group_col}{Column name for independent groups shown as facets.
-Default \code{"group"}.}
+\item{df}{Data frame in \strong{long format} — one row per condition (and per
+faceting-group combination when faceting).}
 
 \item{condition_col}{Column name for the two conditions to compare.
 Default \code{"condition"}.}
@@ -44,17 +39,24 @@ Default \code{"mean"}.}
 \item{error_col}{Column name for error-bar half-widths (SE, SD, CI
 half-width, etc.). Default \code{"se"}.}
 
-\item{error_direction}{Direction of error bars. \code{"both"} draws
-\code{mean +/- error}; \code{"up"} draws only the upper whisker
-(\code{mean} to \code{mean + error}). Default \code{"up"}.}
+\item{p_col}{Column name for p-values. When faceting, the value should be
+the same for both condition rows within each facet group (i.e. repeated).
+Set to \code{NULL} to suppress brackets entirely. Default \code{"p_value"}.}
 
-\item{p_col}{Column name for p-values. The value should be the same for
-both rows belonging to a group (i.e. repeated). Set to \code{NULL} to
-suppress brackets entirely. Default \code{"p_value"}.}
+\item{facet_cols}{Optional character vector of column name(s) to use as
+faceting variables (e.g. \code{"study"} or \code{c("study", "sex")}).
+When supplied, significance brackets are computed per unique combination of
+these columns, and the columns are retained in bracket annotation layers so
+that \code{+ facet_wrap()} or \code{+ facet_grid()} work correctly.
+Default \code{NULL} (single panel, no grouping for brackets).}
 
 \item{label_col}{Optional column name supplying custom bracket label text
 (e.g. \code{"OR = 1.5 [1.1-2.0], p = 0.012"}). When \code{NULL} labels
 are auto-formatted as \code{"p = <value>"} using \code{\link{signif}}.}
+
+\item{error_direction}{Direction of error bars. \code{"both"} draws
+\code{mean +/- error}; \code{"up"} draws only the upper whisker
+(\code{mean} to \code{mean + error}). Default \code{"up"}.}
 
 \item{condition_order}{Length-2 character vector setting the left-to-right
 display order of the two conditions. Defaults to the existing factor level
@@ -62,12 +64,6 @@ order or alphabetical.}
 
 \item{p_cutoff}{Significance threshold; brackets appear only when
 \code{p < p_cutoff}. Default \code{0.05}.}
-
-\item{show_text_groups}{Optional character vector of group names for which
-text should be displayed above brackets. When specified, this argument
-overrides \code{p_cutoff}: only groups listed in \code{show_text_groups}
-will display text labels. When \code{NULL} (default), text display is
-determined solely by \code{p_cutoff}.}
 
 \item{y_label}{Y-axis label. Default \code{"Outcome"}.}
 
@@ -78,55 +74,119 @@ in the order given by \code{condition_order}. Default
 \item{bar_width}{Width of the bars passed to \code{\link[ggplot2]{geom_col}}.
 Default \code{0.4}.}
 
-\item{bar_gap}{Gap between the two bars within each facet, in x-axis units.
-Default \code{0.6} (matches the original discrete-axis spacing).}
+\item{bar_gap}{Gap between the two bars, in x-axis units.
+Default \code{0.6}.}
 
-\item{bar_padding}{White space added to the left and right of the bars
-within each facet panel, in x-axis units. Passed to
-\code{ggplot2::expansion(add = bar_padding)}. Default \code{0.5}.}
+\item{bar_padding}{White space added to the left and right of the bars,
+in x-axis units. Passed to \code{ggplot2::expansion(add = bar_padding)}.
+Default \code{0.5}.}
 
 \item{text_size}{Size of bracket label text (ggplot2 \code{size} units).
 Default \code{3.5}.}
 
-\item{bracket_offset}{Absolute distance (in data units) used as vertical
-spacing above bar tops for bracket placement. Default \code{1.0}.}
+\item{bracket_offset}{Fraction of the per-facet y range added as vertical
+spacing above bar tops for bracket placement. Using a fraction (rather than
+an absolute data-unit distance) ensures consistent visual spacing across
+facets even when \code{scales = "free_y"} is used. Default \code{0.05}.}
 
-\item{bracket_gap}{Fraction of the y range inserted as white space between
-the top of each error bar and the start of the significance bracket tick.
-Default \code{0.04}.}
+\item{bracket_gap}{Fraction of the per-facet y range inserted as white space
+between the top of each error bar and the start of the significance bracket
+tick. Default \code{0.04}.}
 
-\item{bracket_text_gap}{Absolute distance (in data units) used as white space
-between the horizontal bracket line and the label text above it.
-Default \code{1.0}.}
-
-\item{strip_position}{Controls where the facet strip label is placed.
-One of \code{"top"} (default), \code{"bottom"}, \code{"left"}, or
-\code{"right"}.}
+\item{bracket_text_gap}{Fraction of the per-facet y range used as white space
+between the horizontal bracket line and the label text above it. Using a
+fraction ensures consistent visual spacing across facets even when
+\code{scales = "free_y"} is used. Default \code{0.05}.}
 }
 \value{
-A \code{\link[ggplot2]{ggplot}} object.
+A \code{\link[ggplot2]{ggplot}} object. Add
+\code{+ ggplot2::facet_wrap()} or \code{+ ggplot2::facet_grid()} to
+create multi-panel layouts; bracket annotations facet automatically.
 }
 \description{
-Draws a grouped bar chart (one facet per group) comparing a numeric outcome
-between exactly two conditions. Bar height = mean (or any effect size); error
-bars span +/- 1 error unit (SE, SD, CI half-width, etc.). A significance
-bracket with optional label is drawn above bars when the corresponding
-p-value falls below \code{p_cutoff}.
+Draws a bar chart comparing a numeric outcome between exactly two conditions.
+Bar height = mean (or any effect size); error bars span +/- 1 error unit
+(SE, SD, CI half-width, etc.). A significance bracket with optional label is
+drawn above bars when the corresponding p-value falls below \code{p_cutoff}.
+}
+\details{
+When \code{facet_cols} is supplied, the significance brackets are computed
+separately for each unique combination of those columns and those columns are
+retained in the annotation layers. This means adding
+\code{+ ggplot2::facet_wrap()} or \code{+ ggplot2::facet_grid()} after the
+function call will correctly split both bars and brackets across panels.
 }
 \examples{
 library(ggplot2)
 df <- data.frame(
-    group     = rep(c("Group A", "Group B"), each = 2),
-    condition = rep(c("Exercise", "Control"), 2),
+    study     = rep(c("Study A", "Study B"), each = 2),
+    group     = rep(c("Exercise", "Control"), 2),
     mean      = c(10.2, 14.8, 12.5, 13.1),
     se        = c(0.9, 1.0, 1.1, 1.0),
     p_value   = c(0.004, 0.004, 0.18, 0.18)
 )
-df$condition <- factor(df$condition, levels = c("Exercise", "Control"))
+df$group <- factor(df$group, levels = c("Exercise", "Control"))
 ggplot2::theme_set(theme_bw2())
 
-# Default: auto-formatted p-value label (text shown if p < 0.05)
-plot_barplot_by_group(df, y_label = "Performance score", p_cutoff = 0.05)
+# Single bar plot (no faceting)
+df_a <- df[df$study == "Study A", ]
+plot_barplot_by_group(
+    df = df_a,
+    condition_col = "group",
+    mean_col = "mean",
+    error_col = "se",
+    p_col = "p_value",
+    y_label = "Performance score"
+)
+
+# Facet by study using facet_wrap
+plot_barplot_by_group(
+    df = df,
+    condition_col = "group",
+    facet_cols = "study",
+    mean_col = "mean",
+    error_col = "se",
+    p_col = "p_value",
+    y_label = "Performance score"
+) +
+    ggplot2::facet_wrap(~study)
+
+# Set p_cutoff = 1 to always show all p-values
+plot_barplot_by_group(
+    df = df,
+    condition_col = "group",
+    facet_cols = "study",
+    mean_col = "mean",
+    error_col = "se",
+    p_col = "p_value",
+    y_label = "Performance score",
+    p_cutoff = 1
+) +
+    ggplot2::facet_wrap(~study)
+
+# facet_grid works too (useful with multiple facet_cols)
+df_multi <- data.frame(
+    study     = rep(c("Study A", "Study B"), each = 4),
+    sex       = rep(c("M", "M", "F", "F"), 2),
+    group     = rep(c("Exercise", "Control"), 4),
+    mean      = c(10.2, 14.8, 12.5, 13.1, 11.0, 15.2, 13.0, 13.8),
+    se        = c(0.9, 1.0, 1.1, 1.0, 0.8, 1.1, 1.0, 0.9),
+    p_value   = c(0.004, 0.004, 0.18, 0.18, 0.01, 0.01, 0.25, 0.25)
+)
+df_multi$group <- factor(df_multi$group, levels = c("Exercise", "Control"))
+plot_barplot_by_group(
+    df = df_multi,
+    condition_col = "group",
+    facet_cols = c("study", "sex"),
+    mean_col = "mean",
+    error_col = "se",
+    p_col = "p_value",
+    y_label = "Performance score"
+) +
+    ggplot2::facet_grid(
+        rows = ggplot2::vars(sex),
+        cols = ggplot2::vars(study)
+    )
 
 # Custom bracket label from a column
 df$label <- ifelse(
@@ -134,32 +194,56 @@ df$label <- ifelse(
     paste0("d = 1.5 [1.1-2.1]\n", format_pvalue(df$p_value)),
     NA
 )
-plot_barplot_by_group(df, y_label = "Performance score", label_col = "label", p_cutoff = 0.05) +
+plot_barplot_by_group(
+    df = df,
+    condition_col = "group",
+    facet_cols = "study",
+    mean_col = "mean",
+    error_col = "se",
+    p_col = "p_value",
+    y_label = "Performance score",
+    label_col = "label"
+) +
+    ggplot2::facet_wrap(~study) +
     ggplot2::coord_cartesian(ylim = c(0, 20))
 
-# Show text for specific groups only (Group B shown even though p = 0.18)
+# Using theme_classic2 with strip bars positioned below the plot
+ggplot2::theme_set(theme_classic2())
 plot_barplot_by_group(
-    df,
-    y_label = "Performance score",
-    show_text_groups = "Group B"
-)
-
-# Show text for all groups by setting p_cutoff = 1
-plot_barplot_by_group(
-    df,
-    y_label = "Performance score",
-    p_cutoff = 1
-)
-
-# Position strip below x-axis labels
-plot_barplot_by_group(
-    df,
-    y_label = "Performance score",
-    p_cutoff = 1,
-    strip_position = "bottom"
+    df = df,
+    condition_col = "group",
+    facet_cols = "study",
+    mean_col = "mean",
+    error_col = "se",
+    p_col = "p_value",
+    y_label = "Performance score"
 ) +
+    ggplot2::facet_wrap(~study, strip.position = "bottom") +
     ggplot2::theme(
         axis.text.x = ggplot2::element_text(margin = ggplot2::margin(b = 5)),
         strip.placement = "outside"
     )
+
+# Facet by outcome with different scales
+# When outcomes are on different scales (e.g., one is 0-20, another is 0-200),
+# use facet_wrap(scales = "free_y") to let each panel have its own y-axis range
+df_outcomes <- data.frame(
+    outcome   = rep(c("Strength (kg)", "Endurance (min)"), each = 2),
+    group     = rep(c("Exercise", "Control"), 2),
+    mean      = c(12.5, 10.2, 45.0, 28.3),
+    se        = c(1.1, 0.9, 3.5, 2.8),
+    p_value   = c(0.008, 0.008, 0.012, 0.012)
+)
+df_outcomes$group <- factor(df_outcomes$group, levels = c("Exercise", "Control"))
+plot_barplot_by_group(
+    df = df_outcomes,
+    condition_col = "group",
+    facet_cols = "outcome",
+    mean_col = "mean",
+    error_col = "se",
+    p_col = "p_value",
+    y_label = "Measurement"
+) +
+    ggplot2::facet_wrap(~outcome, scales = "free_y")
+
 }

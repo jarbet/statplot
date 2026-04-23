@@ -1,15 +1,18 @@
 #' Bar plot comparing a numeric outcome between two conditions
 #'
-#' Draws a grouped bar chart (one facet per group) comparing a numeric outcome
-#' between exactly two conditions. Bar height = mean (or any effect size); error
-#' bars span +/- 1 error unit (SE, SD, CI half-width, etc.). A significance
-#' bracket with optional label is drawn above bars when the corresponding
-#' p-value falls below \code{p_cutoff}.
+#' Draws a bar chart comparing a numeric outcome between exactly two conditions.
+#' Bar height = mean (or any effect size); error bars span +/- 1 error unit
+#' (SE, SD, CI half-width, etc.). A significance bracket with optional label is
+#' drawn above bars when the corresponding p-value falls below \code{p_cutoff}.
 #'
-#' @param df Data frame in **long format** - one row per group x condition
-#'   combination.
-#' @param group_col Column name for independent groups shown as facets.
-#'   Default \code{"group"}.
+#' When \code{facet_cols} is supplied, the significance brackets are computed
+#' separately for each unique combination of those columns and those columns are
+#' retained in the annotation layers. This means adding
+#' \code{+ ggplot2::facet_wrap()} or \code{+ ggplot2::facet_grid()} after the
+#' function call will correctly split both bars and brackets across panels.
+#'
+#' @param df Data frame in **long format** — one row per condition (and per
+#'   faceting-group combination when faceting).
 #' @param condition_col Column name for the two conditions to compare.
 #'   Default \code{"condition"}.
 #' @param mean_col Column name for bar heights (means or effect sizes).
@@ -19,64 +22,124 @@
 #' @param error_direction Direction of error bars. \code{"both"} draws
 #'   \code{mean +/- error}; \code{"up"} draws only the upper whisker
 #'   (\code{mean} to \code{mean + error}). Default \code{"up"}.
-#' @param p_col Column name for p-values. The value should be the same for
-#'   both rows belonging to a group (i.e. repeated). Set to \code{NULL} to
-#'   suppress brackets entirely. Default \code{"p_value"}.
+#' @param p_col Column name for p-values. When faceting, the value should be
+#'   the same for both condition rows within each facet group (i.e. repeated).
+#'   Set to \code{NULL} to suppress brackets entirely. Default \code{"p_value"}.
 #' @param label_col Optional column name supplying custom bracket label text
 #'   (e.g. \code{"OR = 1.5 [1.1-2.0], p = 0.012"}). When \code{NULL} labels
 #'   are auto-formatted as \code{"p = <value>"} using \code{\link{signif}}.
 #' @param condition_order Length-2 character vector setting the left-to-right
 #'   display order of the two conditions. Defaults to the existing factor level
 #'   order or alphabetical.
+#' @param facet_cols Optional character vector of column name(s) to use as
+#'   faceting variables (e.g. \code{"study"} or \code{c("study", "sex")}).
+#'   When supplied, significance brackets are computed per unique combination of
+#'   these columns, and the columns are retained in bracket annotation layers so
+#'   that \code{+ facet_wrap()} or \code{+ facet_grid()} work correctly.
+#'   Default \code{NULL} (single panel, no grouping for brackets).
 #' @param p_cutoff Significance threshold; brackets appear only when
 #'   \code{p < p_cutoff}. Default \code{0.05}.
-#' @param show_text_groups Optional character vector of group names for which
-#'   text should be displayed above brackets. When specified, this argument
-#'   overrides \code{p_cutoff}: only groups listed in \code{show_text_groups}
-#'   will display text labels. When \code{NULL} (default), text display is
-#'   determined solely by \code{p_cutoff}.
 #' @param y_label Y-axis label. Default \code{"Outcome"}.
 #' @param bar_colors Length-2 fill colour vector applied to the two conditions
 #'   in the order given by \code{condition_order}. Default
 #'   \code{c("black", "grey70")}.
 #' @param bar_width Width of the bars passed to \code{\link[ggplot2]{geom_col}}.
 #'   Default \code{0.4}.
-#' @param bar_gap Gap between the two bars within each facet, in x-axis units.
-#'   Default \code{0.6} (matches the original discrete-axis spacing).
-#' @param bar_padding White space added to the left and right of the bars
-#'   within each facet panel, in x-axis units. Passed to
-#'   \code{ggplot2::expansion(add = bar_padding)}. Default \code{0.5}.
+#' @param bar_gap Gap between the two bars, in x-axis units.
+#'   Default \code{0.6}.
+#' @param bar_padding White space added to the left and right of the bars,
+#'   in x-axis units. Passed to \code{ggplot2::expansion(add = bar_padding)}.
+#'   Default \code{0.5}.
 #' @param text_size Size of bracket label text (ggplot2 \code{size} units).
 #'   Default \code{3.5}.
-#' @param bracket_offset Absolute distance (in data units) used as vertical
-#'   spacing above bar tops for bracket placement. Default \code{1.0}.
-#' @param bracket_gap Fraction of the y range inserted as white space between
-#'   the top of each error bar and the start of the significance bracket tick.
-#'   Default \code{0.04}.
-#' @param bracket_text_gap Absolute distance (in data units) used as white space
-#'   between the horizontal bracket line and the label text above it.
-#'   Default \code{1.0}.
-#' @param strip_position Controls where the facet strip label is placed.
-#'   One of \code{"top"} (default), \code{"bottom"}, \code{"left"}, or
-#'   \code{"right"}.
+#' @param bracket_offset Fraction of the per-facet y range added as vertical
+#'   spacing above bar tops for bracket placement. Using a fraction (rather than
+#'   an absolute data-unit distance) ensures consistent visual spacing across
+#'   facets even when \code{scales = "free_y"} is used. Default \code{0.05}.
+#' @param bracket_gap Fraction of the per-facet y range inserted as white space
+#'   between the top of each error bar and the start of the significance bracket
+#'   tick. Default \code{0.04}.
+#' @param bracket_text_gap Fraction of the per-facet y range used as white space
+#'   between the horizontal bracket line and the label text above it. Using a
+#'   fraction ensures consistent visual spacing across facets even when
+#'   \code{scales = "free_y"} is used. Default \code{0.05}.
 #'
-#' @return A \code{\link[ggplot2]{ggplot}} object.
+#' @return A \code{\link[ggplot2]{ggplot}} object. Add
+#'   \code{+ ggplot2::facet_wrap()} or \code{+ ggplot2::facet_grid()} to
+#'   create multi-panel layouts; bracket annotations facet automatically.
 #' @export
 #'
 #' @examples
 #' library(ggplot2)
 #' df <- data.frame(
-#'     group     = rep(c("Group A", "Group B"), each = 2),
-#'     condition = rep(c("Exercise", "Control"), 2),
+#'     study     = rep(c("Study A", "Study B"), each = 2),
+#'     group     = rep(c("Exercise", "Control"), 2),
 #'     mean      = c(10.2, 14.8, 12.5, 13.1),
 #'     se        = c(0.9, 1.0, 1.1, 1.0),
 #'     p_value   = c(0.004, 0.004, 0.18, 0.18)
 #' )
-#' df$condition <- factor(df$condition, levels = c("Exercise", "Control"))
+#' df$group <- factor(df$group, levels = c("Exercise", "Control"))
 #' ggplot2::theme_set(theme_bw2())
 #'
-#' # Default: auto-formatted p-value label (text shown if p < 0.05)
-#' plot_barplot_by_group(df, y_label = "Performance score", p_cutoff = 0.05)
+#' # Single bar plot (no faceting)
+#' df_a <- df[df$study == "Study A", ]
+#' plot_barplot_by_group(
+#'     df = df_a,
+#'     condition_col = "group",
+#'     mean_col = "mean",
+#'     error_col = "se",
+#'     p_col = "p_value",
+#'     y_label = "Performance score"
+#' )
+#'
+#' # Facet by study using facet_wrap
+#' plot_barplot_by_group(
+#'     df = df,
+#'     condition_col = "group",
+#'     facet_cols = "study",
+#'     mean_col = "mean",
+#'     error_col = "se",
+#'     p_col = "p_value",
+#'     y_label = "Performance score"
+#' ) +
+#'     ggplot2::facet_wrap(~study)
+#'
+#' # Set p_cutoff = 1 to always show all p-values
+#' plot_barplot_by_group(
+#'     df = df,
+#'     condition_col = "group",
+#'     facet_cols = "study",
+#'     mean_col = "mean",
+#'     error_col = "se",
+#'     p_col = "p_value",
+#'     y_label = "Performance score",
+#'     p_cutoff = 1
+#' ) +
+#'     ggplot2::facet_wrap(~study)
+#'
+#' # facet_grid works too (useful with multiple facet_cols)
+#' df_multi <- data.frame(
+#'     study     = rep(c("Study A", "Study B"), each = 4),
+#'     sex       = rep(c("M", "M", "F", "F"), 2),
+#'     group     = rep(c("Exercise", "Control"), 4),
+#'     mean      = c(10.2, 14.8, 12.5, 13.1, 11.0, 15.2, 13.0, 13.8),
+#'     se        = c(0.9, 1.0, 1.1, 1.0, 0.8, 1.1, 1.0, 0.9),
+#'     p_value   = c(0.004, 0.004, 0.18, 0.18, 0.01, 0.01, 0.25, 0.25)
+#' )
+#' df_multi$group <- factor(df_multi$group, levels = c("Exercise", "Control"))
+#' plot_barplot_by_group(
+#'     df = df_multi,
+#'     condition_col = "group",
+#'     facet_cols = c("study", "sex"),
+#'     mean_col = "mean",
+#'     error_col = "se",
+#'     p_col = "p_value",
+#'     y_label = "Performance score"
+#' ) +
+#'     ggplot2::facet_grid(
+#'         rows = ggplot2::vars(sex),
+#'         cols = ggplot2::vars(study)
+#'     )
 #'
 #' # Custom bracket label from a column
 #' df$label <- ifelse(
@@ -84,74 +147,104 @@
 #'     paste0("d = 1.5 [1.1-2.1]\n", format_pvalue(df$p_value)),
 #'     NA
 #' )
-#' plot_barplot_by_group(df, y_label = "Performance score", label_col = "label", p_cutoff = 0.05) +
+#' plot_barplot_by_group(
+#'     df = df,
+#'     condition_col = "group",
+#'     facet_cols = "study",
+#'     mean_col = "mean",
+#'     error_col = "se",
+#'     p_col = "p_value",
+#'     y_label = "Performance score",
+#'     label_col = "label"
+#' ) +
+#'     ggplot2::facet_wrap(~study) +
 #'     ggplot2::coord_cartesian(ylim = c(0, 20))
 #'
-#' # Show text for specific groups only (Group B shown even though p = 0.18)
+#' # Using theme_classic2 with strip bars positioned below the plot
+#' ggplot2::theme_set(theme_classic2())
 #' plot_barplot_by_group(
-#'     df,
-#'     y_label = "Performance score",
-#'     show_text_groups = "Group B"
-#' )
-#'
-#' # Show text for all groups by setting p_cutoff = 1
-#' plot_barplot_by_group(
-#'     df,
-#'     y_label = "Performance score",
-#'     p_cutoff = 1
-#' )
-#'
-#' # Position strip below x-axis labels
-#' plot_barplot_by_group(
-#'     df,
-#'     y_label = "Performance score",
-#'     p_cutoff = 1,
-#'     strip_position = "bottom"
+#'     df = df,
+#'     condition_col = "group",
+#'     facet_cols = "study",
+#'     mean_col = "mean",
+#'     error_col = "se",
+#'     p_col = "p_value",
+#'     y_label = "Performance score"
 #' ) +
+#'     ggplot2::facet_wrap(~study, strip.position = "bottom") +
 #'     ggplot2::theme(
 #'         axis.text.x = ggplot2::element_text(margin = ggplot2::margin(b = 5)),
 #'         strip.placement = "outside"
 #'     )
-#' @importFrom stats setNames as.formula reformulate
+#'
+#' # Facet by outcome with different scales
+#' # When outcomes are on different scales (e.g., one is 0-20, another is 0-200),
+#' # use facet_wrap(scales = "free_y") to let each panel have its own y-axis range
+#' df_outcomes <- data.frame(
+#'     outcome   = rep(c("Strength (kg)", "Endurance (min)"), each = 2),
+#'     group     = rep(c("Exercise", "Control"), 2),
+#'     mean      = c(12.5, 10.2, 45.0, 28.3),
+#'     se        = c(1.1, 0.9, 3.5, 2.8),
+#'     p_value   = c(0.008, 0.008, 0.012, 0.012)
+#' )
+#' df_outcomes$group <- factor(df_outcomes$group, levels = c("Exercise", "Control"))
+#' plot_barplot_by_group(
+#'     df = df_outcomes,
+#'     condition_col = "group",
+#'     facet_cols = "outcome",
+#'     mean_col = "mean",
+#'     error_col = "se",
+#'     p_col = "p_value",
+#'     y_label = "Measurement"
+#' ) +
+#'     ggplot2::facet_wrap(~outcome, scales = "free_y")
+#'
+#' @importFrom stats setNames
+#' @importFrom rlang %||%
 plot_barplot_by_group <- function(
     df,
-    group_col = "group",
-    condition_col = "condition",
-    mean_col = "mean",
-    error_col = "se",
-    error_direction = "up",
-    p_col = "p_value",
+    condition_col,
+    mean_col,
+    error_col,
+    p_col,
+    facet_cols = NULL,
     label_col = NULL,
+    error_direction = "up",
     condition_order = NULL,
     p_cutoff = 0.05,
-    show_text_groups = NULL,
     y_label = "Outcome",
     bar_colors = c("black", "grey70"),
     bar_width = 0.4,
     bar_gap = 0.6,
     bar_padding = 0.5,
     text_size = 3.5,
-    bracket_offset = 1.0,
+    bracket_offset = 0.05,
     bracket_gap = 0.04,
-    bracket_text_gap = 1,
-    strip_position = "top"
+    bracket_text_gap = 0.05
 ) {
     # -- Input validation --
     stopifnot(is.data.frame(df))
-    required <- c(group_col, condition_col, mean_col, error_col)
-    missing <- setdiff(required, names(df))
-    if (length(missing)) {
-        stop("Column(s) not found in `df`: ", paste(missing, collapse = ", "))
+    required <- c(condition_col, mean_col, error_col)
+    missing_cols <- setdiff(required, names(df))
+    if (length(missing_cols)) {
+        stop(
+            "Column(s) not found in `df`: ",
+            paste(missing_cols, collapse = ", ")
+        )
     }
 
-    strip_position <- match.arg(
-        strip_position,
-        c("top", "bottom", "left", "right")
-    )
+    if (!is.null(facet_cols)) {
+        missing_facet <- setdiff(facet_cols, names(df))
+        if (length(missing_facet)) {
+            stop(
+                "`facet_cols` column(s) not found in `df`: ",
+                paste(missing_facet, collapse = ", ")
+            )
+        }
+    }
 
-    # -- Condition factor ordering --
+    # -- Condition factor ordering (before facet validation) --
     if (!is.null(condition_order)) {
-        # Validate condition_order
         if (length(condition_order) != 2L) {
             stop(
                 "`condition_order` must have exactly 2 elements; found ",
@@ -168,13 +261,13 @@ plot_barplot_by_group <- function(
             )
         }
         condition_values <- unique(df[[condition_col]])
-        missing <- setdiff(condition_order, condition_values)
-        if (length(missing)) {
+        missing_cols <- setdiff(condition_order, condition_values)
+        if (length(missing_cols)) {
             stop(
                 "Values in `condition_order` not found in `",
                 condition_col,
                 "`: ",
-                paste(missing, collapse = ", ")
+                paste(missing_cols, collapse = ", ")
             )
         }
         df[[condition_col]] <- factor(
@@ -192,50 +285,20 @@ plot_barplot_by_group <- function(
         )
     }
 
-    # -- Validate long-format: one row per (group, condition) pair --
-    group_condition_counts <- df |>
-        dplyr::count(.data[[group_col]], .data[[condition_col]])
-
-    invalid_pairs <- group_condition_counts[
-        group_condition_counts$n != 1L,
-    ]
-    if (nrow(invalid_pairs) > 0L) {
-        stop(
-            "Long-format requirement violated: each (group, condition) pair ",
-            "must have exactly one row. Invalid pairs:\n",
-            paste(
-                "  ",
-                invalid_pairs[[group_col]],
-                " x ",
-                invalid_pairs[[condition_col]],
-                " (n=",
-                invalid_pairs$n,
-                ")",
-                collapse = "\n"
-            )
+    # Validate that each facet group contains exactly both conditions
+    # (one row per condition, and all conditions must be present)
+    group_by_cols_temp <- facet_cols %||% character(0)
+    val_df <- df |>
+        dplyr::group_by(dplyr::pick(dplyr::all_of(group_by_cols_temp))) |>
+        dplyr::summarize(
+            n_rows = dplyr::n(),
+            n_conditions = dplyr::n_distinct(.data[[condition_col]]),
+            .groups = "drop"
         )
-    }
-
-    # Also verify each group has exactly 2 rows (one per condition)
-    group_totals <- df |>
-        dplyr::group_by(.data[[group_col]]) |>
-        dplyr::summarize(n_rows = dplyr::n(), .groups = "drop")
-
-    invalid_group_totals <- group_totals[
-        group_totals$n_rows != 2L,
-    ]
-    if (nrow(invalid_group_totals) > 0L) {
+    if (!all(val_df$n_rows == 2L & val_df$n_conditions == 2L)) {
         stop(
-            "Long-format requirement violated: each group must have exactly ",
-            "2 rows total (one per condition). Invalid groups:\n",
-            paste(
-                "  ",
-                invalid_group_totals[[group_col]],
-                " (n=",
-                invalid_group_totals$n_rows,
-                ")",
-                collapse = "\n"
-            )
+            "Each condition must appear exactly once per facet group. ",
+            "Some groups have multiple rows per condition or missing conditions."
         )
     }
 
@@ -248,101 +311,70 @@ plot_barplot_by_group <- function(
     x_mid <- (x_left + x_right) / 2
     df$.x_pos <- ifelse(df[[condition_col]] == cond_levels[1], x_left, x_right)
 
-    # -- Y offset used to space brackets above bar tops --
-    bar_tops <- df[[mean_col]] + df[[error_col]]
-    ymax <- max(bar_tops, na.rm = TRUE)
-    ymin <- min(c(df[[mean_col]], 0), na.rm = TRUE)
-    y_gap <- (ymax - ymin) * bracket_gap
-
-    # -- Build significance bracket data --
-    seg_df <- NULL
-    text_df <- NULL
-
-    # Validate p_col if provided
+    # -- Validate optional columns --
     if (!is.null(p_col) && !(p_col %in% names(df))) {
         stop("Column `", p_col, "` not found in `df`")
     }
-
-    # Validate label_col if provided
     if (!is.null(label_col) && !(label_col %in% names(df))) {
         stop("Column `", label_col, "` not found in `df`")
     }
 
+    # -- Build significance bracket data --
+    # group_by_cols determines how brackets are summarised and which columns
+    # are retained in seg_df/text_df. When facet_cols is NULL (single panel)
+    # no grouping is applied. When facet_cols is supplied, brackets are
+    # computed per unique combination of those columns so that
+    # facet_wrap() / facet_grid() added by the caller routes brackets
+    # to the correct panel.
+    group_by_cols <- facet_cols %||% character(0)
+
+    seg_df <- NULL
+    text_df <- NULL
     draw_brackets <- !is.null(p_col)
 
     if (draw_brackets) {
-        # Validate show_text_groups if provided
-        if (!is.null(show_text_groups)) {
-            group_values <- unique(df[[group_col]])
-            invalid_groups <- setdiff(show_text_groups, group_values)
-            if (length(invalid_groups)) {
-                stop(
-                    "Values in `show_text_groups` not found in `",
-                    group_col,
-                    "`: ",
-                    paste(invalid_groups, collapse = ", ")
-                )
-            }
-        }
-
-        # Determine label text for each row (NA -> suppress bracket)
+        # Determine label text per row (NA -> suppress bracket)
         if (!is.null(label_col)) {
             df$.lbl <- df[[label_col]]
         } else {
-            # If show_text_groups is specified, use only that for label generation
-            # Otherwise, use p_cutoff logic
-            if (!is.null(show_text_groups)) {
-                df$.show_group <- df[[group_col]] %in% show_text_groups
-                df$.lbl <- ifelse(
-                    !is.na(df[[p_col]]) & df$.show_group,
-                    paste0("p = ", signif(df[[p_col]], 2)),
-                    NA_character_
-                )
-            } else {
-                df$.lbl <- ifelse(
-                    !is.na(df[[p_col]]) & df[[p_col]] < p_cutoff,
-                    paste0("p = ", signif(df[[p_col]], 2)),
-                    NA_character_
-                )
-            }
+            df$.lbl <- ifelse(
+                !is.na(df[[p_col]]) & df[[p_col]] < p_cutoff,
+                paste0("p = ", signif(df[[p_col]], 2)),
+                NA_character_
+            )
         }
 
-        # Summarise to one row per group: bar-top y values for left & right bars
-        # Select by condition name (not position) to be robust against row ordering
+        # Summarise to one row per bracket (one per unique combination of
+        # grouping cols). All grouping cols are retained via dplyr::across().
+        # Per-facet y range is computed so that bracket_offset, bracket_gap,
+        # and bracket_text_gap (all fractions) scale correctly with free_y.
         bracket_df <- df |>
             dplyr::mutate(.bar_top = .data[[mean_col]] + .data[[error_col]]) |>
-            dplyr::arrange(.data[[group_col]], .data[[condition_col]]) |>
-            dplyr::group_by(.data[[group_col]]) |>
-            dplyr::mutate(
-                .cond_is_left = .data[[condition_col]] == cond_levels[1],
-                .cond_is_right = .data[[condition_col]] == cond_levels[2]
+            dplyr::arrange(
+                dplyr::pick(dplyr::all_of(group_by_cols)),
+                .data[[condition_col]]
             ) |>
+            dplyr::group_by(dplyr::pick(dplyr::all_of(group_by_cols))) |>
             dplyr::summarize(
-                y_left = .bar_top[.cond_is_left],
-                y_right = .bar_top[.cond_is_right],
+                y_left = .bar_top[.data[[condition_col]] == cond_levels[1]],
+                y_right = .bar_top[.data[[condition_col]] == cond_levels[2]],
+                .y_max = max(.bar_top),
+                .y_min = min(c(.data[[mean_col]], 0)),
                 pval = dplyr::first(.data[[p_col]]),
                 lbl = dplyr::first(.data$.lbl),
                 .groups = "drop"
             ) |>
-            dplyr::mutate(
-                .in_show_text_groups = if (!is.null(show_text_groups)) {
-                    .data[[group_col]] %in% show_text_groups
-                } else {
-                    FALSE
-                },
-                .meets_p_cutoff = !is.na(pval) & pval < p_cutoff
-            ) |>
             dplyr::filter(
                 !is.na(pval),
-                (.meets_p_cutoff | .in_show_text_groups),
                 !is.na(lbl),
                 lbl != ""
             ) |>
-            dplyr::select(
-                -dplyr::all_of(c(".in_show_text_groups", ".meets_p_cutoff"))
-            ) |>
             dplyr::mutate(
-                y_top = pmax(y_left, y_right) + y_gap + bracket_offset
+                .y_range = .y_max - .y_min,
+                .y_gap = .y_range * bracket_gap,
+                y_top = pmax(y_left, y_right) +
+                    .y_gap +
+                    .y_range * bracket_offset
             )
 
         if (nrow(bracket_df) > 0L) {
@@ -359,21 +391,21 @@ plot_barplot_by_group <- function(
                     bracket_df,
                     x = x_left,
                     xend = x_left,
-                    y = y_left + y_gap,
+                    y = y_left + .y_gap,
                     yend = y_top
                 ),
                 dplyr::mutate(
                     bracket_df,
                     x = x_right,
                     xend = x_right,
-                    y = y_right + y_gap,
+                    y = y_right + .y_gap,
                     yend = y_top
                 )
             )
             text_df <- dplyr::mutate(
                 bracket_df,
                 x = x_mid,
-                y = y_top + bracket_text_gap
+                y = y_top + .y_range * bracket_text_gap
             )
         }
     }
@@ -397,19 +429,7 @@ plot_barplot_by_group <- function(
             expand = ggplot2::expansion(add = bar_padding)
         ) +
         ggplot2::labs(x = NULL, y = y_label) +
-        ggplot2::theme(
-            legend.position = "none"
-        )
-
-    # -- Faceting --
-    p <- p +
-        ggplot2::facet_wrap(
-            reformulate(paste0("`", group_col, "`")),
-            strip.position = strip_position
-        ) +
-        ggplot2::theme(
-            strip.text = ggplot2::element_text(face = "bold")
-        )
+        ggplot2::theme(legend.position = "none")
 
     # -- Error bars --
     if (error_direction == "both") {
@@ -443,6 +463,9 @@ plot_barplot_by_group <- function(
     }
 
     # -- Overlay significance brackets --
+    # seg_df / text_df retain all grouping columns from df, so any
+    # facet_wrap() / facet_grid() added by the caller automatically
+    # splits the brackets into the correct panels.
     if (!is.null(seg_df)) {
         p <- p +
             ggplot2::geom_segment(
