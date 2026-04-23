@@ -174,6 +174,28 @@
 #'         strip.placement = "outside"
 #'     )
 #'
+#' # Facet by outcome with different scales
+#' # When outcomes are on different scales (e.g., one is 0-20, another is 0-200),
+#' # use facet_wrap(scales = "free_y") to let each panel have its own y-axis range
+#' df_outcomes <- data.frame(
+#'     outcome   = rep(c("Strength (kg)", "Endurance (min)"), each = 2),
+#'     group     = rep(c("Exercise", "Control"), 2),
+#'     mean      = c(12.5, 10.2, 45.0, 28.3),
+#'     se        = c(1.1, 0.9, 3.5, 2.8),
+#'     p_value   = c(0.008, 0.008, 0.012, 0.012)
+#' )
+#' df_outcomes$group <- factor(df_outcomes$group, levels = c("Exercise", "Control"))
+#' plot_barplot_by_group(
+#'     df = df_outcomes,
+#'     condition_col = "group",
+#'     facet_cols = "outcome",
+#'     mean_col = "mean",
+#'     error_col = "se",
+#'     p_col = "p_value",
+#'     y_label = "Measurement"
+#' ) +
+#'     ggplot2::facet_wrap(~outcome, scales = "free_y")
+#'
 #' @importFrom stats setNames
 #' @importFrom rlang %||%
 plot_barplot_by_group <- function(
