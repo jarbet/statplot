@@ -34,6 +34,25 @@
   of mathematical notation in plots. When `exponentiate_labels = TRUE`
   without `mlog10_transform_pvalue = TRUE`, a warning is issued.
 
+- `plot_barplot_by_group`: major refactoring for more flexible faceting
+  support:
+
+  - **Breaking changes**: removed `group_col` parameter (no longer
+    auto-facets by group); removed `show_text_groups` parameter; removed
+    `strip_position` parameter
+  - **New parameter**: `facet_cols` (optional character vector) supports
+    multi-level faceting via user-supplied column names; when supplied,
+    significance brackets are computed per unique combination of those
+    columns
+  - **API changes**: `condition_col`, `mean_col`, `error_col`, and
+    `p_col` are now required arguments (previously had defaults)
+  - **Faceting approach**: users now explicitly add
+    `+ ggplot2::facet_wrap()` or `+ ggplot2::facet_grid()` after the
+    function call; bracket annotations facet automatically via retained
+    grouping columns
+  - **Updated examples**: demonstrate single-panel, single-faceting,
+    multi-faceting, and custom label workflows
+
 ### Fixed
 
 - `plot_confidence_intervals`: fixed y-axis alignment when displaying
@@ -162,7 +181,7 @@
     `ci_low`, `xmax` → `ci_high`, `label_col` → `id`
   - **New parameters**:
     - `effect_size`, `ci_low`, `ci_high`, and `id` are now required
-      positional arguments (previously optional with defaults)
+      arguments (previously optional with defaults)
     - `color_col`: optional column for coloring segments and points (can
       be group-based or id-based)
     - `color_values`: optional named character vector for custom colors
