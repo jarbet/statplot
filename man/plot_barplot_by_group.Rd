@@ -21,9 +21,9 @@ plot_barplot_by_group(
   bar_gap = 0.6,
   bar_padding = 0.5,
   text_size = 3.5,
-  bracket_offset = 1,
+  bracket_offset = 0.05,
   bracket_gap = 0.04,
-  bracket_text_gap = 1
+  bracket_text_gap = 0.05
 )
 }
 \arguments{
@@ -84,16 +84,19 @@ Default \code{0.5}.}
 \item{text_size}{Size of bracket label text (ggplot2 \code{size} units).
 Default \code{3.5}.}
 
-\item{bracket_offset}{Absolute distance (in data units) used as vertical
-spacing above bar tops for bracket placement. Default \code{1.0}.}
+\item{bracket_offset}{Fraction of the per-facet y range added as vertical
+spacing above bar tops for bracket placement. Using a fraction (rather than
+an absolute data-unit distance) ensures consistent visual spacing across
+facets even when \code{scales = "free_y"} is used. Default \code{0.05}.}
 
-\item{bracket_gap}{Fraction of the y range inserted as white space between
-the top of each error bar and the start of the significance bracket tick.
-Default \code{0.04}.}
+\item{bracket_gap}{Fraction of the per-facet y range inserted as white space
+between the top of each error bar and the start of the significance bracket
+tick. Default \code{0.04}.}
 
-\item{bracket_text_gap}{Absolute distance (in data units) used as white space
-between the horizontal bracket line and the label text above it.
-Default \code{1.0}.}
+\item{bracket_text_gap}{Fraction of the per-facet y range used as white space
+between the horizontal bracket line and the label text above it. Using a
+fraction ensures consistent visual spacing across facets even when
+\code{scales = "free_y"} is used. Default \code{0.05}.}
 }
 \value{
 A \code{\link[ggplot2]{ggplot}} object. Add

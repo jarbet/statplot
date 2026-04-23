@@ -52,14 +52,17 @@
 #'   Default \code{0.5}.
 #' @param text_size Size of bracket label text (ggplot2 \code{size} units).
 #'   Default \code{3.5}.
-#' @param bracket_offset Absolute distance (in data units) used as vertical
-#'   spacing above bar tops for bracket placement. Default \code{1.0}.
-#' @param bracket_gap Fraction of the y range inserted as white space between
-#'   the top of each error bar and the start of the significance bracket tick.
-#'   Default \code{0.04}.
-#' @param bracket_text_gap Absolute distance (in data units) used as white space
-#'   between the horizontal bracket line and the label text above it.
-#'   Default \code{1.0}.
+#' @param bracket_offset Fraction of the per-facet y range added as vertical
+#'   spacing above bar tops for bracket placement. Using a fraction (rather than
+#'   an absolute data-unit distance) ensures consistent visual spacing across
+#'   facets even when \code{scales = "free_y"} is used. Default \code{0.05}.
+#' @param bracket_gap Fraction of the per-facet y range inserted as white space
+#'   between the top of each error bar and the start of the significance bracket
+#'   tick. Default \code{0.04}.
+#' @param bracket_text_gap Fraction of the per-facet y range used as white space
+#'   between the horizontal bracket line and the label text above it. Using a
+#'   fraction ensures consistent visual spacing across facets even when
+#'   \code{scales = "free_y"} is used. Default \code{0.05}.
 #'
 #' @return A \code{\link[ggplot2]{ggplot}} object. Add
 #'   \code{+ ggplot2::facet_wrap()} or \code{+ ggplot2::facet_grid()} to
@@ -215,9 +218,9 @@ plot_barplot_by_group <- function(
     bar_gap = 0.6,
     bar_padding = 0.5,
     text_size = 3.5,
-    bracket_offset = 1.0,
+    bracket_offset = 0.05,
     bracket_gap = 0.04,
-    bracket_text_gap = 1
+    bracket_text_gap = 0.05
 ) {
     # -- Input validation --
     stopifnot(is.data.frame(df))
@@ -308,12 +311,6 @@ plot_barplot_by_group <- function(
     x_mid <- (x_left + x_right) / 2
     df$.x_pos <- ifelse(df[[condition_col]] == cond_levels[1], x_left, x_right)
 
-    # -- Y offset used to space brackets above bar tops --
-    bar_tops <- df[[mean_col]] + df[[error_col]]
-    ymax <- max(bar_tops, na.rm = TRUE)
-    ymin <- min(c(df[[mean_col]], 0), na.rm = TRUE)
-    y_gap <- (ymax - ymin) * bracket_gap
-
     # -- Validate optional columns --
     if (!is.null(p_col) && !(p_col %in% names(df))) {
         stop("Column `", p_col, "` not found in `df`")
@@ -349,6 +346,8 @@ plot_barplot_by_group <- function(
 
         # Summarise to one row per bracket (one per unique combination of
         # grouping cols). All grouping cols are retained via dplyr::across().
+        # Per-facet y range is computed so that bracket_offset, bracket_gap,
+        # and bracket_text_gap (all fractions) scale correctly with free_y.
         bracket_df <- df |>
             dplyr::mutate(.bar_top = .data[[mean_col]] + .data[[error_col]]) |>
             dplyr::arrange(
@@ -359,6 +358,8 @@ plot_barplot_by_group <- function(
             dplyr::summarize(
                 y_left = .bar_top[.data[[condition_col]] == cond_levels[1]],
                 y_right = .bar_top[.data[[condition_col]] == cond_levels[2]],
+                .y_max = max(.bar_top),
+                .y_min = min(c(.data[[mean_col]], 0)),
                 pval = dplyr::first(.data[[p_col]]),
                 lbl = dplyr::first(.data$.lbl),
                 .groups = "drop"
@@ -369,7 +370,11 @@ plot_barplot_by_group <- function(
                 lbl != ""
             ) |>
             dplyr::mutate(
-                y_top = pmax(y_left, y_right) + y_gap + bracket_offset
+                .y_range = .y_max - .y_min,
+                .y_gap = .y_range * bracket_gap,
+                y_top = pmax(y_left, y_right) +
+                    .y_gap +
+                    .y_range * bracket_offset
             )
 
         if (nrow(bracket_df) > 0L) {
@@ -386,21 +391,21 @@ plot_barplot_by_group <- function(
                     bracket_df,
                     x = x_left,
                     xend = x_left,
-                    y = y_left + y_gap,
+                    y = y_left + .y_gap,
                     yend = y_top
                 ),
                 dplyr::mutate(
                     bracket_df,
                     x = x_right,
                     xend = x_right,
-                    y = y_right + y_gap,
+                    y = y_right + .y_gap,
                     yend = y_top
                 )
             )
             text_df <- dplyr::mutate(
                 bracket_df,
                 x = x_mid,
-                y = y_top + bracket_text_gap
+                y = y_top + .y_range * bracket_text_gap
             )
         }
     }

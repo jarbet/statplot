@@ -299,12 +299,12 @@ test_that("facet_cols retains grouping columns in bracket segment data", {
 
 test_that("multiple facet_cols are retained in bracket data", {
     df_multi <- data.frame(
-        study     = rep(c("Study A", "Study B"), each = 4),
-        sex       = rep(c("M", "M", "F", "F"), 2),
+        study = rep(c("Study A", "Study B"), each = 4),
+        sex = rep(c("M", "M", "F", "F"), 2),
         condition = rep(c("Exercise", "Control"), 4),
-        mean      = c(10.2, 14.8, 12.5, 13.1, 11.0, 15.2, 13.0, 13.8),
-        se        = c(0.9, 1.0, 1.1, 1.0, 0.8, 1.1, 1.0, 0.9),
-        p_value   = c(0.004, 0.004, 0.18, 0.18, 0.01, 0.01, 0.25, 0.25)
+        mean = c(10.2, 14.8, 12.5, 13.1, 11.0, 15.2, 13.0, 13.8),
+        se = c(0.9, 1.0, 1.1, 1.0, 0.8, 1.1, 1.0, 0.9),
+        p_value = c(0.004, 0.004, 0.18, 0.18, 0.01, 0.01, 0.25, 0.25)
     )
     p <- plot_barplot_by_group(
         df_multi,
@@ -320,3 +320,42 @@ test_that("multiple facet_cols are retained in bracket data", {
     expect_true(all(c("study", "sex") %in% names(seg_layer$data)))
 })
 
+test_that("bracket y positions scale per-facet, not globally, with free_y", {
+    # Facet A: small scale (~0-15), Facet B: large scale (~0-50).
+    # With per-facet fractional spacing, the bracket in the large-scale facet
+    # should sit proportionally higher (larger absolute y_top) than in the
+    # small-scale facet.  A global y-range computation would use only the
+    # larger range for both, producing the same absolute offset in both panels.
+    df_scales <- data.frame(
+        outcome = rep(c("Small", "Large"), each = 2),
+        condition = rep(c("Exercise", "Control"), 2),
+        mean = c(12.5, 10.2, 45.0, 28.3),
+        se = c(1.1, 0.9, 3.5, 2.8),
+        p_value = c(0.01, 0.01, 0.01, 0.01)
+    )
+    p <- plot_barplot_by_group(
+        df_scales,
+        condition_col = "condition",
+        mean_col = "mean",
+        error_col = "se",
+        p_col = "p_value",
+        facet_cols = "outcome",
+        p_cutoff = 0.05
+    )
+    layer_classes <- vapply(p$layers, \(l) class(l$geom)[1], character(1))
+    seg_layer <- p$layers[[which(layer_classes == "GeomSegment")]]
+    seg_data <- seg_layer$data
+
+    # Extract the top of the horizontal bracket cap (y == yend, i.e. the cap)
+    caps <- seg_data[seg_data$y == seg_data$yend, ]
+    y_top_small <- caps$y[caps$outcome == "Small"]
+    y_top_large <- caps$y[caps$outcome == "Large"]
+
+    # The large-scale facet must have a strictly higher bracket
+    expect_gt(y_top_large, y_top_small)
+
+    # And the ratio of bracket heights should be roughly proportional to
+    # the ratio of y ranges (~48.5 / ~13.4 ≈ 3.6), not equal (which would
+    # happen if a single global range were mistakenly applied to both)
+    expect_false(isTRUE(all.equal(y_top_large, y_top_small)))
+})
