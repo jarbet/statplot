@@ -218,21 +218,7 @@ plot_barplot_by_group <- function(
         }
     }
 
-    # Validate that each condition appears exactly once per facet group
-    group_by_cols_temp <- facet_cols %||% character(0)
-    val_df <- df |>
-        dplyr::group_by(
-            dplyr::pick(dplyr::all_of(c(group_by_cols_temp, condition_col)))
-        ) |>
-        dplyr::summarize(n = dplyr::n(), .groups = "drop")
-    if (!all(val_df$n == 1L)) {
-        stop(
-            "Each condition must appear exactly once per facet group. ",
-            "Some groups have multiple rows per condition."
-        )
-    }
-
-    # -- Condition factor ordering --
+    # -- Condition factor ordering (before facet validation) --
     if (!is.null(condition_order)) {
         if (length(condition_order) != 2L) {
             stop(
@@ -271,6 +257,23 @@ plot_barplot_by_group <- function(
         stop(
             "`condition_col` must contain exactly 2 levels; found ",
             length(cond_levels)
+        )
+    }
+
+    # Validate that each facet group contains exactly both conditions
+    # (one row per condition, and all conditions must be present)
+    group_by_cols_temp <- facet_cols %||% character(0)
+    val_df <- df |>
+        dplyr::group_by(dplyr::pick(dplyr::all_of(group_by_cols_temp))) |>
+        dplyr::summarize(
+            n_rows = dplyr::n(),
+            n_conditions = dplyr::n_distinct(.data[[condition_col]]),
+            .groups = "drop"
+        )
+    if (!all(val_df$n_rows == 2L & val_df$n_conditions == 2L)) {
+        stop(
+            "Each condition must appear exactly once per facet group. ",
+            "Some groups have multiple rows per condition or missing conditions."
         )
     }
 
