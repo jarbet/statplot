@@ -178,15 +178,11 @@ co-expression structure.
 \examples{
 \donttest{
 ggplot2::theme_set(theme_bw2())
-# ex_gsea_result is a pre-computed run_gsea() result bundled with the package.
-# To recompute it yourself:
-#   data(hallmark_t2g)
-#   set.seed(1)
-#   all_genes <- unique(hallmark_t2g$gene)
-#   gene_vec  <- setNames(rnorm(length(all_genes)), all_genes)
-#   res <- run_gsea(gene_vec, term2gene = hallmark_t2g)
-data(ex_gsea_result)
-res <- ex_gsea_result
+data(hallmark_t2g)
+set.seed(1)
+all_genes <- unique(hallmark_t2g$gene)
+gene_vec  <- setNames(rnorm(length(all_genes)), all_genes)
+res <- run_gsea(gene_vec, term2gene = hallmark_t2g)
 
 # Basic usage
 plot_pathways(
