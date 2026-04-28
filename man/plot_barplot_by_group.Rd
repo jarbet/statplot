@@ -23,7 +23,8 @@ plot_barplot_by_group(
   text_size = 3.5,
   bracket_offset = 0.05,
   bracket_gap = 0.04,
-  bracket_text_gap = 0.05
+  bracket_text_gap = 0.05,
+  bracket_scale = c("relative", "absolute")
 )
 }
 \arguments{
@@ -97,6 +98,13 @@ tick. Default \code{0.04}.}
 between the horizontal bracket line and the label text above it. Using a
 fraction ensures consistent visual spacing across facets even when
 \code{scales = "free_y"} is used. Default \code{0.05}.}
+
+\item{bracket_scale}{Controls how \code{bracket_offset}, \code{bracket_gap},
+and \code{bracket_text_gap} are interpreted. \code{"relative"} (default)
+multiplies each value by the per-facet y range, giving consistent
+proportional spacing across facets with \code{scales = "free_y"}.
+\code{"absolute"} uses the values as raw data units, giving consistent
+pixel-level spacing across separate plots that share the same y scale.}
 }
 \value{
 A \code{\link[ggplot2]{ggplot}} object. Add

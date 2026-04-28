@@ -320,6 +320,133 @@ test_that("multiple facet_cols are retained in bracket data", {
     expect_true(all(c("study", "sex") %in% names(seg_layer$data)))
 })
 
+# ── bracket_scale ──────────────────────────────────────────────────────────────
+test_that("bracket_scale = 'absolute': bracket y_top invariant to y range", {
+    # Two facets with very different y ranges.  With absolute spacing the
+    # bracket gap above the bar tops should be identical in both panels.
+    df_abs <- data.frame(
+        outcome = rep(c("Small", "Large"), each = 2),
+        condition = rep(c("Exercise", "Control"), 2),
+        mean = c(12.5, 10.2, 125.0, 102.0),
+        se = c(0.0, 0.0, 0.0, 0.0),
+        p_value = c(0.01, 0.01, 0.01, 0.01)
+    )
+    p <- plot_barplot_by_group(
+        df_abs,
+        condition_col = "condition",
+        mean_col = "mean",
+        error_col = "se",
+        p_col = "p_value",
+        facet_cols = "outcome",
+        p_cutoff = 0.05,
+        bracket_scale = "absolute",
+        bracket_offset = 1,
+        bracket_gap = 0.5
+    )
+    layer_classes <- vapply(p$layers, \(l) class(l$geom)[1], character(1))
+    seg_layer <- p$layers[[which(layer_classes == "GeomSegment")]]
+    caps <- seg_layer$data[seg_layer$data$y == seg_layer$data$yend, ]
+
+    y_top_small <- caps$y[caps$outcome == "Small"]
+    y_top_large <- caps$y[caps$outcome == "Large"]
+
+    # bar tops: 12.5 and 125.0; same absolute offset applied to both
+    expect_equal(y_top_small, 12.5 + 0.5 + 1) # bar_top + gap + offset
+    expect_equal(y_top_large, 125.0 + 0.5 + 1)
+})
+
+test_that("bracket_scale = 'relative': bracket gap scales with y range", {
+    # Two single-panel plots with different y ranges; relative gap should
+    # produce a larger absolute y_top on the bigger-range plot.
+    make_single <- function(mean_val) {
+        data.frame(
+            condition = c("Control", "Exercise"),
+            mean = c(mean_val, mean_val * 2),
+            se = c(0, 0),
+            p_value = c(0.01, 0.01)
+        )
+    }
+    extract_y_top <- function(df) {
+        p <- plot_barplot_by_group(
+            df,
+            condition_col = "condition",
+            mean_col = "mean",
+            error_col = "se",
+            p_col = "p_value",
+            p_cutoff = 0.05,
+            bracket_scale = "relative",
+            bracket_offset = 0.1,
+            bracket_gap = 0.05
+        )
+        layer_classes <- vapply(p$layers, \(l) class(l$geom)[1], character(1))
+        seg_layer <- p$layers[[which(layer_classes == "GeomSegment")]]
+        caps <- seg_layer$data[seg_layer$data$y == seg_layer$data$yend, ]
+        caps$y
+    }
+
+    y_top_small <- extract_y_top(make_single(10)) # range ~0-20
+    y_top_large <- extract_y_top(make_single(100)) # range ~0-200
+
+    expect_gt(y_top_large, y_top_small)
+    # ratio should be ~10x (proportional to y range)
+    expect_true(y_top_large / y_top_small > 5)
+})
+
+test_that("bracket_scale rejects invalid values", {
+    expect_error(barplot(bracket_scale = "banana"))
+})
+
+test_that("bracket_scale = 'absolute' does not affect text_gap proportionally", {
+    # With absolute, text_gap is a fixed offset regardless of y range.
+    # We verify the text y position = y_top + bracket_text_gap exactly.
+    df <- make_df()
+    df$se <- 0
+    p <- plot_barplot_by_group(
+        df,
+        condition_col = "condition",
+        mean_col = "mean",
+        error_col = "se",
+        p_col = "p_value",
+        p_cutoff = 0.05,
+        bracket_scale = "absolute",
+        bracket_offset = 1,
+        bracket_gap = 0.5,
+        bracket_text_gap = 2
+    )
+    layer_classes <- vapply(p$layers, \(l) class(l$geom)[1], character(1))
+    seg_layer <- p$layers[[which(layer_classes == "GeomSegment")]]
+    text_layer <- p$layers[[which(layer_classes == "GeomText")]]
+
+    caps <- seg_layer$data[seg_layer$data$y == seg_layer$data$yend, ]
+    y_top <- caps$y[[1]]
+    y_text <- text_layer$data$y[[1]]
+
+    expect_equal(y_text, y_top + 2)
+})
+
+test_that("bracket_scale = 'absolute' returns a ggplot", {
+    p <- barplot(bracket_scale = "absolute")
+    expect_s3_class(p, "ggplot")
+})
+
+test_that("bracket_scale = 'relative' returns a ggplot", {
+    p <- barplot(bracket_scale = "relative")
+    expect_s3_class(p, "ggplot")
+})
+
+test_that("bracket_scale = 'absolute' with facets returns a ggplot", {
+    p <- plot_barplot_by_group(
+        make_df_facet(),
+        condition_col = "condition",
+        mean_col = "mean",
+        error_col = "se",
+        p_col = "p_value",
+        facet_cols = "group",
+        bracket_scale = "absolute"
+    )
+    expect_s3_class(p, "ggplot")
+})
+
 test_that("bracket y positions scale per-facet, not globally, with free_y", {
     # Facet A: small scale (~0-15), Facet B: large scale (~0-50).
     # With per-facet fractional spacing, the bracket in the large-scale facet
