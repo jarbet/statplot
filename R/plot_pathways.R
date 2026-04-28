@@ -113,6 +113,7 @@
 #' @return A ggplot2 object.
 #'
 #' @examples
+#' \donttest{
 #' ggplot2::theme_set(theme_bw2())
 #' # ex_gsea_result is a pre-computed run_gsea() result bundled with the package.
 #' # To recompute it yourself:
@@ -232,6 +233,7 @@
 #'     legend_pathway_fill_title = "Pathway category",
 #'     effect_size_threshold     = 1.5
 #' )
+#' }
 #'
 #' @importFrom ggplot2 ggtitle geom_point scale_fill_identity
 #' @export
