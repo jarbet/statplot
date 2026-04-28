@@ -65,13 +65,11 @@ A list with elements:
 ggplot2::theme_set(theme_bw2())
 mtcars$am <- factor(mtcars$am)
 res <- plot_numeric_by_2groups("mpg", "am", mtcars)
-#> Warning: cannot compute exact p-value with ties
-#> Warning: cannot compute exact confidence intervals with ties
 res$ggplot
 
 res$wilcox
 #> # A tibble: 1 × 8
 #>   estimate statistic p.value conf.low conf.high method       alternative outcome
 #>      <dbl>     <dbl>   <dbl>    <dbl>     <dbl> <chr>        <chr>       <chr>  
-#> 1    -6.80        42 0.00187    -11.7     -2.90 Wilcoxon ra… two.sided   mpg    
+#> 1     -6.8        42 0.00116    -11.3     -2.90 Wilcoxon ra… two.sided   mpg    
 ```

@@ -67,7 +67,8 @@ drawn above bars when the corresponding p-value falls below <code>p_cutoff</code
 <span>  text_size <span class="op">=</span> <span class="fl">3.5</span>,</span>
 <span>  bracket_offset <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  bracket_gap <span class="op">=</span> <span class="fl">0.04</span>,</span>
-<span>  bracket_text_gap <span class="op">=</span> <span class="fl">0.05</span></span>
+<span>  bracket_text_gap <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>  bracket_scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"relative"</span>, <span class="st">"absolute"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -165,23 +166,37 @@ Default <code>3.5</code>.</p></dd>
 
 
 <dt id="arg-bracket-offset">bracket_offset<a class="anchor" aria-label="anchor" href="#arg-bracket-offset"></a></dt>
-<dd><p>Fraction of the per-facet y range added as vertical
-spacing above bar tops for bracket placement. Using a fraction (rather than
-an absolute data-unit distance) ensures consistent visual spacing across
-facets even when <code>scales = "free_y"</code> is used. Default <code>0.05</code>.</p></dd>
+<dd><p>Spacing added above bar tops for bracket placement.
+When <code>bracket_scale = "relative"</code> (default), this is a fraction of
+the per-facet y range, ensuring consistent proportional spacing across
+facets even with <code>scales = "free_y"</code>. When <code>bracket_scale
+  = "absolute"</code>, this is an absolute data unit. Default <code>0.05</code>.</p></dd>
 
 
 <dt id="arg-bracket-gap">bracket_gap<a class="anchor" aria-label="anchor" href="#arg-bracket-gap"></a></dt>
-<dd><p>Fraction of the per-facet y range inserted as white space
-between the top of each error bar and the start of the significance bracket
-tick. Default <code>0.04</code>.</p></dd>
+<dd><p>White space between the top of each error bar and the
+start of the significance bracket tick. When <code>bracket_scale
+  = "relative"</code> (default), this is a fraction of the per-facet y range.
+When <code>bracket_scale = "absolute"</code>, this is an absolute data unit.
+Default <code>0.04</code>.</p></dd>
 
 
 <dt id="arg-bracket-text-gap">bracket_text_gap<a class="anchor" aria-label="anchor" href="#arg-bracket-text-gap"></a></dt>
-<dd><p>Fraction of the per-facet y range used as white space
-between the horizontal bracket line and the label text above it. Using a
-fraction ensures consistent visual spacing across facets even when
-<code>scales = "free_y"</code> is used. Default <code>0.05</code>.</p></dd>
+<dd><p>White space between the horizontal bracket line
+and the label text above it. When <code>bracket_scale = "relative"</code>
+(default), this is a fraction of the per-facet y range, ensuring
+consistent visual spacing across facets with <code>scales = "free_y"</code>.
+When <code>bracket_scale = "absolute"</code>, this is an absolute data unit.
+Default <code>0.05</code>.</p></dd>
+
+
+<dt id="arg-bracket-scale">bracket_scale<a class="anchor" aria-label="anchor" href="#arg-bracket-scale"></a></dt>
+<dd><p>Controls how <code>bracket_offset</code>, <code>bracket_gap</code>,
+and <code>bracket_text_gap</code> are interpreted. <code>"relative"</code> (default)
+multiplies each value by the per-facet y range, giving consistent
+proportional spacing across facets with <code>scales = "free_y"</code>.
+<code>"absolute"</code> uses the values as data units, most useful when
+multiple plots share the same y limits and scale.</p></dd>
 
 </dl></div>
     <div class="section level2">

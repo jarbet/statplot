@@ -28,7 +28,8 @@ plot_barplot_by_group(
   text_size = 3.5,
   bracket_offset = 0.05,
   bracket_gap = 0.04,
-  bracket_text_gap = 0.05
+  bracket_text_gap = 0.05,
+  bracket_scale = c("relative", "absolute")
 )
 ```
 
@@ -120,23 +121,38 @@ plot_barplot_by_group(
 
 - bracket_offset:
 
-  Fraction of the per-facet y range added as vertical spacing above bar
-  tops for bracket placement. Using a fraction (rather than an absolute
-  data-unit distance) ensures consistent visual spacing across facets
-  even when `scales = "free_y"` is used. Default `0.05`.
+  Spacing added above bar tops for bracket placement. When
+  `bracket_scale = "relative"` (default), this is a fraction of the
+  per-facet y range, ensuring consistent proportional spacing across
+  facets even with `scales = "free_y"`. When
+  `bracket_scale = "absolute"`, this is an absolute data unit. Default
+  `0.05`.
 
 - bracket_gap:
 
-  Fraction of the per-facet y range inserted as white space between the
-  top of each error bar and the start of the significance bracket tick.
-  Default `0.04`.
+  White space between the top of each error bar and the start of the
+  significance bracket tick. When `bracket_scale = "relative"`
+  (default), this is a fraction of the per-facet y range. When
+  `bracket_scale = "absolute"`, this is an absolute data unit. Default
+  `0.04`.
 
 - bracket_text_gap:
 
-  Fraction of the per-facet y range used as white space between the
-  horizontal bracket line and the label text above it. Using a fraction
-  ensures consistent visual spacing across facets even when
-  `scales = "free_y"` is used. Default `0.05`.
+  White space between the horizontal bracket line and the label text
+  above it. When `bracket_scale = "relative"` (default), this is a
+  fraction of the per-facet y range, ensuring consistent visual spacing
+  across facets with `scales = "free_y"`. When
+  `bracket_scale = "absolute"`, this is an absolute data unit. Default
+  `0.05`.
+
+- bracket_scale:
+
+  Controls how `bracket_offset`, `bracket_gap`, and `bracket_text_gap`
+  are interpreted. `"relative"` (default) multiplies each value by the
+  per-facet y range, giving consistent proportional spacing across
+  facets with `scales = "free_y"`. `"absolute"` uses the values as data
+  units, most useful when multiple plots share the same y limits and
+  scale.
 
 ## Value
 

@@ -240,14 +240,14 @@ A ggplot2 object.
 ## Examples
 
 ``` r
+# \donttest{
 ggplot2::theme_set(theme_bw2())
-# hallmark_t2g is bundled with the package (columns: term, gene)
 data(hallmark_t2g)
 set.seed(1)
 all_genes <- unique(hallmark_t2g$gene)
 gene_vec  <- setNames(rnorm(length(all_genes)), all_genes)
-
 res <- run_gsea(gene_vec, term2gene = hallmark_t2g)
+#> 
 
 # Basic usage
 plot_pathways(
@@ -383,4 +383,5 @@ plot_pathways(
 #> Scale for colour is already present.
 #> Adding another scale for colour, which will replace the existing scale.
 
+# }
 ```
