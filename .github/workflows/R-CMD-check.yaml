@@ -40,8 +40,10 @@ jobs:
       # Step 5: Run R CMD check
       - uses: r-lib/actions/check-r-package@v2
         with:
-          args: 'c("--no-manual", "--as-cran", "--no-run-donttest")'
+          args: 'c("--no-manual", "--as-cran")'
           error-on: '"error"'
           check-dir: '"check"'
           upload-results: false
           upload-snapshots: false
+        env:
+          _R_CHECK_DONTTEST_EXAMPLES_: "false"
