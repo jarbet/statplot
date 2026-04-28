@@ -75,21 +75,23 @@ p4 <- ggplot2::ggplot(mtcars, ggplot2::aes(factor(cyl), hp)) +
 # Use case 1: Row title as an entire row (spanning all columns)
 row_title_1 <- patchwork_rowtitle("Group A")
 row_title_2 <- patchwork_rowtitle("Group B")
-patchwork1 <- p1 + p2
-patchwork2 <- p3 + p4
+patchwork1 <- patchwork::wrap_plots(p1, p2)
+patchwork2 <- patchwork::wrap_plots(p3, p4)
 
-row_title_1 +
-  patchwork1 +
-  row_title_2 +
-  patchwork2 +
-  patchwork::plot_layout(ncol = 1, heights = c(0.2, 1, 0.2, 1))
+patchwork::wrap_plots(
+  row_title_1, patchwork1,
+  row_title_2, patchwork2,
+  ncol = 1, heights = c(0.2, 1, 0.2, 1)
+)
 
 # Use case 2: Row title as a box to the left (narrow column)
 row_title_left_1 <- patchwork_rowtitle("Group\nA")
 row_title_left_2 <- patchwork_rowtitle("Group\nB")
 
-row_title_left_1 + patchwork1 +
-  row_title_left_2 + patchwork2 +
-  patchwork::plot_layout(ncol = 2, widths = c(0.2, 1))
+patchwork::wrap_plots(
+  row_title_left_1, patchwork1,
+  row_title_left_2, patchwork2,
+  ncol = 2, widths = c(0.2, 1)
+)
 
 }

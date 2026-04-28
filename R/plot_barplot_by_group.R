@@ -52,17 +52,28 @@
 #'   Default \code{0.5}.
 #' @param text_size Size of bracket label text (ggplot2 \code{size} units).
 #'   Default \code{3.5}.
-#' @param bracket_offset Fraction of the per-facet y range added as vertical
-#'   spacing above bar tops for bracket placement. Using a fraction (rather than
-#'   an absolute data-unit distance) ensures consistent visual spacing across
-#'   facets even when \code{scales = "free_y"} is used. Default \code{0.05}.
-#' @param bracket_gap Fraction of the per-facet y range inserted as white space
-#'   between the top of each error bar and the start of the significance bracket
-#'   tick. Default \code{0.04}.
-#' @param bracket_text_gap Fraction of the per-facet y range used as white space
-#'   between the horizontal bracket line and the label text above it. Using a
-#'   fraction ensures consistent visual spacing across facets even when
-#'   \code{scales = "free_y"} is used. Default \code{0.05}.
+#' @param bracket_offset Spacing added above bar tops for bracket placement.
+#'   When \code{bracket_scale = "relative"} (default), this is a fraction of
+#'   the per-facet y range, ensuring consistent proportional spacing across
+#'   facets even with \code{scales = "free_y"}. When \code{bracket_scale
+#'   = "absolute"}, this is an absolute data unit. Default \code{0.05}.
+#' @param bracket_gap White space between the top of each error bar and the
+#'   start of the significance bracket tick. When \code{bracket_scale
+#'   = "relative"} (default), this is a fraction of the per-facet y range.
+#'   When \code{bracket_scale = "absolute"}, this is an absolute data unit.
+#'   Default \code{0.04}.
+#' @param bracket_text_gap White space between the horizontal bracket line
+#'   and the label text above it. When \code{bracket_scale = "relative"}
+#'   (default), this is a fraction of the per-facet y range, ensuring
+#'   consistent visual spacing across facets with \code{scales = "free_y"}.
+#'   When \code{bracket_scale = "absolute"}, this is an absolute data unit.
+#'   Default \code{0.05}.
+#' @param bracket_scale Controls how \code{bracket_offset}, \code{bracket_gap},
+#'   and \code{bracket_text_gap} are interpreted. \code{"relative"} (default)
+#'   multiplies each value by the per-facet y range, giving consistent
+#'   proportional spacing across facets with \code{scales = "free_y"}.
+#'   \code{"absolute"} uses the values as data units, most useful when
+#'   multiple plots share the same y limits and scale.
 #'
 #' @return A \code{\link[ggplot2]{ggplot}} object. Add
 #'   \code{+ ggplot2::facet_wrap()} or \code{+ ggplot2::facet_grid()} to
@@ -220,7 +231,8 @@ plot_barplot_by_group <- function(
     text_size = 3.5,
     bracket_offset = 0.05,
     bracket_gap = 0.04,
-    bracket_text_gap = 0.05
+    bracket_text_gap = 0.05,
+    bracket_scale = c("relative", "absolute")
 ) {
     # -- Input validation --
     stopifnot(is.data.frame(df))
@@ -304,6 +316,7 @@ plot_barplot_by_group <- function(
 
     stopifnot(length(bar_colors) == 2L)
     error_direction <- match.arg(error_direction, c("both", "up"))
+    bracket_scale <- match.arg(bracket_scale)
 
     # -- Bar x positions (continuous axis) --
     x_left <- 1
@@ -371,10 +384,18 @@ plot_barplot_by_group <- function(
             ) |>
             dplyr::mutate(
                 .y_range = .y_max - .y_min,
-                .y_gap = .y_range * bracket_gap,
+                .y_gap = if (bracket_scale == "relative") {
+                    .y_range * bracket_gap
+                } else {
+                    bracket_gap
+                },
                 y_top = pmax(y_left, y_right) +
                     .y_gap +
-                    .y_range * bracket_offset
+                    if (bracket_scale == "relative") {
+                        .y_range * bracket_offset
+                    } else {
+                        bracket_offset
+                    }
             )
 
         if (nrow(bracket_df) > 0L) {
@@ -405,7 +426,12 @@ plot_barplot_by_group <- function(
             text_df <- dplyr::mutate(
                 bracket_df,
                 x = x_mid,
-                y = y_top + .y_range * bracket_text_gap
+                y = y_top +
+                    if (bracket_scale == "relative") {
+                        .y_range * bracket_text_gap
+                    } else {
+                        bracket_text_gap
+                    }
             )
         }
     }

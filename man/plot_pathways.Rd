@@ -176,13 +176,12 @@ gene–gene correlation — see \code{\link[=plot_pathway_correlation_network]{p
 co-expression structure.
 }
 \examples{
+\donttest{
 ggplot2::theme_set(theme_bw2())
-# hallmark_t2g is bundled with the package (columns: term, gene)
 data(hallmark_t2g)
 set.seed(1)
 all_genes <- unique(hallmark_t2g$gene)
 gene_vec  <- setNames(rnorm(length(all_genes)), all_genes)
-
 res <- run_gsea(gene_vec, term2gene = hallmark_t2g)
 
 # Basic usage
@@ -293,5 +292,6 @@ plot_pathways(
     legend_pathway_fill_title = "Pathway category",
     effect_size_threshold     = 1.5
 )
+}
 
 }

@@ -45,3 +45,5 @@ jobs:
           check-dir: '"check"'
           upload-results: false
           upload-snapshots: false
+        env:
+          _R_CHECK_DONTTEST_EXAMPLES_: "false"

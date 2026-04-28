@@ -113,13 +113,12 @@
 #' @return A ggplot2 object.
 #'
 #' @examples
+#' \donttest{
 #' ggplot2::theme_set(theme_bw2())
-#' # hallmark_t2g is bundled with the package (columns: term, gene)
 #' data(hallmark_t2g)
 #' set.seed(1)
 #' all_genes <- unique(hallmark_t2g$gene)
 #' gene_vec  <- setNames(rnorm(length(all_genes)), all_genes)
-#'
 #' res <- run_gsea(gene_vec, term2gene = hallmark_t2g)
 #'
 #' # Basic usage
@@ -230,8 +229,8 @@
 #'     legend_pathway_fill_title = "Pathway category",
 #'     effect_size_threshold     = 1.5
 #' )
+#' }
 #'
-#' @importFrom enrichplot cnetplot
 #' @importFrom ggplot2 ggtitle geom_point scale_fill_identity
 #' @export
 plot_pathways <- function(
