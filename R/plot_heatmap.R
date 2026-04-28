@@ -69,6 +69,10 @@
 #'       legends into a single combined block rather than separate groups.
 #'   }
 #'   Default \code{FALSE} for backward compatibility.
+#' @param bold_row_split_labels Logical. Whether to bold row split labels.
+#'   Default \code{FALSE}.
+#' @param bold_column_split_labels Logical. Whether to bold column split labels.
+#'   Default \code{FALSE}.
 #' @param ... Additional arguments passed to
 #'   \code{\link[ComplexHeatmap]{Heatmap}}.
 #'
@@ -107,7 +111,9 @@
 #'     cluster_rows = TRUE,
 #'     cluster_columns = TRUE,
 #'     return_details = TRUE,
-#'     row_names_side = "left"
+#'     row_names_side = "left",
+#'     bold_row_split_labels = TRUE,
+#'     bold_column_split_labels = TRUE
 #' )
 #' # custom colors
 #' plot_heatmap(
@@ -251,6 +257,8 @@ plot_heatmap <- function(
     heatmap_legend_title = 'Value',
     rect_gp = grid::gpar(col = "white", lwd = 1),
     merge_legends = FALSE,
+    bold_row_split_labels = FALSE,
+    bold_column_split_labels = FALSE,
     ...
 ) {
     # --- mapping names
@@ -753,8 +761,9 @@ plot_heatmap <- function(
     }
 
     # ---------- heatmap
-    ht <- ComplexHeatmap::Heatmap(
-        mat,
+    # Build Heatmap parameters, conditionally adding gp params for bold split labels
+    ht_params <- list(
+        matrix = mat,
         name = heatmap_legend_title,
         col = heatmap_colors,
         row_split = row_split,
@@ -765,9 +774,22 @@ plot_heatmap <- function(
         row_names_side = row_names_side,
         show_column_names = show_column_names,
         top_annotation = ha_col,
-        rect_gp = rect_gp,
-        ...
+        rect_gp = rect_gp
     )
+
+    if (bold_row_split_labels) {
+        ht_params$row_title_gp <- grid::gpar(fontface = "bold")
+    }
+    if (bold_column_split_labels) {
+        ht_params$column_title_gp <- grid::gpar(fontface = "bold")
+    }
+
+    # Add any additional arguments from ...
+    dots <- list(...)
+    ht_params <- c(ht_params, dots)
+
+    ht <- do.call(ComplexHeatmap::Heatmap, ht_params)
+
     if (!is.null(ha_row)) {
         ht <- ht + ha_row
     }
