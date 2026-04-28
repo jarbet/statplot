@@ -231,7 +231,6 @@
 #'     effect_size_threshold     = 1.5
 #' )
 #'
-#' @importFrom enrichplot cnetplot
 #' @importFrom ggplot2 ggtitle geom_point scale_fill_identity
 #' @export
 plot_pathways <- function(

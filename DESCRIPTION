@@ -9,9 +9,10 @@ License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-ByteCompile: false
 Suggests: 
     cluster,
+    DOSE,
+    enrichplot,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
@@ -20,10 +21,8 @@ Imports:
     circlize,
     clusterProfiler,
     ComplexHeatmap,
-    DOSE,
     dplyr (>= 1.1.0),
     effectsize,
-    enrichplot,
     forcats,
     ggnewscale,
     ggplot2,
