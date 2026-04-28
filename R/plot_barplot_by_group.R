@@ -52,23 +52,28 @@
 #'   Default \code{0.5}.
 #' @param text_size Size of bracket label text (ggplot2 \code{size} units).
 #'   Default \code{3.5}.
-#' @param bracket_offset Fraction of the per-facet y range added as vertical
-#'   spacing above bar tops for bracket placement. Using a fraction (rather than
-#'   an absolute data-unit distance) ensures consistent visual spacing across
-#'   facets even when \code{scales = "free_y"} is used. Default \code{0.05}.
-#' @param bracket_gap Fraction of the per-facet y range inserted as white space
-#'   between the top of each error bar and the start of the significance bracket
-#'   tick. Default \code{0.04}.
-#' @param bracket_text_gap Fraction of the per-facet y range used as white space
-#'   between the horizontal bracket line and the label text above it. Using a
-#'   fraction ensures consistent visual spacing across facets even when
-#'   \code{scales = "free_y"} is used. Default \code{0.05}.
+#' @param bracket_offset Spacing added above bar tops for bracket placement.
+#'   When \code{bracket_scale = "relative"} (default), this is a fraction of
+#'   the per-facet y range, ensuring consistent proportional spacing across
+#'   facets even with \code{scales = "free_y"}. When \code{bracket_scale
+#'   = "absolute"}, this is an absolute data unit. Default \code{0.05}.
+#' @param bracket_gap White space between the top of each error bar and the
+#'   start of the significance bracket tick. When \code{bracket_scale
+#'   = "relative"} (default), this is a fraction of the per-facet y range.
+#'   When \code{bracket_scale = "absolute"}, this is an absolute data unit.
+#'   Default \code{0.04}.
+#' @param bracket_text_gap White space between the horizontal bracket line
+#'   and the label text above it. When \code{bracket_scale = "relative"}
+#'   (default), this is a fraction of the per-facet y range, ensuring
+#'   consistent visual spacing across facets with \code{scales = "free_y"}.
+#'   When \code{bracket_scale = "absolute"}, this is an absolute data unit.
+#'   Default \code{0.05}.
 #' @param bracket_scale Controls how \code{bracket_offset}, \code{bracket_gap},
 #'   and \code{bracket_text_gap} are interpreted. \code{"relative"} (default)
 #'   multiplies each value by the per-facet y range, giving consistent
 #'   proportional spacing across facets with \code{scales = "free_y"}.
-#'   \code{"absolute"} uses the values as raw data units, giving consistent
-#'   pixel-level spacing across separate plots that share the same y scale.
+#'   \code{"absolute"} uses the values as data units, most useful when
+#'   multiple plots share the same y limits and scale.
 #'
 #' @return A \code{\link[ggplot2]{ggplot}} object. Add
 #'   \code{+ ggplot2::facet_wrap()} or \code{+ ggplot2::facet_grid()} to

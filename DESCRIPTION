@@ -19,6 +19,7 @@ Imports:
     circlize,
     clusterProfiler,
     ComplexHeatmap,
+    DOSE,
     dplyr (>= 1.1.0),
     effectsize,
     enrichplot,
