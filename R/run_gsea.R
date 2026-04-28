@@ -57,7 +57,6 @@
 #' head(as.data.frame(res$gsea_result))
 #' }
 #'
-#' @importFrom clusterProfiler GSEA
 #' @export
 run_gsea <- function(
     gene_vec,

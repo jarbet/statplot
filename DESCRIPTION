@@ -11,6 +11,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Suggests: 
     cluster,
+    clusterProfiler,
     DOSE,
     enrichplot,
     testthat (>= 3.0.0)
@@ -19,7 +20,6 @@ Imports:
     BoutrosLab.plotting.general,
     broom,
     circlize,
-    clusterProfiler,
     ComplexHeatmap,
     dplyr (>= 1.1.0),
     effectsize,
