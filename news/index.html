@@ -60,8 +60,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
-<ul><li>
-<code>plot_confidence_intervals</code>: fixed y-axis alignment when displaying grouped data with a p-value barplot. Previously, the y-axis limits of the confidence interval plot were calculated based on the dodged <code>y_pos</code> values, causing misalignment with the p-value plot’s fixed limits. Now uses fixed y-axis limits that match the p-value panel, ensuring perfect alignment of tick marks regardless of dodging.</li>
+<ul><li><p><code>plot_heatmap</code>: fixed factor covariate legend rendering when a factor covariate exists only on one side (column-only or row-only). Previously, combining a <code>NULL</code> value with a factor vector via <code>c(NULL, factor_vector)</code> would drop factor attributes and convert the result to integer codes (<code>"1"</code>, <code>"2"</code>, <code>"3"</code>), which then appeared in the legend and color mapping instead of proper factor labels. Now converts each side (row and column) to character independently before combining, preserving factor label names in all cases.</p></li>
+<li><p><code>plot_confidence_intervals</code>: fixed y-axis alignment when displaying grouped data with a p-value barplot. Previously, the y-axis limits of the confidence interval plot were calculated based on the dodged <code>y_pos</code> values, causing misalignment with the p-value plot’s fixed limits. Now uses fixed y-axis limits that match the p-value panel, ensuring perfect alignment of tick marks regardless of dodging.</p></li>
 </ul></div>
 </div>
     <div class="section level2">
