@@ -353,3 +353,161 @@ test_that("merge_legends = TRUE works with col_covariates sharing identical colo
         )
     )
 })
+
+# ---------------------------------------------------------------------------
+# Factor covariates: preserve levels when only on one side (col-only / row-only)
+# Regression test for: https://github.com/jarbet/statplot/issues/XXX
+# Bug: c(NULL, factor) would drop factor attributes, converting to integer codes
+# ---------------------------------------------------------------------------
+
+test_that("factor col_covariate-only does not produce integer codes in levels", {
+    data(ex_data_heatmap, package = "statplot", envir = environment())
+    df <- ex_data_heatmap |>
+        dplyr::mutate(
+            col_factor = factor(
+                dplyr::case_when(
+                    sample %in% c("S1", "S2", "S3", "S4") ~ "GroupA",
+                    TRUE ~ "GroupB"
+                ),
+                levels = c("GroupA", "GroupB", "GroupC")
+            )
+        )
+    out <- plot_heatmap(
+        df = df,
+        row_var = external_gene_name,
+        col_var = sample,
+        value_var = expression,
+        col_covariates = "col_factor",
+        col_split_var = "group",
+        row_split_var = "direction",
+        return_details = TRUE,
+        anno_colors = list(
+            col_factor = c(
+                GroupA = "#e41a1c",
+                GroupB = "#377eb8",
+                GroupC = "#4daf4a"
+            )
+        )
+    )
+    # Levels should contain actual group names, NOT integer codes like "1", "2", "3"
+    expect_true("GroupA" %in% out$levels$col_factor)
+    expect_true("GroupB" %in% out$levels$col_factor)
+    expect_true("GroupC" %in% out$levels$col_factor)
+    expect_false("1" %in% out$levels$col_factor)
+    expect_false("2" %in% out$levels$col_factor)
+    expect_false("3" %in% out$levels$col_factor)
+})
+
+test_that("factor col_covariate-only produces correct final_colors (no integer keys)", {
+    data(ex_data_heatmap, package = "statplot", envir = environment())
+    df <- ex_data_heatmap |>
+        dplyr::mutate(
+            col_factor = factor(
+                dplyr::case_when(
+                    sample %in% c("S1", "S2", "S3", "S4") ~ "GroupA",
+                    TRUE ~ "GroupB"
+                ),
+                levels = c("GroupA", "GroupB", "GroupC")
+            )
+        )
+    out <- plot_heatmap(
+        df = df,
+        row_var = external_gene_name,
+        col_var = sample,
+        value_var = expression,
+        col_covariates = "col_factor",
+        col_split_var = "group",
+        row_split_var = "direction",
+        return_details = TRUE,
+        anno_colors = list(
+            col_factor = c(
+                GroupA = "#e41a1c",
+                GroupB = "#377eb8",
+                GroupC = "#4daf4a"
+            )
+        )
+    )
+    # final_colors$col_factor should have names = group labels, not integer codes
+    expect_setequal(
+        names(out$final_colors$col_factor),
+        c("GroupA", "GroupB", "GroupC")
+    )
+    expect_false("1" %in% names(out$final_colors$col_factor))
+    expect_false("2" %in% names(out$final_colors$col_factor))
+})
+
+test_that("factor row_covariate-only does not produce integer codes in levels", {
+    data(ex_data_heatmap, package = "statplot", envir = environment())
+    df <- ex_data_heatmap |>
+        dplyr::mutate(
+            row_factor = factor(
+                dplyr::case_when(
+                    direction == "up" ~ "DirectionUp",
+                    TRUE ~ "DirectionDown"
+                ),
+                levels = c("DirectionUp", "DirectionDown", "DirectionUnknown")
+            )
+        )
+    out <- plot_heatmap(
+        df = df,
+        row_var = external_gene_name,
+        col_var = sample,
+        value_var = expression,
+        row_covariates = "row_factor",
+        col_split_var = "group",
+        row_split_var = "direction",
+        return_details = TRUE,
+        anno_colors = list(
+            row_factor = c(
+                DirectionUp = "#1f78b4",
+                DirectionDown = "#e31a1c",
+                DirectionUnknown = "#33a02c"
+            )
+        )
+    )
+    # Levels should contain actual direction names, NOT integer codes
+    expect_true("DirectionUp" %in% out$levels$row_factor)
+    expect_true("DirectionDown" %in% out$levels$row_factor)
+    expect_true("DirectionUnknown" %in% out$levels$row_factor)
+    expect_false("1" %in% out$levels$row_factor)
+    expect_false("2" %in% out$levels$row_factor)
+    expect_false("3" %in% out$levels$row_factor)
+})
+
+test_that("factor row_covariate-only produces correct final_colors (no integer keys)", {
+    data(ex_data_heatmap, package = "statplot", envir = environment())
+    df <- ex_data_heatmap |>
+        dplyr::mutate(
+            row_factor = factor(
+                dplyr::case_when(
+                    direction == "up" ~ "DirectionUp",
+                    TRUE ~ "DirectionDown"
+                ),
+                levels = c("DirectionUp", "DirectionDown", "DirectionUnknown")
+            )
+        )
+    out <- plot_heatmap(
+        df = df,
+        row_var = external_gene_name,
+        col_var = sample,
+        value_var = expression,
+        row_covariates = "row_factor",
+        col_split_var = "group",
+        row_split_var = "direction",
+        return_details = TRUE,
+        anno_colors = list(
+            row_factor = c(
+                DirectionUp = "#1f78b4",
+                DirectionDown = "#e31a1c",
+                DirectionUnknown = "#33a02c"
+            )
+        )
+    )
+    # final_colors should have factor labels, not integer codes
+    expect_setequal(
+        names(out$final_colors$row_factor),
+        c("DirectionUp", "DirectionDown", "DirectionUnknown")
+    )
+    expect_false("1" %in% names(out$final_colors$row_factor))
+    expect_false("2" %in% names(out$final_colors$row_factor))
+})

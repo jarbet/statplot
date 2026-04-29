@@ -570,7 +570,10 @@ plot_heatmap <- function(
         } else {
             NULL
         }
-        data_lvls <- unique(as.character(c(val_row, val_col)))
+        data_lvls <- unique(c(
+            if (!is.null(val_row)) as.character(val_row),
+            if (!is.null(val_col)) as.character(val_col)
+        ))
         usr <- if (!is.null(anno_colors)) anno_colors[[v]] else NULL
         # Include any user-specified levels (even if absent from the data) so
         # that levels_list is consistent with final_colors and the legend

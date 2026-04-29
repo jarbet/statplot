@@ -29,6 +29,14 @@
 
 ## Fixed
 
+* `plot_heatmap`: fixed factor covariate legend rendering when a factor covariate
+  exists only on one side (column-only or row-only). Previously, combining a `NULL`
+  value with a factor vector via `c(NULL, factor_vector)` would drop factor
+  attributes and convert the result to integer codes (`"1"`, `"2"`, `"3"`),
+  which then appeared in the legend and color mapping instead of proper factor
+  labels. Now converts each side (row and column) to character independently
+  before combining, preserving factor label names in all cases.
+
 * `plot_confidence_intervals`: fixed y-axis alignment when displaying grouped
   data with a p-value barplot. Previously, the y-axis limits of the confidence
   interval plot were calculated based on the dodged `y_pos` values, causing
