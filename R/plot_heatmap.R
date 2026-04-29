@@ -69,6 +69,12 @@
 #'       legends into a single combined block rather than separate groups.
 #'   }
 #'   Default \code{FALSE} for backward compatibility.
+#' @param row_title_gp Graphic parameters for row split labels, passed to
+#'   \code{\link[ComplexHeatmap]{Heatmap}}'s \code{row_title_gp} argument.
+#'   Default \code{grid::gpar(fontface = "bold")}.
+#' @param column_title_gp Graphic parameters for column split labels, passed to
+#'   \code{\link[ComplexHeatmap]{Heatmap}}'s \code{column_title_gp} argument.
+#'   Default \code{grid::gpar(fontface = "bold")}.
 #' @param ... Additional arguments passed to
 #'   \code{\link[ComplexHeatmap]{Heatmap}}.
 #'
@@ -108,7 +114,7 @@
 #'     cluster_columns = TRUE,
 #'     return_details = TRUE,
 #'     row_names_side = "left"
-#' )
+#' ) # row_title_gp and column_title_gp are bold by default
 #' # custom colors
 #' plot_heatmap(
 #'     df = ex_data_heatmap,
@@ -251,6 +257,8 @@ plot_heatmap <- function(
     heatmap_legend_title = 'Value',
     rect_gp = grid::gpar(col = "white", lwd = 1),
     merge_legends = FALSE,
+    row_title_gp = grid::gpar(fontface = "bold"),
+    column_title_gp = grid::gpar(fontface = "bold"),
     ...
 ) {
     # --- mapping names
@@ -753,8 +761,9 @@ plot_heatmap <- function(
     }
 
     # ---------- heatmap
-    ht <- ComplexHeatmap::Heatmap(
-        mat,
+    # Build Heatmap parameters, conditionally adding gp params for bold split labels
+    ht_params <- list(
+        matrix = mat,
         name = heatmap_legend_title,
         col = heatmap_colors,
         row_split = row_split,
@@ -766,8 +775,16 @@ plot_heatmap <- function(
         show_column_names = show_column_names,
         top_annotation = ha_col,
         rect_gp = rect_gp,
-        ...
+        row_title_gp = row_title_gp,
+        column_title_gp = column_title_gp
     )
+
+    # Add any additional arguments from ...
+    dots <- list(...)
+    ht_params <- c(ht_params, dots)
+
+    ht <- do.call(ComplexHeatmap::Heatmap, ht_params)
+
     if (!is.null(ha_row)) {
         ht <- ht + ha_row
     }
