@@ -25,8 +25,8 @@ plot_heatmap(
   heatmap_legend_title = "Value",
   rect_gp = grid::gpar(col = "white", lwd = 1),
   merge_legends = FALSE,
-  bold_row_split_labels = FALSE,
-  bold_column_split_labels = FALSE,
+  row_title_gp = grid::gpar(fontface = "bold"),
+  column_title_gp = grid::gpar(fontface = "bold"),
   ...
 )
 }
@@ -116,11 +116,13 @@ legends into a single combined block rather than separate groups.
 }
 Default \code{FALSE} for backward compatibility.}
 
-\item{bold_row_split_labels}{Logical. Whether to bold row split labels.
-Default \code{FALSE}.}
+\item{row_title_gp}{Graphic parameters for row split labels, passed to
+\code{\link[ComplexHeatmap]{Heatmap}}'s \code{row_title_gp} argument.
+Default \code{grid::gpar(fontface = "bold")}.}
 
-\item{bold_column_split_labels}{Logical. Whether to bold column split labels.
-Default \code{FALSE}.}
+\item{column_title_gp}{Graphic parameters for column split labels, passed to
+\code{\link[ComplexHeatmap]{Heatmap}}'s \code{column_title_gp} argument.
+Default \code{grid::gpar(fontface = "bold")}.}
 
 \item{...}{Additional arguments passed to
 \code{\link[ComplexHeatmap]{Heatmap}}.}
@@ -166,10 +168,8 @@ plot_heatmap(
     cluster_rows = TRUE,
     cluster_columns = TRUE,
     return_details = TRUE,
-    row_names_side = "left",
-    bold_row_split_labels = TRUE,
-    bold_column_split_labels = TRUE
-)
+    row_names_side = "left"
+) # row_title_gp and column_title_gp are bold by default
 # custom colors
 plot_heatmap(
     df = ex_data_heatmap,

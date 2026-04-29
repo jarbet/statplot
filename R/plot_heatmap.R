@@ -69,10 +69,12 @@
 #'       legends into a single combined block rather than separate groups.
 #'   }
 #'   Default \code{FALSE} for backward compatibility.
-#' @param bold_row_split_labels Logical. Whether to bold row split labels.
-#'   Default \code{FALSE}.
-#' @param bold_column_split_labels Logical. Whether to bold column split labels.
-#'   Default \code{FALSE}.
+#' @param row_title_gp Graphic parameters for row split labels, passed to
+#'   \code{\link[ComplexHeatmap]{Heatmap}}'s \code{row_title_gp} argument.
+#'   Default \code{grid::gpar(fontface = "bold")}.
+#' @param column_title_gp Graphic parameters for column split labels, passed to
+#'   \code{\link[ComplexHeatmap]{Heatmap}}'s \code{column_title_gp} argument.
+#'   Default \code{grid::gpar(fontface = "bold")}.
 #' @param ... Additional arguments passed to
 #'   \code{\link[ComplexHeatmap]{Heatmap}}.
 #'
@@ -111,10 +113,8 @@
 #'     cluster_rows = TRUE,
 #'     cluster_columns = TRUE,
 #'     return_details = TRUE,
-#'     row_names_side = "left",
-#'     bold_row_split_labels = TRUE,
-#'     bold_column_split_labels = TRUE
-#' )
+#'     row_names_side = "left"
+#' ) # row_title_gp and column_title_gp are bold by default
 #' # custom colors
 #' plot_heatmap(
 #'     df = ex_data_heatmap,
@@ -257,8 +257,8 @@ plot_heatmap <- function(
     heatmap_legend_title = 'Value',
     rect_gp = grid::gpar(col = "white", lwd = 1),
     merge_legends = FALSE,
-    bold_row_split_labels = FALSE,
-    bold_column_split_labels = FALSE,
+    row_title_gp = grid::gpar(fontface = "bold"),
+    column_title_gp = grid::gpar(fontface = "bold"),
     ...
 ) {
     # --- mapping names
@@ -774,15 +774,10 @@ plot_heatmap <- function(
         row_names_side = row_names_side,
         show_column_names = show_column_names,
         top_annotation = ha_col,
-        rect_gp = rect_gp
+        rect_gp = rect_gp,
+        row_title_gp = row_title_gp,
+        column_title_gp = column_title_gp
     )
-
-    if (bold_row_split_labels) {
-        ht_params$row_title_gp <- grid::gpar(fontface = "bold")
-    }
-    if (bold_column_split_labels) {
-        ht_params$column_title_gp <- grid::gpar(fontface = "bold")
-    }
 
     # Add any additional arguments from ...
     dots <- list(...)
