@@ -53,6 +53,12 @@
   - **Updated examples**: demonstrate single-panel, single-faceting,
     multi-faceting, and custom label workflows
 
+- `plot_heatmap`: added `row_title_gp` and `column_title_gp` parameters
+  to allow customization of row and column split label styling. Both
+  parameters accept [`grid::gpar()`](https://rdrr.io/r/grid/gpar.html)
+  objects and default to `grid::gpar(fontface = "bold")` for bold split
+  labels.
+
 ### Fixed
 
 - `plot_confidence_intervals`: fixed y-axis alignment when displaying

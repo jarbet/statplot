@@ -28,6 +28,8 @@ plot_heatmap(
   heatmap_legend_title = "Value",
   rect_gp = grid::gpar(col = "white", lwd = 1),
   merge_legends = FALSE,
+  row_title_gp = grid::gpar(fontface = "bold"),
+  column_title_gp = grid::gpar(fontface = "bold"),
   ...
 )
 ```
@@ -165,6 +167,18 @@ plot_heatmap(
 
   Default `FALSE` for backward compatibility.
 
+- row_title_gp:
+
+  Graphic parameters for row split labels, passed to
+  [`Heatmap`](https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html)'s
+  `row_title_gp` argument. Default `grid::gpar(fontface = "bold")`.
+
+- column_title_gp:
+
+  Graphic parameters for column split labels, passed to
+  [`Heatmap`](https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html)'s
+  `column_title_gp` argument. Default `grid::gpar(fontface = "bold")`.
+
 - ...:
 
   Additional arguments passed to
@@ -211,7 +225,7 @@ plot_heatmap(
     cluster_columns = TRUE,
     return_details = TRUE,
     row_names_side = "left"
-)
+) # row_title_gp and column_title_gp are bold by default
 
 # custom colors
 plot_heatmap(

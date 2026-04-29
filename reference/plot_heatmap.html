@@ -66,6 +66,8 @@ splits, and row scaling.</p>
 <span>  heatmap_legend_title <span class="op">=</span> <span class="st">"Value"</span>,</span>
 <span>  rect_gp <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"white"</span>, lwd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  merge_legends <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  row_title_gp <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>fontface <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span>,</span>
+<span>  column_title_gp <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>fontface <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -196,6 +198,18 @@ legends into a single combined block rather than separate groups.</p></li>
 </ol><p>Default <code>FALSE</code> for backward compatibility.</p></dd>
 
 
+<dt id="arg-row-title-gp">row_title_gp<a class="anchor" aria-label="anchor" href="#arg-row-title-gp"></a></dt>
+<dd><p>Graphic parameters for row split labels, passed to
+<code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">Heatmap</a></code>'s <code>row_title_gp</code> argument.
+Default <code>grid::gpar(fontface = "bold")</code>.</p></dd>
+
+
+<dt id="arg-column-title-gp">column_title_gp<a class="anchor" aria-label="anchor" href="#arg-column-title-gp"></a></dt>
+<dd><p>Graphic parameters for column split labels, passed to
+<code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">Heatmap</a></code>'s <code>column_title_gp</code> argument.
+Default <code>grid::gpar(fontface = "bold")</code>.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments passed to
 <code><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">Heatmap</a></code>.</p></dd>
@@ -241,7 +255,7 @@ object, or a named list with elements <code>ht</code>, <code>final_colors</code>
 <span class="r-in"><span>    cluster_columns <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>    return_details <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>    row_names_side <span class="op">=</span> <span class="st">"left"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span> <span class="co"># row_title_gp and column_title_gp are bold by default</span></span></span>
 <span class="r-plt img"><img src="plot_heatmap-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># custom colors</span></span></span>
 <span class="r-in"><span><span class="fu">plot_heatmap</span><span class="op">(</span></span></span>
