@@ -4,6 +4,20 @@
 
 ### Added
 
+…
+
+### Changed
+
+…
+
+### Fixed
+
+…
+
+## statplot 0.7.0 - 2026-05-04
+
+### Added
+
 - `patchwork_rowtitle`: new function to create row titles for patchwork
   compositions. Produces a ggplot object with centered text in a
   customizable box, suitable for use as either an entire row spanning
@@ -58,6 +72,11 @@
   parameters accept [`grid::gpar()`](https://rdrr.io/r/grid/gpar.html)
   objects and default to `grid::gpar(fontface = "bold")` for bold split
   labels.
+
+- `plot_heatmap`: added `annotation_legend_param` to customize
+  annotation legend titles and appearance for row and column covariates,
+  including support for overriding auto-generated titles when
+  `merge_legends = TRUE`.
 
 ### Fixed
 

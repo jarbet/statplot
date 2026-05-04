@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">statplot</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,18 +29,33 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/jarbet/statplot/blob/main/NEWS.md"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/jarbet/statplot/blob/v0.7.0/NEWS.md"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="statplot-development-version">statplot (development version)<a class="anchor" aria-label="anchor" href="#statplot-development-version"></a></h2>
 <div class="section level3">
 <h3 id="added-development-version">Added<a class="anchor" aria-label="anchor" href="#added-development-version"></a></h3>
+<p>…</p>
+</div>
+<div class="section level3">
+<h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
+<p>…</p>
+</div>
+<div class="section level3">
+<h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
+<p>…</p>
+</div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.7.0" id="statplot-070---2026-05-04">statplot 0.7.0 - 2026-05-04<a class="anchor" aria-label="anchor" href="#statplot-070---2026-05-04"></a></h2>
+<div class="section level3">
+<h3 id="added-0-7-0">Added<a class="anchor" aria-label="anchor" href="#added-0-7-0"></a></h3>
 <ul><li><p><code>patchwork_rowtitle</code>: new function to create row titles for patchwork compositions. Produces a ggplot object with centered text in a customizable box, suitable for use as either an entire row spanning all columns or as a narrow left-side column. Supports customization of text position/size (<code>x</code>, <code>y</code>, <code>size</code>, <code>hjust</code>, <code>vjust</code>), background styling (<code>fill</code>, <code>color</code>, <code>linewidth</code>), and plot margins (<code>margin_top</code>, <code>margin_right</code>, <code>margin_bottom</code>, <code>margin_left</code>).</p></li>
 <li><p><code>quarto_note</code>: new function to render colored reviewer or collaborator notes in Quarto documents. Produces colored text in HTML, colored LaTeX in PDF, and custom paragraph styles in Word documents. Supports customizable text color and Word style names.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
+<h3 id="changed-0-7-0">Changed<a class="anchor" aria-label="anchor" href="#changed-0-7-0"></a></h3>
 <ul><li><p><code>theme_bw2</code> and <code>theme_classic2</code>: refactored to use an internal <code><a href="../reference/theme_base.html">theme_base()</a></code> helper function that consolidates common bold styling (titles, axis labels, legend titles, and plot tags). Both themes now apply <code><a href="../reference/theme_base.html">theme_base()</a></code> consistently, reducing code duplication.</p></li>
 <li><p><code>plot_pvalue_barplot</code>: new <code>exponentiate_labels</code> argument (default <code>FALSE</code>) allows formatting x-axis labels with exponential notation and superscripts (e.g., 1, 10^-1, 10^-2, 10^-3, &lt;10^-x) when <code>mlog10_transform_pvalue = TRUE</code>. Uses R expressions via <code><a href="https://rdrr.io/r/base/bquote.html" class="external-link">bquote()</a></code> for proper rendering of mathematical notation in plots. When <code>exponentiate_labels = TRUE</code> without <code>mlog10_transform_pvalue = TRUE</code>, a warning is issued.</p></li>
 <li>
@@ -57,9 +72,10 @@
 <strong>Updated examples</strong>: demonstrate single-panel, single-faceting, multi-faceting, and custom label workflows</li>
 </ul></li>
 <li><p><code>plot_heatmap</code>: added <code>row_title_gp</code> and <code>column_title_gp</code> parameters to allow customization of row and column split label styling. Both parameters accept <code><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">grid::gpar()</a></code> objects and default to <code>grid::gpar(fontface = "bold")</code> for bold split labels.</p></li>
+<li><p><code>plot_heatmap</code>: added <code>annotation_legend_param</code> to customize annotation legend titles and appearance for row and column covariates, including support for overriding auto-generated titles when <code>merge_legends = TRUE</code>.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
+<h3 id="fixed-0-7-0">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-7-0"></a></h3>
 <ul><li><p><code>plot_heatmap</code>: fixed factor covariate legend rendering when a factor covariate exists only on one side (column-only or row-only). Previously, combining a <code>NULL</code> value with a factor vector via <code>c(NULL, factor_vector)</code> would drop factor attributes and convert the result to integer codes (<code>"1"</code>, <code>"2"</code>, <code>"3"</code>), which then appeared in the legend and color mapping instead of proper factor labels. Now converts each side (row and column) to character independently before combining, preserving factor label names in all cases.</p></li>
 <li><p><code>plot_confidence_intervals</code>: fixed y-axis alignment when displaying grouped data with a p-value barplot. Previously, the y-axis limits of the confidence interval plot were calculated based on the dodged <code>y_pos</code> values, causing misalignment with the p-value plot’s fixed limits. Now uses fixed y-axis limits that match the p-value panel, ensuring perfect alignment of tick marks regardless of dodging.</p></li>
 </ul></div>
