@@ -27,6 +27,8 @@
 
 * `plot_heatmap`: added `row_title_gp` and `column_title_gp` parameters to allow customization of row and column split label styling. Both parameters accept `grid::gpar()` objects and default to `grid::gpar(fontface = "bold")` for bold split labels.
 
+* `plot_heatmap`: added `annotation_legend_param` to customize annotation legend titles and appearance for row and column covariates, including support for overriding auto-generated titles when `merge_legends = TRUE`.
+
 ## Fixed
 
 * `plot_heatmap`: fixed factor covariate legend rendering when a factor covariate
