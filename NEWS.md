@@ -2,6 +2,20 @@
 
 ## Added
 
+...
+
+## Changed
+
+...
+
+## Fixed
+
+...
+
+# statplot 0.7.0 - 2026-05-04
+
+## Added
+
 * `patchwork_rowtitle`: new function to create row titles for patchwork compositions. Produces a ggplot object with centered text in a customizable box, suitable for use as either an entire row spanning all columns or as a narrow left-side column. Supports customization of text position/size (`x`, `y`, `size`, `hjust`, `vjust`), background styling (`fill`, `color`, `linewidth`), and plot margins (`margin_top`, `margin_right`, `margin_bottom`, `margin_left`).
 
 * `quarto_note`: new function to render colored reviewer or collaborator notes in Quarto documents. Produces colored text in HTML, colored LaTeX in PDF, and custom paragraph styles in Word documents. Supports customizable text color and Word style names.
