@@ -511,3 +511,56 @@ test_that("factor row_covariate-only produces correct final_colors (no integer k
     expect_false("1" %in% names(out$final_colors$row_factor))
     expect_false("2" %in% names(out$final_colors$row_factor))
 })
+
+# ---------------------------------------------------------------------------
+# annotation_legend_param validation
+# ---------------------------------------------------------------------------
+
+test_that("annotation_legend_param must be a list if not NULL", {
+    df <- make_heatmap_df()
+    expect_error(
+        plot_heatmap(
+            df,
+            row_var = external_gene_name,
+            col_var = sample,
+            value_var = expression,
+            col_covariates = c("direction"),
+            annotation_legend_param = "not_a_list"
+        ),
+        "is.list"
+    )
+})
+
+test_that("annotation_legend_param with invalid covariate names warns", {
+    df <- make_heatmap_df()
+    expect_warning(
+        plot_heatmap(
+            df,
+            row_var = external_gene_name,
+            col_var = sample,
+            value_var = expression,
+            col_covariates = c("direction"),
+            annotation_legend_param = list(
+                direction = list(title = "Direction"),
+                invalid_var = list(title = "Bad")
+            )
+        ),
+        "annotation_legend_param contains names not in row_covariates or col_covariates: invalid_var"
+    )
+})
+
+test_that("annotation_legend_param with valid names works silently", {
+    df <- make_heatmap_df()
+    expect_no_warning(
+        plot_heatmap(
+            df,
+            row_var = external_gene_name,
+            col_var = sample,
+            value_var = expression,
+            col_covariates = c("direction"),
+            annotation_legend_param = list(
+                direction = list(title = "Disease Direction")
+            )
+        )
+    )
+})
