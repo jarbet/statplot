@@ -548,12 +548,46 @@ plot_heatmap <- function(
 
     # Validate annotation_legend_param
     if (!is.null(annotation_legend_param)) {
-        stopifnot(is.list(annotation_legend_param))
+        if (!is.list(annotation_legend_param)) {
+            stop("`annotation_legend_param` must be a list.")
+        }
+
+        # Check that the list is named
+        if (is.null(names(annotation_legend_param))) {
+            stop(
+                "`annotation_legend_param` must be a *named* list. ",
+                "Each name should correspond to a covariate, and each value should be ",
+                "a list of legend parameters (e.g., list(condition = list(title = \"Disease Status\")))."
+            )
+        }
+
+        # Check that all names are non-empty
+        if (any(!nzchar(names(annotation_legend_param)))) {
+            stop(
+                "`annotation_legend_param` contains empty names. ",
+                "All elements must be named with non-empty covariate names."
+            )
+        }
+
+        # Check that each element is itself a list
+        for (nm in names(annotation_legend_param)) {
+            if (!is.list(annotation_legend_param[[nm]])) {
+                stop(
+                    "`annotation_legend_param$",
+                    nm,
+                    "` must be a list of legend parameters (e.g., list(title = \"Custom Title\")). ",
+                    "Received: ",
+                    typeof(annotation_legend_param[[nm]])
+                )
+            }
+        }
+
+        # Check that all names correspond to actual covariates
         all_covariates <- unique(c(row_covariates, col_covariates))
         invalid_names <- setdiff(names(annotation_legend_param), all_covariates)
         if (length(invalid_names)) {
-            warning(
-                "annotation_legend_param contains names not in row_covariates or col_covariates: ",
+            stop(
+                "`annotation_legend_param` contains names not in row_covariates or col_covariates: ",
                 paste(invalid_names, collapse = ", ")
             )
         }

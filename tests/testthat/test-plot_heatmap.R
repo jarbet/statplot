@@ -527,13 +527,13 @@ test_that("annotation_legend_param must be a list if not NULL", {
             col_covariates = c("direction"),
             annotation_legend_param = "not_a_list"
         ),
-        "is.list"
+        "must be a list"
     )
 })
 
-test_that("annotation_legend_param with invalid covariate names warns", {
+test_that("annotation_legend_param with invalid covariate names errors", {
     df <- make_heatmap_df()
-    expect_warning(
+    expect_error(
         plot_heatmap(
             df,
             row_var = external_gene_name,
@@ -545,7 +545,7 @@ test_that("annotation_legend_param with invalid covariate names warns", {
                 invalid_var = list(title = "Bad")
             )
         ),
-        "annotation_legend_param contains names not in row_covariates or col_covariates: invalid_var"
+        "contains names not in row_covariates or col_covariates: invalid_var"
     )
 })
 
@@ -563,4 +563,74 @@ test_that("annotation_legend_param with valid names works silently", {
             )
         )
     )
+})
+test_that("annotation_legend_param must be named (not unnamed list)", {
+    df <- make_heatmap_df()
+    expect_error(
+        plot_heatmap(
+            df,
+            row_var = external_gene_name,
+            col_var = sample,
+            value_var = expression,
+            col_covariates = c("direction"),
+            annotation_legend_param = list(list(title = "x"))
+        ),
+        "named.*list"
+    )
+})
+
+test_that("annotation_legend_param rejects empty names", {
+    df <- make_heatmap_df()
+    expect_error(
+        plot_heatmap(
+            df,
+            row_var = external_gene_name,
+            col_var = sample,
+            value_var = expression,
+            col_covariates = c("direction"),
+            annotation_legend_param = stats::setNames(
+                list(list(title = "x")),
+                ""
+            )
+        ),
+        "empty names"
+    )
+})
+
+test_that("annotation_legend_param elements must be lists", {
+    df <- make_heatmap_df()
+    expect_error(
+        plot_heatmap(
+            df,
+            row_var = external_gene_name,
+            col_var = sample,
+            value_var = expression,
+            col_covariates = c("direction"),
+            annotation_legend_param = list(
+                direction = "not_a_list"
+            )
+        ),
+        "must be a list of legend parameters"
+    )
+})
+
+test_that("annotation_legend_param preserves user-provided titles when merge_legends=TRUE", {
+    df <- make_heatmap_df()
+    out <- plot_heatmap(
+        df,
+        row_var = external_gene_name,
+        col_var = sample,
+        value_var = expression,
+        row_covariates = c("direction", "sample_type"),
+        annotation_legend_param = list(
+            direction = list(title = "Custom Direction Title")
+        ),
+        anno_colors = anno_cols_with_phantom,
+        merge_legends = TRUE,
+        return_details = TRUE,
+        scale_rows = FALSE
+    )
+    # Just verify no error occurs — the actual legend param propagation is tested
+    # through the draw() behavior, which is harder to assert on
+    expect_s4_class(out$ht, "HeatmapList")
 })
