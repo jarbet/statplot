@@ -25,6 +25,7 @@ plot_heatmap(
   heatmap_legend_title = "Value",
   rect_gp = grid::gpar(col = "white", lwd = 1),
   merge_legends = FALSE,
+  annotation_legend_param = NULL,
   row_title_gp = grid::gpar(fontface = "bold"),
   column_title_gp = grid::gpar(fontface = "bold"),
   ...
@@ -115,6 +116,14 @@ is forwarded as \code{merge_legends} to
 legends into a single combined block rather than separate groups.
 }
 Default \code{FALSE} for backward compatibility.}
+
+\item{annotation_legend_param}{Named list of legend parameters to customize
+annotation legend titles and appearance, passed to both column and row
+annotations via \code{\link[ComplexHeatmap]{HeatmapAnnotation}} and
+\code{\link[ComplexHeatmap]{rowAnnotation}}. Each element should be named
+after the annotation covariate. For example: \code{list(var1 = list(title = "My Title"))}.
+When \code{merge_legends = TRUE}, user-provided params override any
+auto-generated titles from deduplication. Default \code{NULL}.}
 
 \item{row_title_gp}{Graphic parameters for row split labels, passed to
 \code{\link[ComplexHeatmap]{Heatmap}}'s \code{row_title_gp} argument.
@@ -289,5 +298,17 @@ plot_heatmap(
     row_names_side = "left",
     clustering_distance_rows = clust_dist_gower,
     clustering_distance_columns = clust_dist_gower
+)
+### Customize annotation legend titles
+plot_heatmap(
+    df = ex_data_heatmap,
+    row_var = external_gene_name,
+    col_var = sample,
+    value_var = expression,
+    col_covariates = c("condition", "group"),
+    annotation_legend_param = list(
+        condition = list(title = "Disease Status"),
+        group = list(title = "Treatment")
+    )
 )
 }

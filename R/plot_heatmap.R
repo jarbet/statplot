@@ -69,6 +69,13 @@
 #'       legends into a single combined block rather than separate groups.
 #'   }
 #'   Default \code{FALSE} for backward compatibility.
+#' @param annotation_legend_param Named list of legend parameters to customize
+#'   annotation legend titles and appearance, passed to both column and row
+#'   annotations via \code{\link[ComplexHeatmap]{HeatmapAnnotation}} and
+#'   \code{\link[ComplexHeatmap]{rowAnnotation}}. Each element should be named
+#'   after the annotation covariate. For example: \code{list(var1 = list(title = "My Title"))}.
+#'   When \code{merge_legends = TRUE}, user-provided params override any
+#'   auto-generated titles from deduplication. Default \code{NULL}.
 #' @param row_title_gp Graphic parameters for row split labels, passed to
 #'   \code{\link[ComplexHeatmap]{Heatmap}}'s \code{row_title_gp} argument.
 #'   Default \code{grid::gpar(fontface = "bold")}.
@@ -235,6 +242,18 @@
 #'     clustering_distance_rows = clust_dist_gower,
 #'     clustering_distance_columns = clust_dist_gower
 #' )
+#' ### Customize annotation legend titles
+#' plot_heatmap(
+#'     df = ex_data_heatmap,
+#'     row_var = external_gene_name,
+#'     col_var = sample,
+#'     value_var = expression,
+#'     col_covariates = c("condition", "group"),
+#'     annotation_legend_param = list(
+#'         condition = list(title = "Disease Status"),
+#'         group = list(title = "Treatment")
+#'     )
+#' )
 #' @export
 plot_heatmap <- function(
     df,
@@ -257,6 +276,7 @@ plot_heatmap <- function(
     heatmap_legend_title = 'Value',
     rect_gp = grid::gpar(col = "white", lwd = 1),
     merge_legends = FALSE,
+    annotation_legend_param = NULL,
     row_title_gp = grid::gpar(fontface = "bold"),
     column_title_gp = grid::gpar(fontface = "bold"),
     ...
@@ -526,6 +546,53 @@ plot_heatmap <- function(
         }
     }
 
+    # Validate annotation_legend_param
+    if (!is.null(annotation_legend_param)) {
+        if (!is.list(annotation_legend_param)) {
+            stop("`annotation_legend_param` must be a list.")
+        }
+
+        # Check that the list is named
+        if (is.null(names(annotation_legend_param))) {
+            stop(
+                "`annotation_legend_param` must be a *named* list. ",
+                "Each name should correspond to a covariate, and each value should be ",
+                "a list of legend parameters (e.g., list(condition = list(title = \"Disease Status\")))."
+            )
+        }
+
+        # Check that all names are non-empty
+        if (any(!nzchar(names(annotation_legend_param)))) {
+            stop(
+                "`annotation_legend_param` contains empty names. ",
+                "All elements must be named with non-empty covariate names."
+            )
+        }
+
+        # Check that each element is itself a list
+        for (nm in names(annotation_legend_param)) {
+            if (!is.list(annotation_legend_param[[nm]])) {
+                stop(
+                    "`annotation_legend_param$",
+                    nm,
+                    "` must be a list of legend parameters (e.g., list(title = \"Custom Title\")). ",
+                    "Received: ",
+                    typeof(annotation_legend_param[[nm]])
+                )
+            }
+        }
+
+        # Check that all names correspond to actual covariates
+        all_covariates <- unique(c(row_covariates, col_covariates))
+        invalid_names <- setdiff(names(annotation_legend_param), all_covariates)
+        if (length(invalid_names)) {
+            stop(
+                "`annotation_legend_param` contains names not in row_covariates or col_covariates: ",
+                paste(invalid_names, collapse = ", ")
+            )
+        }
+    }
+
     # Helper: is this covariate continuous?
     is_continuous_cov <- function(v) {
         usr <- if (!is.null(anno_colors)) anno_colors[[v]] else NULL
@@ -718,13 +785,33 @@ plot_heatmap <- function(
         } else {
             NULL
         }
+        # Merge dedup-generated params with user-provided params
+        # User-provided params take precedence, but filter out invalid names
+        col_ann_legend_param <- if (!is.null(annotation_legend_param)) {
+            annotation_legend_param[intersect(
+                names(annotation_legend_param),
+                col_covariates
+            )]
+        } else {
+            NULL
+        }
+        if (
+            isTRUE(merge_legends) && !is.null(col_extra$annotation_legend_param)
+        ) {
+            if (is.null(col_ann_legend_param)) {
+                col_ann_legend_param <- col_extra$annotation_legend_param
+            } else {
+                col_ann_legend_param <- utils::modifyList(
+                    col_extra$annotation_legend_param,
+                    col_ann_legend_param
+                )
+            }
+        }
         ComplexHeatmap::HeatmapAnnotation(
             df = anno_df,
             col = final_colors[col_covariates],
             show_legend = if (!is.null(col_extra)) col_extra$show_legend,
-            annotation_legend_param = if (!is.null(col_extra)) {
-                col_extra$annotation_legend_param
-            },
+            annotation_legend_param = col_ann_legend_param,
             which = "column"
         )
     } else {
@@ -751,13 +838,33 @@ plot_heatmap <- function(
         } else {
             NULL
         }
+        # Merge dedup-generated params with user-provided params
+        # User-provided params take precedence, but filter out invalid names
+        row_ann_legend_param <- if (!is.null(annotation_legend_param)) {
+            annotation_legend_param[intersect(
+                names(annotation_legend_param),
+                row_covariates
+            )]
+        } else {
+            NULL
+        }
+        if (
+            isTRUE(merge_legends) && !is.null(row_extra$annotation_legend_param)
+        ) {
+            if (is.null(row_ann_legend_param)) {
+                row_ann_legend_param <- row_extra$annotation_legend_param
+            } else {
+                row_ann_legend_param <- utils::modifyList(
+                    row_extra$annotation_legend_param,
+                    row_ann_legend_param
+                )
+            }
+        }
         ComplexHeatmap::rowAnnotation(
             df = anno_df,
             col = final_colors[row_covariates],
             show_legend = if (!is.null(row_extra)) row_extra$show_legend,
-            annotation_legend_param = if (!is.null(row_extra)) {
-                row_extra$annotation_legend_param
-            }
+            annotation_legend_param = row_ann_legend_param
         )
     } else {
         NULL
