@@ -1,10 +1,10 @@
 # Hallmark pathway process categories
 
-A two-column data frame mapping each MSigDB Hallmark gene-set name to
+A four-column data frame mapping each MSigDB Hallmark gene-set name to
 its biological process category, as defined in Table 1 of Liberzon et
-al. (2015). Categories are: `"cellular_component"`, `"development"`,
-`"DNA_damage"`, `"immune"`, `"metabolic"`, `"pathway"`,
-`"proliferation"`, and `"signaling"`.
+al. (2015), along with human-readable pathway labels. Categories are:
+`"Cellular component"`, `"Development"`, `"DNA damage"`, `"Immune"`,
+`"Metabolic"`, `"Pathway"`, `"Proliferation"`, and `"Signaling"`.
 
 ## Usage
 
@@ -14,7 +14,7 @@ hallmark_pathway_categories
 
 ## Format
 
-A data frame with 50 rows and 2 columns:
+A data frame with 50 rows and 4 columns:
 
 - term:
 
@@ -25,11 +25,21 @@ A data frame with 50 rows and 2 columns:
 - process_category:
 
   Character. Biological process category assigned in Liberzon et al.
-  (2015), Table 1.
+  (2015), Table 1, with underscores replaced by spaces.
+
+- label_short:
+
+  Character. Concise human-readable pathway label with Greek symbols (α,
+  β, γ, κ) preserved.
+
+- label_long:
+
+  Character. Expanded human-readable pathway label with Greek symbols
+  spelled out (alpha, beta, gamma, kappa).
 
 ## Source
 
-Process categories taken from Table 1 of Liberzon et al. (2015). Data
+Process categories taken from Table 1 of Liberzon et al. (2015). Labels
 prepared by `inst/prepare_data/hallmark_pathway_categories.R`.
 
 ## References

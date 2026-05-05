@@ -4,7 +4,8 @@
 
 ### Added
 
-…
+- `data(hallmark_pathway_categories)` has 2 new columns that give more
+  human-readable labels that can be used for plots or in-text reference
 
 ### Changed
 
