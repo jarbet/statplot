@@ -228,8 +228,8 @@ stopifnot(
 # Add labels to the main data object
 hallmark_pathway_categories <- hallmark_pathway_categories |>
     dplyr::mutate(
-        label_short = hallmark_pathway_labels_short[term],
-        label_long = hallmark_pathway_labels_long[term]
+        label_plot = hallmark_pathway_labels_short[term],
+        label_text = hallmark_pathway_labels_long[term]
     )
 # Validate: check for missing labels
 missing_short <- setdiff(
