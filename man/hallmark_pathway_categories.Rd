@@ -5,27 +5,32 @@
 \alias{hallmark_pathway_categories}
 \title{Hallmark pathway process categories}
 \format{
-A data frame with 50 rows and 2 columns:
+A data frame with 50 rows and 4 columns:
 \describe{
 \item{term}{Character. Hallmark gene-set name, with the \code{"HALLMARK_"}
 prefix removed to match the \code{term} column of \code{\link{hallmark_t2g}}.}
 \item{process_category}{Character. Biological process category assigned in
-Liberzon et al. (2015), Table 1.}
+Liberzon et al. (2015), Table 1, with underscores replaced by spaces.}
+\item{label_short}{Character. Concise human-readable pathway label with
+Greek symbols (α, β, γ, κ) preserved.}
+\item{label_long}{Character. Expanded human-readable pathway label with
+Greek symbols spelled out (alpha, beta, gamma, kappa).}
 }
 }
 \source{
 Process categories taken from Table 1 of Liberzon et al. (2015).
-Data prepared by \code{inst/prepare_data/hallmark_pathway_categories.R}.
+Labels prepared by \code{inst/prepare_data/hallmark_pathway_categories.R}.
 }
 \usage{
 hallmark_pathway_categories
 }
 \description{
-A two-column data frame mapping each MSigDB Hallmark gene-set name to its
+A four-column data frame mapping each MSigDB Hallmark gene-set name to its
 biological process category, as defined in Table 1 of Liberzon et al.
-(2015).  Categories are: \code{"cellular_component"}, \code{"development"},
-\code{"DNA_damage"}, \code{"immune"}, \code{"metabolic"}, \code{"pathway"},
-\code{"proliferation"}, and \code{"signaling"}.
+(2015), along with human-readable pathway labels.  Categories are:
+\code{"Cellular component"}, \code{"Development"}, \code{"DNA damage"},
+\code{"Immune"}, \code{"Metabolic"}, \code{"Pathway"}, \code{"Proliferation"},
+and \code{"Signaling"}.
 }
 \references{
 Liberzon, A., Birger, C., Thorvaldsdóttir, H., Ghandi, M.,
