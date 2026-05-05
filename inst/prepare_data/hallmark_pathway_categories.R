@@ -231,7 +231,43 @@ hallmark_pathway_categories <- hallmark_pathway_categories |>
         label_short = hallmark_pathway_labels_short[term],
         label_long = hallmark_pathway_labels_long[term]
     )
+# Validate: check for missing labels
+missing_short <- setdiff(
+    hallmark_pathway_categories$term,
+    names(hallmark_pathway_labels_short)
+)
+missing_long <- setdiff(
+    hallmark_pathway_categories$term,
+    names(hallmark_pathway_labels_long)
+)
+if (length(missing_short) > 0) {
+    stop(
+        "Terms in hallmark_pathway_categories without short labels:\n",
+        paste(missing_short, collapse = "\n")
+    )
+}
+if (length(missing_long) > 0) {
+    stop(
+        "Terms in hallmark_pathway_categories without long labels:\n",
+        paste(missing_long, collapse = "\n")
+    )
+}
 
+# Check for any NA values that might have slipped through
+na_short <- which(is.na(hallmark_pathway_categories$label_short))
+na_long <- which(is.na(hallmark_pathway_categories$label_long))
+if (length(na_short) > 0) {
+    stop(
+        "NA values found in label_short for: ",
+        paste(hallmark_pathway_categories$term[na_short], collapse = ", ")
+    )
+}
+if (length(na_long) > 0) {
+    stop(
+        "NA values found in label_long for: ",
+        paste(hallmark_pathway_categories$term[na_long], collapse = ", ")
+    )
+}
 # Save the combined data object
 usethis::use_data(
     hallmark_pathway_categories,
