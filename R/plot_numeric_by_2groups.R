@@ -24,20 +24,20 @@
 #'   \code{"median_difference"} (default; Hodges-Lehmann estimate of location
 #'   shift) or \code{"c_index"} (concordance probability using
 #'   \code{asht::wmwTest}).
-#' #'   Default \\code{NULL} (single panel).
-#' @param facet_qvalue logical(1) When \\code{facet_cols} is supplied, whether to
-#'   compute q-values (adjusted p-values using FDR correction) and display them
-#'   in the second row of annotations instead of p-values. Default \\code{FALSE}.
+#' @param facet_cols character vector of column names to facet by.
+#'   Default \code{NULL} (single panel).
+#' @param facet_pvalue character(1) When \code{facet_cols} is supplied, which
+#'   p-value information to display in annotations. One of "pvalue" (default),
+#'   "qvalue", or "both". Q-values are always computed when \code{facet_cols}
+#'   is supplied using FDR correction.
 #' @param text_effectsize_vjust numeric(1) Vertical justification for the
-#'   effect size annotation text (used when \\code{facet_cols} is supplied).
-#'   Default \\code{1.5}.
+#'   effect size annotation text (used when \code{facet_cols} is supplied).
+#'   Default \code{1.5}.
 #' @param text_n_vjust numeric(1) Vertical justification for the sample size
-#'   annotation text (used when \\code{facet_cols} is supplied). Default
-#'   \\code{-0.4}.
+#'   annotation text (used when \code{facet_cols} is supplied). Default
+#'   \code{-0.4}.
 #' @param text_effectsize_prefix character(1) Prefix text for the effect size
-#'   annotation (e.g., \"Median diff: \" when \\code{effect_size=\"median_difference\"}
-#'   or \"c-index = \" when \\code{effect_size=\"c_index\"}). Set to \"\" to remove the
-#'   prefix. Default \\code{\"Median diff: \"}.
+#'   annotation. Default \code{"Median diff: "}.
 #' @return A list with elements:
 #' \describe{
 #'   \item{ggplot}{A ggplot2 object (violin + boxplot). Add
@@ -97,7 +97,6 @@ plot_numeric_by_2groups <- function(
     alpha = 0.7,
     effect_size = c("median_difference"),
     facet_cols = NULL,
-    facet_qvalue = FALSE,
     facet_pvalue = "pvalue",
     text_effectsize_vjust = 1.5,
     text_n_vjust = -0.4,
@@ -117,6 +116,16 @@ plot_numeric_by_2groups <- function(
     stopifnot(is.factor(d[[group]]) & length(levels(d[[group]])) == 2)
     stopifnot(is.numeric(digits), length(digits) == 1, digits >= 0)
 
+    stopifnot(
+        facet_pvalue %in%
+            c("pvalue", "qvalue", "both") &
+            length(facet_pvalue) == 1
+    )
+    stopifnot(
+        facet_pvalue %in%
+            c("pvalue", "qvalue", "both") &
+            length(facet_pvalue) == 1
+    )
     if (!is.null(facet_cols)) {
         missing_facet <- setdiff(facet_cols, names(d))
         if (length(missing_facet)) {
