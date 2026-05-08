@@ -2,15 +2,20 @@
 % Please edit documentation in R/plot_numeric_by_2groups.R
 \name{plot_numeric_by_2groups}
 \alias{plot_numeric_by_2groups}
-\title{Violin + boxplot with Wilcoxon rank-sum test}
+\title{Compare a numeric variable between two groups with violins/boxplots and Wilcoxon test}
 \usage{
 plot_numeric_by_2groups(
   yvar,
   group,
   d,
-  title = NULL,
   colors = c("white", "white"),
-  digits = 1
+  digits = 1,
+  alpha = 0.7,
+  effect_size = c("median_difference", "c_index"),
+  facet_cols = NULL,
+  text_effectsize_vjust = 1.5,
+  text_n_vjust = -0.4,
+  text_effectsize_prefix = "Median diff: "
 )
 }
 \arguments{
@@ -20,22 +25,66 @@ plot_numeric_by_2groups(
 
 \item{d}{data.frame Data containing \code{yvar} and \code{group}.}
 
-\item{title}{character Optional plot title. If NULL, a default is generated.}
-
 \item{colors}{character vector Length-2 vector of fill colours (default c('white', 'white')); if NULL the default ggplot2 fill scale is used.  When supplied, must be a character vector with length equal to the number of groups (two after filtering); if it has names, they must exactly match the factor levels.}
 
-\item{digits}{numeric(1) Number of decimal places to use in the subtitle statistics.}
+\item{digits}{numeric(1) Number of decimal places to use in effect size results.}
+
+\item{alpha}{numeric(1) Fill transparency for violin and boxplot geoms,
+passed to the \code{alpha} argument of
+\code{\link[ggplot2:geom_violin]{ggplot2::geom_violin()}} and \code{\link[ggplot2:geom_boxplot]{ggplot2::geom_boxplot()}}. Values range from
+0 (fully transparent) to 1 (fully opaque). Default \code{0.7}.}
+
+\item{effect_size}{character(1) Type of effect size to compute. Either
+\code{"median_difference"} (default; Hodges-Lehmann estimate of location
+shift) or \code{"c_index"} (concordance probability using
+\code{asht::wmwTest}).}
+
+\item{facet_cols}{Optional character vector of column name(s) in \code{d} to
+use as faceting variables (e.g. \code{"group"} or
+\code{c("study", "sex")}). When supplied, a Wilcoxon test is run within
+each unique combination of those columns and per-panel p-value and sample
+size (\code{n=}) annotations are added. The annotation layers retain the
+faceting columns so that \code{+ facet_wrap()} or \code{+ facet_grid()}
+added after the function call correctly routes annotations to each panel.
+Default \code{NULL} (single panel).}
+
+\item{text_effectsize_vjust}{numeric(1) Vertical justification for the
+effect size annotation text (used when \code{facet_cols} is supplied).
+Default \code{1.5}.}
+
+\item{text_n_vjust}{numeric(1) Vertical justification for the sample size
+annotation text (used when \code{facet_cols} is supplied). Default
+\code{-0.4}.}
+
+\item{text_effectsize_prefix}{character(1) Prefix text for the effect size
+annotation (e.g., "Median diff: " when \code{effect_size="median_difference"}
+or "c-index = " when \code{effect_size="c_index"}). Set to "" to remove the
+prefix. Default \code{"Median diff: "}.}
 }
 \value{
 A list with elements:
 \describe{
-\item{ggplot}{A ggplot2 object (violin + boxplot).}
-\item{wilcox}{A tibble with the Wilcoxon test results (from broom::tidy).}
+\item{ggplot}{A ggplot2 object (violin + boxplot). Add
+\code{+ ggplot2::facet_wrap()} or \code{+ ggplot2::facet_grid()} to
+create multi-panel layouts; annotations facet automatically.}
+\item{wilcox}{A tibble with the Wilcoxon test results (from
+\code{broom::tidy}). When \code{facet_cols} is supplied the tibble
+includes the faceting column(s) identifying which facet each row belongs
+to.}
 }
 }
 \description{
-Create a violin plot overlaid with a narrow boxplot for two groups and run a
-Wilcoxon rank-sum test. Returns the ggplot object and a tidy Wilcoxon result.
+Compare a numeric variable between two groups with violins/boxplots and Wilcoxon test.
+Returns the ggplot object and a tidy Wilcoxon result.
+Optionally you can facet by additional variables.
+}
+\details{
+When \code{facet_cols} is supplied, a separate Wilcoxon test is run within
+each unique combination of those columns and per-panel p-value and sample
+size annotations are prepared automatically. The annotation layers retain
+the faceting columns so that adding \code{+ ggplot2::facet_wrap()} or
+\code{+ ggplot2::facet_grid()} after the function call correctly splits both
+violins and annotations across panels.
 }
 \examples{
 ggplot2::theme_set(theme_bw2())
@@ -43,4 +92,24 @@ mtcars$am <- factor(mtcars$am)
 res <- plot_numeric_by_2groups("mpg", "am", mtcars)
 res$ggplot
 res$wilcox
+
+# Faceted example: compare a "score" between exercisers and non-exercisers,
+# faceted by group (A/B/C/D)
+set.seed(42)
+n <- 200
+df <- data.frame(
+  score    = c(rnorm(n / 2, mean = 5), rnorm(n / 2, mean = 6)),
+  exercise = factor(rep(c("No", "Yes"), each = n / 2)),
+  group    = factor(sample(LETTERS[1:4], n, replace = TRUE))
+)
+res_facet <- plot_numeric_by_2groups(
+  yvar       = "score",
+  group      = "exercise",
+  d          = df,
+  facet_cols = "group",
+  colors     = c("No" = "grey80", "Yes" = "steelblue"),
+  alpha      = 0.6
+)
+res_facet$ggplot + ggplot2::facet_wrap(~group, ncol = 2)
+res_facet$wilcox
 }
