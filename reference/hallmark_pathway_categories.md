@@ -27,15 +27,15 @@ A data frame with 50 rows and 4 columns:
   Character. Biological process category assigned in Liberzon et al.
   (2015), Table 1, with underscores replaced by spaces.
 
-- label_short:
+- label_plot:
 
-  Character. Concise human-readable pathway label with Greek symbols (α,
-  β, γ, κ) preserved.
+  Character. Concise human-readable pathway label used for figures
 
-- label_long:
+- label_text:
 
-  Character. Expanded human-readable pathway label with Greek symbols
-  spelled out (alpha, beta, gamma, kappa).
+  Character. Expanded human-readable pathway label used for in-text
+  references with Greek symbols spelled out (e.g. alpha, beta) and
+  lowercase first letter.
 
 ## Source
 
