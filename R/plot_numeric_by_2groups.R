@@ -27,8 +27,8 @@
 #' @param facet_cols character vector of column names to facet by.
 #'   Default \code{NULL} (single panel).
 #' @param facet_pvalue character(1) When \code{facet_cols} is supplied, which
-#'   p-value information to display in annotations. One of "pvalue" (default),
-#'   "qvalue", or "both". Q-values are always computed when \code{facet_cols}
+#'   p-value information to display in annotations. One of "pvalue",
+#'   "qvalue", or "both" (default). Q-values are always computed when \code{facet_cols}
 #'   is supplied using FDR correction.
 #' @param text_effectsize_vjust numeric(1) Vertical justification for the
 #'   effect size annotation text (used when \code{facet_cols} is supplied).
@@ -97,7 +97,7 @@ plot_numeric_by_2groups <- function(
     alpha = 0.7,
     effect_size = c("median_difference"),
     facet_cols = NULL,
-    facet_pvalue = "pvalue",
+    facet_pvalue = "both",
     text_effectsize_vjust = 1.5,
     text_n_vjust = -0.4,
     text_effectsize_prefix = ifelse(
@@ -430,19 +430,11 @@ plot_numeric_by_2groups <- function(
                 qval <- if ("qvalue" %in% names(wr)) wr$qvalue[1] else NA_real_
 
                 # Build p-value label
-                if (pval < 0.001) {
-                    sci <- formatC(pval, format = "e", digits = 2)
-                    parts <- strsplit(sci, "e", fixed = TRUE)[[1]]
-                    coef <- trimws(parts[1])
-                    exp_val <- as.integer(parts[2])
-                    p_lbl <- sprintf("p = %s × 10^%d", coef, exp_val)
-                } else {
-                    pval_str <- trimws(format_pvalue(
-                        pval,
-                        include_p_symbol = FALSE
-                    ))
-                    p_lbl <- sprintf("p = %s", pval_str)
-                }
+                pval_str <- trimws(format_pvalue(
+                    pval,
+                    include_p_symbol = FALSE
+                ))
+                p_lbl <- sprintf("p = %s", pval_str)
 
                 # Build q-value label if available
                 q_lbl <- NULL
