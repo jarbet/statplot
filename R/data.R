@@ -76,10 +76,9 @@
 #'     prefix removed to match the \code{term} column of \code{\link{hallmark_t2g}}.}
 #'   \item{process_category}{Character. Biological process category assigned in
 #'     Liberzon et al. (2015), Table 1, with underscores replaced by spaces.}
-#'   \item{label_short}{Character. Concise human-readable pathway label with
-#'     Greek symbols (α, β, γ, κ) preserved.}
-#'   \item{label_long}{Character. Expanded human-readable pathway label with
-#'     Greek symbols spelled out (alpha, beta, gamma, kappa).}
+#'   \item{label_plot}{Character. Concise human-readable pathway label used for figures}
+#'   \item{label_text}{Character. Expanded human-readable pathway label used for in-text references
+#'     with Greek symbols spelled out (e.g. alpha, beta) and lowercase first letter.}
 #' }
 #'
 #' @references Liberzon, A., Birger, C., Thorvaldsdóttir, H., Ghandi, M.,
