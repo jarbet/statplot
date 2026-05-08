@@ -9,13 +9,15 @@ plot_numeric_by_2groups(
   group,
   d,
   colors = c("white", "white"),
-  digits = 1,
+  digits = ifelse(effect_size == "median_difference", 1, 2),
   alpha = 0.7,
-  effect_size = c("median_difference", "c_index"),
+  effect_size = c("median_difference"),
   facet_cols = NULL,
+  facet_pvalue = "pvalue",
   text_effectsize_vjust = 1.5,
   text_n_vjust = -0.4,
-  text_effectsize_prefix = "Median diff: "
+  text_effectsize_prefix = ifelse(effect_size == "median_difference", "Median diff: ",
+    "C-index: ")
 )
 }
 \arguments{
@@ -39,14 +41,13 @@ passed to the \code{alpha} argument of
 shift) or \code{"c_index"} (concordance probability using
 \code{asht::wmwTest}).}
 
-\item{facet_cols}{Optional character vector of column name(s) in \code{d} to
-use as faceting variables (e.g. \code{"group"} or
-\code{c("study", "sex")}). When supplied, a Wilcoxon test is run within
-each unique combination of those columns and per-panel p-value and sample
-size (\code{n=}) annotations are added. The annotation layers retain the
-faceting columns so that \code{+ facet_wrap()} or \code{+ facet_grid()}
-added after the function call correctly routes annotations to each panel.
+\item{facet_cols}{character vector of column names to facet by.
 Default \code{NULL} (single panel).}
+
+\item{facet_pvalue}{character(1) When \code{facet_cols} is supplied, which
+p-value information to display in annotations. One of "pvalue" (default),
+"qvalue", or "both". Q-values are always computed when \code{facet_cols}
+is supplied using FDR correction.}
 
 \item{text_effectsize_vjust}{numeric(1) Vertical justification for the
 effect size annotation text (used when \code{facet_cols} is supplied).
@@ -57,9 +58,7 @@ annotation text (used when \code{facet_cols} is supplied). Default
 \code{-0.4}.}
 
 \item{text_effectsize_prefix}{character(1) Prefix text for the effect size
-annotation (e.g., "Median diff: " when \code{effect_size="median_difference"}
-or "c-index = " when \code{effect_size="c_index"}). Set to "" to remove the
-prefix. Default \code{"Median diff: "}.}
+annotation. Default \code{"Median diff: "}.}
 }
 \value{
 A list with elements:
@@ -118,7 +117,8 @@ res_facet <- plot_numeric_by_2groups(
   d          = df,
   facet_cols = "group",
   colors     = c("No" = "grey80", "Yes" = "steelblue"),
-  alpha      = 0.6
+  alpha      = 0.6,
+  effect_size = "c_index"
 )
 res_facet$ggplot + ggplot2::facet_wrap(~group, ncol = 2)
 res_facet$wilcox
