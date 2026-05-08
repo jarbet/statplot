@@ -89,9 +89,19 @@ violins and annotations across panels.
 \examples{
 ggplot2::theme_set(theme_bw2())
 mtcars$am <- factor(mtcars$am)
+
+# Basic example
 res <- plot_numeric_by_2groups("mpg", "am", mtcars)
 res$ggplot
 res$wilcox
+
+# Show C-index effect size instead of median difference
+plot_numeric_by_2groups(
+  yvar = "mpg",
+  group = "am",
+  d = mtcars,
+  effect_size = "c_index"
+)
 
 # Faceted example: compare a "score" between exercisers and non-exercisers,
 # faceted by group (A/B/C/D)
