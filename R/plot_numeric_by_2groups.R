@@ -98,6 +98,7 @@ plot_numeric_by_2groups <- function(
     effect_size = c("median_difference"),
     facet_cols = NULL,
     facet_qvalue = FALSE,
+    facet_pvalue = "pvalue",
     text_effectsize_vjust = 1.5,
     text_n_vjust = -0.4,
     text_effectsize_prefix = ifelse(
@@ -416,25 +417,58 @@ plot_numeric_by_2groups <- function(
                     lo,
                     hi
                 )
-                diff_expr <- sprintf('"%s%s"', text_effectsize_prefix, est_str)
+                diff_expr <- sprintf("%s%s", text_effectsize_prefix, est_str)
+                qval <- if ("qvalue" %in% names(wr)) wr$qvalue[1] else NA_real_
+
+                # Build p-value label
                 if (pval < 0.001) {
                     sci <- formatC(pval, format = "e", digits = 2)
                     parts <- strsplit(sci, "e", fixed = TRUE)[[1]]
                     coef <- trimws(parts[1])
                     exp_val <- as.integer(parts[2])
-                    p_expr <- sprintf(
-                        '"p =" ~ %s %%*%% 10^{%d}',
-                        coef,
-                        exp_val
-                    )
+                    p_lbl <- sprintf("p = %s × 10^%d", coef, exp_val)
                 } else {
                     pval_str <- trimws(format_pvalue(
                         pval,
                         include_p_symbol = FALSE
                     ))
-                    p_expr <- sprintf('"p = %s"', pval_str)
+                    p_lbl <- sprintf("p = %s", pval_str)
                 }
-                lbl <- sprintf("atop(%s, %s)", diff_expr, p_expr)
+
+                # Build q-value label if available
+                q_lbl <- NULL
+                if (!is.na(qval)) {
+                    if (qval < 0.001) {
+                        sci <- formatC(qval, format = "e", digits = 2)
+                        parts <- strsplit(sci, "e", fixed = TRUE)[[1]]
+                        coef <- trimws(parts[1])
+                        exp_val <- as.integer(parts[2])
+                        q_lbl <- sprintf("q = %s × 10^%d", coef, exp_val)
+                    } else {
+                        qval_str <- trimws(format_pvalue(
+                            qval,
+                            include_p_symbol = FALSE
+                        ))
+                        q_lbl <- sprintf("q = %s", qval_str)
+                    }
+                }
+
+                # Build label based on facet_pvalue
+                if (facet_pvalue == "pvalue") {
+                    lbl <- paste(diff_expr, p_lbl, sep = "\n")
+                } else if (facet_pvalue == "qvalue") {
+                    lbl <- paste(
+                        diff_expr,
+                        if (!is.null(q_lbl)) q_lbl else p_lbl,
+                        sep = "\n"
+                    )
+                } else if (facet_pvalue == "both") {
+                    if (!is.null(q_lbl)) {
+                        lbl <- paste(diff_expr, p_lbl, q_lbl, sep = "\n")
+                    } else {
+                        lbl <- paste(diff_expr, p_lbl, sep = "\n")
+                    }
+                }
                 anno <- data.frame(
                     .x = mean(seq_along(group_levels)),
                     .lbl = lbl,
@@ -483,7 +517,6 @@ plot_numeric_by_2groups <- function(
                 inherit.aes = FALSE,
                 size = 3.2,
                 vjust = text_effectsize_vjust,
-                parse = TRUE
             ) +
             ggplot2::geom_text(
                 data = n_anno,
