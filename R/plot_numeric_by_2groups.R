@@ -24,24 +24,20 @@
 #'   \code{"median_difference"} (default; Hodges-Lehmann estimate of location
 #'   shift) or \code{"c_index"} (concordance probability using
 #'   \code{asht::wmwTest}).
-#' @param facet_cols Optional character vector of column name(s) in \code{d} to
-#'   use as faceting variables (e.g. \code{"group"} or
-#'   \code{c("study", "sex")}). When supplied, a Wilcoxon test is run within
-#'   each unique combination of those columns and per-panel p-value and sample
-#'   size (\code{n=}) annotations are added. The annotation layers retain the
-#'   faceting columns so that \code{+ facet_wrap()} or \code{+ facet_grid()}
-#'   added after the function call correctly routes annotations to each panel.
-#'   Default \code{NULL} (single panel).
+#' #'   Default \\code{NULL} (single panel).
+#' @param facet_qvalue logical(1) When \\code{facet_cols} is supplied, whether to
+#'   compute q-values (adjusted p-values using FDR correction) and display them
+#'   in the second row of annotations instead of p-values. Default \\code{FALSE}.
 #' @param text_effectsize_vjust numeric(1) Vertical justification for the
-#'   effect size annotation text (used when \code{facet_cols} is supplied).
-#'   Default \code{1.5}.
+#'   effect size annotation text (used when \\code{facet_cols} is supplied).
+#'   Default \\code{1.5}.
 #' @param text_n_vjust numeric(1) Vertical justification for the sample size
-#'   annotation text (used when \code{facet_cols} is supplied). Default
-#'   \code{-0.4}.
+#'   annotation text (used when \\code{facet_cols} is supplied). Default
+#'   \\code{-0.4}.
 #' @param text_effectsize_prefix character(1) Prefix text for the effect size
-#'   annotation (e.g., "Median diff: " when \code{effect_size="median_difference"}
-#'   or "c-index = " when \code{effect_size="c_index"}). Set to "" to remove the
-#'   prefix. Default \code{"Median diff: "}.
+#'   annotation (e.g., \"Median diff: \" when \\code{effect_size=\"median_difference\"}
+#'   or \"c-index = \" when \\code{effect_size=\"c_index\"}). Set to \"\" to remove the
+#'   prefix. Default \\code{\"Median diff: \"}.
 #' @return A list with elements:
 #' \describe{
 #'   \item{ggplot}{A ggplot2 object (violin + boxplot). Add
@@ -55,9 +51,19 @@
 #' @examples
 #' ggplot2::theme_set(theme_bw2())
 #' mtcars$am <- factor(mtcars$am)
+#'
+#' # Basic example
 #' res <- plot_numeric_by_2groups("mpg", "am", mtcars)
 #' res$ggplot
 #' res$wilcox
+#'
+#' # Show C-index effect size instead of median difference
+#' plot_numeric_by_2groups(
+#'   yvar = "mpg",
+#'   group = "am",
+#'   d = mtcars,
+#'   effect_size = "c_index"
+#' )
 #'
 #' # Faceted example: compare a "score" between exercisers and non-exercisers,
 #' # faceted by group (A/B/C/D)
@@ -74,7 +80,8 @@
 #'   d          = df,
 #'   facet_cols = "group",
 #'   colors     = c("No" = "grey80", "Yes" = "steelblue"),
-#'   alpha      = 0.6
+#'   alpha      = 0.6,
+#'   effect_size = "c_index"
 #' )
 #' res_facet$ggplot + ggplot2::facet_wrap(~group, ncol = 2)
 #' res_facet$wilcox
@@ -86,20 +93,28 @@ plot_numeric_by_2groups <- function(
     group,
     d,
     colors = c('white', 'white'),
-    digits = 1,
+    digits = ifelse(effect_size == "median_difference", 1, 2),
     alpha = 0.7,
-    effect_size = c("median_difference", "c_index"),
+    effect_size = c("median_difference"),
     facet_cols = NULL,
+    facet_qvalue = FALSE,
     text_effectsize_vjust = 1.5,
     text_n_vjust = -0.4,
-    text_effectsize_prefix = "Median diff: "
+    text_effectsize_prefix = ifelse(
+        effect_size == "median_difference",
+        "Median diff: ",
+        "C-index: "
+    )
 ) {
+    stopifnot(
+        effect_size %in%
+            c("median_difference", "c_index") &
+            length(effect_size) == 1
+    )
     stopifnot(length(yvar) == 1, length(group) == 1, is.data.frame(d))
     stopifnot(all(c(yvar, group) %in% names(d)))
     stopifnot(is.factor(d[[group]]) & length(levels(d[[group]])) == 2)
     stopifnot(is.numeric(digits), length(digits) == 1, digits >= 0)
-
-    effect_size <- match.arg(effect_size)
 
     if (!is.null(facet_cols)) {
         missing_facet <- setdiff(facet_cols, names(d))
@@ -298,6 +313,13 @@ plot_numeric_by_2groups <- function(
             rbind,
             wilcox_list[!vapply(wilcox_list, is.null, logical(1))]
         )
+
+        if (!is.null(wilcox_res)) {
+            wilcox_res$qvalue <- stats::p.adjust(
+                wilcox_res$p.value,
+                method = "fdr"
+            )
+        }
 
         subtitle <- NULL # per-panel annotations replace the subtitle
     }
