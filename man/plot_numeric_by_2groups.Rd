@@ -13,7 +13,7 @@ plot_numeric_by_2groups(
   alpha = 0.7,
   effect_size = c("median_difference"),
   facet_cols = NULL,
-  facet_pvalue = "pvalue",
+  facet_pvalue = "both",
   text_effectsize_vjust = 1.5,
   text_n_vjust = -0.4,
   text_effectsize_prefix = ifelse(effect_size == "median_difference", "Median diff: ",
@@ -45,8 +45,8 @@ shift) or \code{"c_index"} (concordance probability using
 Default \code{NULL} (single panel).}
 
 \item{facet_pvalue}{character(1) When \code{facet_cols} is supplied, which
-p-value information to display in annotations. One of "pvalue" (default),
-"qvalue", or "both". Q-values are always computed when \code{facet_cols}
+p-value information to display in annotations. One of "pvalue",
+"qvalue", or "both" (default). Q-values are always computed when \code{facet_cols}
 is supplied using FDR correction.}
 
 \item{text_effectsize_vjust}{numeric(1) Vertical justification for the

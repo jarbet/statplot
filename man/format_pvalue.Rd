@@ -2,24 +2,44 @@
 % Please edit documentation in R/format_pvalue.R
 \name{format_pvalue}
 \alias{format_pvalue}
-\title{Format p-values for display}
+\title{Format p-values for display in text, ggplot2 plots, or tables.}
 \usage{
-format_pvalue(x, p_symbol = "p", include_p_symbol = TRUE)
+format_pvalue(
+  x,
+  p_text = "p",
+  p_symbol = "= ",
+  truncate_pvalue = FALSE,
+  html = TRUE
+)
 }
 \arguments{
 \item{x}{Numeric vector of p-values}
 
-\item{p_symbol}{Character; symbol to prefix p-values with (default 'p')}
+\item{p_text}{Character; text prefix for p-values (default "p"). Use "" to omit.}
 
-\item{include_p_symbol}{Logical; whether to include the p_symbol prefix (default TRUE)}
-}
-\value{
-Character vector of formatted p-values, optionally prefixed with \code{p_symbol} when \code{include_p_symbol} is TRUE.
+\item{p_symbol}{Character; symbol/operator to display including spacing (default "= "). When truncate_pvalue=TRUE and p<0.001, "<" is used instead.}
+
+\item{truncate_pvalue}{Logical; whether to truncate pvalues <0.001 to "p<0.001". If FALSE, scientific notation is used (default FALSE).}
+
+\item{html}{Logical; whether to format scientific notation as HTML for small p-values (default TRUE).}
 }
 \description{
 Vectorised helper to format numeric p-values into readable strings.
 }
 \examples{
-format_pvalue(0.0005)
+# Default behavior: HTML formatting for small pvalues using scientific notation
+# This can more easily be added to ggplot2 plots compared to expression()/plotmath formatting
+format_pvalue(0.0005, html = TRUE)
 format_pvalue(c(0.0005, 0.005, 0.02, 0.236))
+
+# Truncate small p-values<0.001 to "p<0.001"
+format_pvalue(0.0005, truncate_pvalue = TRUE)
+format_pvalue(c(0.0005, 0.005, 0.02, 0.236), truncate_pvalue = TRUE)
+
+# Custom p_text and p_symbol
+format_pvalue(0.0005, p_text = "q")
+format_pvalue(c(0.0005, 0.005), p_text = "p", p_symbol = ": ")
+
+# Just the p-value without prefix
+format_pvalue(0.0005, p_text = "", p_symbol = "")
 }
