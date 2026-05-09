@@ -4,8 +4,8 @@
 #'
 #' @param x Numeric vector of p-values
 #' @param p_text Character; text prefix for p-values (default "p"). Use "" to omit.
-#' @param p_symbol Character; symbol/operator to display including spacing (default " = "). When truncate_pvalue=TRUE and p<0.001, " < " is used instead.
-#' @param truncate_pvalue Logical; whether to truncate pvalues <0.001 to "p < 0.001". If FALSE, scientific notation is used (default FALSE).
+#' @param p_symbol Character; symbol/operator to display including spacing (default "= "). When truncate_pvalue=TRUE and p<0.001, "<" is used instead.
+#' @param truncate_pvalue Logical; whether to truncate pvalues <0.001 to "p<0.001". If FALSE, scientific notation is used (default FALSE).
 #' @param html Logical; whether to format scientific notation as HTML for small p-values (default TRUE).
 #' @examples
 #' # Default behavior: HTML formatting for small pvalues using scientific notation
@@ -13,7 +13,7 @@
 #' format_pvalue(0.0005, html = TRUE)
 #' format_pvalue(c(0.0005, 0.005, 0.02, 0.236))
 #'
-#' # Truncate small p-values<0.001 to "p < 0.001"
+#' # Truncate small p-values<0.001 to "p<0.001"
 #' format_pvalue(0.0005, truncate_pvalue = TRUE)
 #' format_pvalue(c(0.0005, 0.005, 0.02, 0.236), truncate_pvalue = TRUE)
 #'
@@ -27,7 +27,7 @@
 format_pvalue <- function(
     x,
     p_text = "p",
-    p_symbol = " = ",
+    p_symbol = "= ",
     truncate_pvalue = FALSE,
     html = TRUE
 ) {
@@ -82,8 +82,8 @@ format_pvalue <- function(
 
     # Determine the appropriate symbol for each value
     if (truncate_pvalue) {
-        # When truncating: use " < " for values < 0.001, p_symbol for others
-        symbol <- ifelse(x < 0.001, " < ", p_symbol)
+        # When truncating: use "<" for values < 0.001, p_symbol for others
+        symbol <- ifelse(x < 0.001, "<", p_symbol)
     } else {
         # When not truncating: always use p_symbol
         symbol <- p_symbol
