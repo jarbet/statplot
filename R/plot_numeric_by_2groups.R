@@ -50,10 +50,10 @@
 #' }
 #' @examples
 #' ggplot2::theme_set(theme_bw2())
-#' mtcars$am <- factor(mtcars$am)
+#' mtcars$vs <- factor(mtcars$vs)
 #'
 #' # Basic example
-#' res <- plot_numeric_by_2groups("mpg", "am", mtcars)
+#' res <- plot_numeric_by_2groups("mpg", "vs", mtcars)
 #' res$ggplot
 #' res$wilcox
 #'
@@ -225,7 +225,7 @@ plot_numeric_by_2groups <- function(
         if (pval < 0.001) {
             sci <- formatC(pval, format = "e", digits = 2)
             parts <- strsplit(sci, "e", fixed = TRUE)[[1]]
-            coef <- trimws(parts[1])
+            coef <- format(round(as.numeric(parts[1]), 1), nsmall = 1)
             exp_val <- as.integer(parts[2])
             p_expr <- sprintf(
                 '"p =" ~ %s %%*%% 10^{%d}',
@@ -440,9 +440,12 @@ plot_numeric_by_2groups <- function(
                     if (qval < 0.001) {
                         sci <- formatC(qval, format = "e", digits = 2)
                         parts <- strsplit(sci, "e", fixed = TRUE)[[1]]
-                        coef <- trimws(parts[1])
+                        coef <- format(
+                            round(as.numeric(parts[1]), 1),
+                            nsmall = 1
+                        )
                         exp_val <- as.integer(parts[2])
-                        q_lbl <- sprintf("q = %s × 10^%d", coef, exp_val)
+                        q_lbl <- sprintf("q = %s \u00d7 10^%d", coef, exp_val)
                     } else {
                         qval_str <- trimws(format_pvalue(
                             qval,

@@ -62,9 +62,9 @@ format_pvalue <- function(
         fmt_small <- function(v, use_html = FALSE) {
             sci <- formatC(v, format = "e", digits = 2)
             if (isTRUE(use_html)) {
-                # e.g. "3.21 × 10<sup>-4</sup>"
+                # e.g. "5.00 × 10<sup>-4</sup>"
                 parts <- strsplit(sci, "e", fixed = TRUE)[[1]]
-                coef <- parts[1]
+                coef <- format(round(as.numeric(parts[1]), 2), nsmall = 2)
                 exp <- as.integer(parts[2])
                 paste0(coef, " \u00d7 10<sup>", exp, "</sup>")
             } else {

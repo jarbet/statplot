@@ -87,10 +87,10 @@ violins and annotations across panels.
 }
 \examples{
 ggplot2::theme_set(theme_bw2())
-mtcars$am <- factor(mtcars$am)
+mtcars$vs <- factor(mtcars$vs)
 
 # Basic example
-res <- plot_numeric_by_2groups("mpg", "am", mtcars)
+res <- plot_numeric_by_2groups("mpg", "vs", mtcars)
 res$ggplot
 res$wilcox
 
