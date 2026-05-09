@@ -234,10 +234,9 @@ plot_numeric_by_2groups <- function(
             )
         } else {
             pval_str <- trimws(format_pvalue(
-                pval,
-                include_p_symbol = FALSE
+                pval
             ))
-            p_expr <- sprintf('"p = %s"', pval_str)
+            p_expr <- sprintf('"%s"', pval_str)
         }
 
         pval_anno <- data.frame(
@@ -431,10 +430,9 @@ plot_numeric_by_2groups <- function(
 
                 # Build p-value label
                 pval_str <- trimws(format_pvalue(
-                    pval,
-                    include_p_symbol = FALSE
+                    pval
                 ))
-                p_lbl <- sprintf("p = %s", pval_str)
+                p_lbl <- sprintf("%s", pval_str)
 
                 # Build q-value label if available
                 q_lbl <- NULL
@@ -448,9 +446,9 @@ plot_numeric_by_2groups <- function(
                     } else {
                         qval_str <- trimws(format_pvalue(
                             qval,
-                            include_p_symbol = FALSE
+                            p_text = "q"
                         ))
-                        q_lbl <- sprintf("q = %s", qval_str)
+                        q_lbl <- sprintf("%s", qval_str)
                     }
                 }
 
