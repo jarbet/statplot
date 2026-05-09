@@ -97,7 +97,7 @@ res$wilcox
 # Show C-index effect size instead of median difference
 plot_numeric_by_2groups(
   yvar = "mpg",
-  group = "am",
+  group = "vs",
   d = mtcars,
   effect_size = "c_index"
 )
