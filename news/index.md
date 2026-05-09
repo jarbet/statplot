@@ -7,9 +7,64 @@
 - `data(hallmark_pathway_categories)` has 2 new columns that give more
   human-readable labels that can be used for plots or in-text reference
 
+- `plot_numeric_by_2groups`: new `facet_cols` parameter enables faceting
+  by additional variables. When supplied, a separate Wilcoxon test is
+  computed within each unique combination of facet columns, with
+  annotations automatically retained for use with
+  [`ggplot2::facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html)
+  or
+  [`ggplot2::facet_grid()`](https://ggplot2.tidyverse.org/reference/facet_grid.html).
+
+- `plot_numeric_by_2groups`: new `effect_size` parameter (default
+  `"median_difference"`) allows selection between Hodges-Lehmann median
+  difference estimate or concordance probability (`"c_index"`) via
+  [`asht::wmwTest()`](https://rdrr.io/pkg/asht/man/wmwTest.html).
+
+- `plot_numeric_by_2groups`: new annotation parameters
+  `text_effectsize_vjust`, `text_n_vjust`, and `text_effectsize_prefix`
+  to customize in-plot text positioning and labeling.
+
+- `format_pvalue`: complete redesign with new parameters for flexible
+  p-value formatting:
+
+  - `p_text` (default `"p"`) and `p_symbol` (default `"= "`) for custom
+    prefix/operator formatting
+  - `truncate_pvalue` (default `FALSE`) to display p \< 0.001 as
+    `"p<0.001"` or use scientific notation
+  - `html` (default `TRUE`) to format scientific notation with HTML
+    `<sup>` tags for use in markdown/Quarto or with
+    [`ggtext::geom_richtext()`](https://wilkelab.org/ggtext/reference/geom_richtext.html)
+  - `format` parameter supporting `"text"` (default) or `"plotmath"` for
+    use with `ggplot2::geom_text(parse = TRUE)`
+
 ### Changed
 
-…
+- `plot_numeric_by_2groups`: **Breaking change** — removed `title`
+  parameter. Plots no longer include a default title; use
+  `+ ggplot2::ggtitle()` to customize.
+
+- `plot_numeric_by_2groups`: statistics are now displayed as in-plot
+  annotations (top and bottom) rather than in the plot subtitle, with
+  HTML-formatted text via
+  [`ggtext::geom_richtext()`](https://wilkelab.org/ggtext/reference/geom_richtext.html)
+  for more flexible rendering including superscripts and line breaks.
+
+- `plot_numeric_by_2groups`: new `alpha` parameter (default `0.7`)
+  controls fill transparency for violin and boxplot geoms.
+
+- `plot_numeric_by_2groups`: default `digits` parameter now depends on
+  `effect_size` — 1 for median difference, 2 for C-index.
+
+- `plot_numeric_by_2groups`: new `facet_pvalue` parameter (default
+  `"both"`) controls whether faceted plots display p-values, q-values
+  (FDR-adjusted), or both; q-values are automatically computed when
+  faceting is used.
+
+- `format_pvalue`: **Breaking change** — removed `p_symbol` and
+  `include_p_symbol` parameters (now use `p_text`, `p_symbol`,
+  `truncate_pvalue`, `html`, and `format`). The function now supports
+  HTML/plotmath output formats and scientific notation with flexible
+  customization.
 
 ### Fixed
 

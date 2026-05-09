@@ -36,13 +36,33 @@
 <h2 class="pkg-version" data-toc-text="development version" id="statplot-development-version">statplot (development version)<a class="anchor" aria-label="anchor" href="#statplot-development-version"></a></h2>
 <div class="section level3">
 <h3 id="added-development-version">Added<a class="anchor" aria-label="anchor" href="#added-development-version"></a></h3>
+<ul><li><p><code>data(hallmark_pathway_categories)</code> has 2 new columns that give more human-readable labels that can be used for plots or in-text reference</p></li>
+<li><p><code>plot_numeric_by_2groups</code>: new <code>facet_cols</code> parameter enables faceting by additional variables. When supplied, a separate Wilcoxon test is computed within each unique combination of facet columns, with annotations automatically retained for use with <code><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">ggplot2::facet_wrap()</a></code> or <code><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">ggplot2::facet_grid()</a></code>.</p></li>
+<li><p><code>plot_numeric_by_2groups</code>: new <code>effect_size</code> parameter (default <code>"median_difference"</code>) allows selection between Hodges-Lehmann median difference estimate or concordance probability (<code>"c_index"</code>) via <code><a href="https://rdrr.io/pkg/asht/man/wmwTest.html" class="external-link">asht::wmwTest()</a></code>.</p></li>
+<li><p><code>plot_numeric_by_2groups</code>: new annotation parameters <code>text_effectsize_vjust</code>, <code>text_n_vjust</code>, and <code>text_effectsize_prefix</code> to customize in-plot text positioning and labeling.</p></li>
+<li>
+<p><code>format_pvalue</code>: complete redesign with new parameters for flexible p-value formatting:</p>
 <ul><li>
-<code>data(hallmark_pathway_categories)</code> has 2 new columns that give more human-readable labels that can be used for plots or in-text reference</li>
+<code>p_text</code> (default <code>"p"</code>) and <code>p_symbol</code> (default <code>"= "</code>) for custom prefix/operator formatting</li>
+<li>
+<code>truncate_pvalue</code> (default <code>FALSE</code>) to display p &lt; 0.001 as <code>"p&lt;0.001"</code> or use scientific notation</li>
+<li>
+<code>html</code> (default <code>TRUE</code>) to format scientific notation with HTML <code>&lt;sup&gt;</code> tags for use in markdown/Quarto or with <code><a href="https://wilkelab.org/ggtext/reference/geom_richtext.html" class="external-link">ggtext::geom_richtext()</a></code>
+</li>
+<li>
+<code>format</code> parameter supporting <code>"text"</code> (default) or <code>"plotmath"</code> for use with <code>ggplot2::geom_text(parse = TRUE)</code>
+</li>
+</ul></li>
 </ul></div>
 <div class="section level3">
 <h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
-<p>…</p>
-</div>
+<ul><li><p><code>plot_numeric_by_2groups</code>: <strong>Breaking change</strong> — removed <code>title</code> parameter. Plots no longer include a default title; use <code>+ ggplot2::ggtitle()</code> to customize.</p></li>
+<li><p><code>plot_numeric_by_2groups</code>: statistics are now displayed as in-plot annotations (top and bottom) rather than in the plot subtitle, with HTML-formatted text via <code><a href="https://wilkelab.org/ggtext/reference/geom_richtext.html" class="external-link">ggtext::geom_richtext()</a></code> for more flexible rendering including superscripts and line breaks.</p></li>
+<li><p><code>plot_numeric_by_2groups</code>: new <code>alpha</code> parameter (default <code>0.7</code>) controls fill transparency for violin and boxplot geoms.</p></li>
+<li><p><code>plot_numeric_by_2groups</code>: default <code>digits</code> parameter now depends on <code>effect_size</code> — 1 for median difference, 2 for C-index.</p></li>
+<li><p><code>plot_numeric_by_2groups</code>: new <code>facet_pvalue</code> parameter (default <code>"both"</code>) controls whether faceted plots display p-values, q-values (FDR-adjusted), or both; q-values are automatically computed when faceting is used.</p></li>
+<li><p><code>format_pvalue</code>: <strong>Breaking change</strong> — removed <code>p_symbol</code> and <code>include_p_symbol</code> parameters (now use <code>p_text</code>, <code>p_symbol</code>, <code>truncate_pvalue</code>, <code>html</code>, and <code>format</code>). The function now supports HTML/plotmath output formats and scientific notation with flexible customization.</p></li>
+</ul></div>
 <div class="section level3">
 <h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
 <p>…</p>

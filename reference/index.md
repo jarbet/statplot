@@ -14,7 +14,7 @@
   : Example log2 fold-change vector for pathway correlation network
   plots
 - [`format_pvalue()`](https://github.com/jarbet/statplot/reference/format_pvalue.md)
-  : Format p-values for display
+  : Format p-values for display in text, ggplot2 plots, or tables.
 - [`hallmark_pathway_categories`](https://github.com/jarbet/statplot/reference/hallmark_pathway_categories.md)
   : Hallmark pathway process categories
 - [`hallmark_t2g`](https://github.com/jarbet/statplot/reference/hallmark_t2g.md)
@@ -42,7 +42,8 @@
 - [`plot_heatmap()`](https://github.com/jarbet/statplot/reference/plot_heatmap.md)
   : Plot a heatmap from tidy data
 - [`plot_numeric_by_2groups()`](https://github.com/jarbet/statplot/reference/plot_numeric_by_2groups.md)
-  : Violin + boxplot with Wilcoxon rank-sum test
+  : Compare a numeric variable between two groups with violins/boxplots
+  and Wilcoxon test
 - [`plot_numeric_by_3plusgroups()`](https://github.com/jarbet/statplot/reference/plot_numeric_by_3plusgroups.md)
   : Violin + boxplot of a numeric variable by a grouping factor
 - [`plot_pathway_correlation_network()`](https://github.com/jarbet/statplot/reference/plot_pathway_correlation_network.md)
