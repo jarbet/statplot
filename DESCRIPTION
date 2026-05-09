@@ -17,6 +17,7 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
+    asht,
     BoutrosLab.plotting.general,
     broom,
     circlize,
@@ -26,6 +27,7 @@ Imports:
     forcats,
     ggnewscale,
     ggplot2,
+    ggtext,
     ggraph,
     ggsurvfit,
     ggtangle,
