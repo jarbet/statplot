@@ -226,7 +226,6 @@ plot_numeric_by_2groups <- function(
         pval_anno <- data.frame(
             .x = mean(seq_along(group_levels)),
             .lbl = anno_str,
-            .y = yr[2] + diff(yr) * 0.15,
             stringsAsFactors = FALSE
         )
 
@@ -243,7 +242,6 @@ plot_numeric_by_2groups <- function(
                 data.frame(
                     .x = group_levels[j],
                     .lbl = paste0("n=", counts_per_group[j]),
-                    .y = -Inf,
                     stringsAsFactors = FALSE
                 )
             })
@@ -457,7 +455,6 @@ plot_numeric_by_2groups <- function(
                 anno <- data.frame(
                     .x = mean(seq_along(group_levels)),
                     .lbl = lbl,
-                    .y = yr[2] + diff(yr) * 0.15,
                     stringsAsFactors = FALSE
                 )
                 for (fc in facet_cols) {
@@ -483,7 +480,6 @@ plot_numeric_by_2groups <- function(
                     ann <- data.frame(
                         .x = lv,
                         .lbl = paste0("n=", n),
-                        .y = -Inf,
                         stringsAsFactors = FALSE
                     )
                     for (fc in facet_cols) {

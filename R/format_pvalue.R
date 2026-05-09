@@ -72,17 +72,34 @@ format_pvalue <- function(
     # Handle scientific notation for values < 0.001 when not truncating
     if (!truncate_pvalue) {
         fmt_small <- function(v, fmt = "text", use_html = FALSE) {
-            sci <- formatC(v, format = "e", digits = 2)
+            sci <- formatC(v, format = "e", digits = 1)
             if (fmt == "plotmath") {
-                # Return plotmath expression: "p =" ~ 5.0 %*% 10^{-5}
+                # Return plotmath expression using p_text and p_symbol
                 parts <- strsplit(sci, "e", fixed = TRUE)[[1]]
                 coef <- format(round(as.numeric(parts[1]), 1), nsmall = 1)
                 exp_val <- as.integer(parts[2])
-                sprintf('"p =" ~ %s %%*%% 10^{%d}', coef, exp_val)
+
+                # Build the plotmath prefix from p_text and p_symbol
+                prefix <- paste0(p_text, p_symbol)
+                # Trim trailing whitespace to avoid double-spacing with tilde operator
+                prefix_trimmed <- trimws(prefix, which = "right")
+
+                if (prefix_trimmed == "") {
+                    # No prefix, just the scientific notation
+                    sprintf('%s %%*%% 10^{%d}', coef, exp_val)
+                } else {
+                    # Include prefix with tilde for spacing
+                    sprintf(
+                        '"%s" ~ %s %%*%% 10^{%d}',
+                        prefix_trimmed,
+                        coef,
+                        exp_val
+                    )
+                }
             } else if (isTRUE(use_html)) {
-                # e.g. "5.00 × 10<sup>-4</sup>"
+                # e.g. "5.0 × 10<sup>-4</sup>"
                 parts <- strsplit(sci, "e", fixed = TRUE)[[1]]
-                coef <- format(round(as.numeric(parts[1]), 2), nsmall = 2)
+                coef <- format(round(as.numeric(parts[1]), 1), nsmall = 1)
                 exp <- as.integer(parts[2])
                 paste0(coef, " \u00d7 10<sup>", exp, "</sup>")
             } else {

@@ -1,12 +1,12 @@
 test_that("format_pvalue default behavior with single value", {
     result <- format_pvalue(0.0005)
-    expect_equal(result, "p= 5.00 × 10<sup>-4</sup>")
+    expect_equal(result, "p= 5.0 × 10<sup>-4</sup>")
 })
 
 test_that("format_pvalue handles vector input", {
     result <- format_pvalue(c(0.0005, 0.005, 0.02, 0.236))
     expect_equal(length(result), 4)
-    expect_equal(result[1], "p= 5.00 × 10<sup>-4</sup>")
+    expect_equal(result[1], "p= 5.0 × 10<sup>-4</sup>")
     expect_equal(result[2], "p= 0.005")
     expect_equal(result[3], "p= 0.020")
     expect_equal(result[4], "p= 0.24")
@@ -14,7 +14,7 @@ test_that("format_pvalue handles vector input", {
 
 test_that("format_pvalue with html = FALSE uses scientific notation", {
     result <- format_pvalue(0.0005, html = FALSE)
-    expect_equal(result, "p= 5.00e-04")
+    expect_equal(result, "p= 5.0e-04")
 })
 
 test_that("format_pvalue with truncate_pvalue = TRUE", {
@@ -35,27 +35,27 @@ test_that("format_pvalue truncate with vector includes both < and =", {
 
 test_that("format_pvalue with custom p_text", {
     result <- format_pvalue(0.0005, p_text = "q")
-    expect_equal(result, "q= 5.00 × 10<sup>-4</sup>")
+    expect_equal(result, "q= 5.0 × 10<sup>-4</sup>")
 })
 
 test_that("format_pvalue with custom p_symbol", {
     result <- format_pvalue(0.0005, p_symbol = ": ")
-    expect_equal(result, "p: 5.00 × 10<sup>-4</sup>")
+    expect_equal(result, "p: 5.0 × 10<sup>-4</sup>")
 })
 
 test_that("format_pvalue with empty p_text and p_symbol returns only value", {
     result <- format_pvalue(0.0005, p_text = "", p_symbol = "")
-    expect_equal(result, "5.00 × 10<sup>-4</sup>")
+    expect_equal(result, "5.0 × 10<sup>-4</sup>")
 })
 
 test_that("format_pvalue with empty p_text", {
     result <- format_pvalue(0.0005, p_text = "", p_symbol = "= ")
-    expect_equal(result, "= 5.00 × 10<sup>-4</sup>")
+    expect_equal(result, "= 5.0 × 10<sup>-4</sup>")
 })
 
 test_that("format_pvalue with empty p_symbol", {
     result <- format_pvalue(0.0005, p_text = "p", p_symbol = "")
-    expect_equal(result, "p5.00 × 10<sup>-4</sup>")
+    expect_equal(result, "p5.0 × 10<sup>-4</sup>")
 })
 
 test_that("format_pvalue handles values >= 0.1", {
@@ -97,10 +97,10 @@ test_that("format_pvalue handles NA values", {
 
 test_that("format_pvalue handles edge case p=0", {
     result <- format_pvalue(0.0)
-    expect_equal(result, "p= 0.00 × 10<sup>0</sup>")
+    expect_equal(result, "p= 0.0 × 10<sup>0</sup>")
 
     result_no_html <- format_pvalue(0.0, html = FALSE)
-    expect_equal(result_no_html, "p= 0.00e+00")
+    expect_equal(result_no_html, "p= 0.0e+00")
 })
 
 test_that("format_pvalue truncate uses < operator in symbol position", {
@@ -117,7 +117,7 @@ test_that("format_pvalue all parameters work together", {
         truncate_pvalue = FALSE,
         html = TRUE
     )
-    expect_equal(result, "α: 5.00 × 10<sup>-4</sup>")
+    expect_equal(result, "α: 5.0 × 10<sup>-4</sup>")
 
     result <- format_pvalue(
         0.0005,
