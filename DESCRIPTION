@@ -27,6 +27,7 @@ Imports:
     forcats,
     ggnewscale,
     ggplot2,
+    ggtext,
     ggraph,
     ggsurvfit,
     ggtangle,

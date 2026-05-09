@@ -9,7 +9,8 @@ format_pvalue(
   p_text = "p",
   p_symbol = "= ",
   truncate_pvalue = FALSE,
-  html = TRUE
+  html = TRUE,
+  format = c("text", "plotmath")
 )
 }
 \arguments{
@@ -21,20 +22,30 @@ format_pvalue(
 
 \item{truncate_pvalue}{Logical; whether to truncate pvalues <0.001 to "p<0.001". If FALSE, scientific notation is used (default FALSE).}
 
-\item{html}{Logical; whether to format scientific notation as HTML for small p-values (default TRUE).}
+\item{html}{Logical; whether to format scientific notation as HTML for small p-values (default TRUE). HTML output is suitable for markdown documents, Quarto, or with \code{ggtext::geom_richtext()}, but not with standard \code{ggplot2::geom_text()}. Ignored when \code{format = "plotmath"}.}
+
+\item{format}{Character; output format for small p-values. One of "text" (default; plain scientific notation), or "plotmath" (suitable for ggplot2 with parse=TRUE). When "plotmath", returns a quoted string with plotmath notation (e.g., \code{"p =" ~ 5.0 \%*\% 10^{-5}}).}
+}
+\value{
+Character vector of formatted p-values. For p >= 0.001, returns values formatted to 2-3 decimal places. For p < 0.001 with truncate_pvalue = TRUE, returns "p<0.001". For p < 0.001 with truncate_pvalue = FALSE, returns scientific notation in the format specified by \code{format}.
 }
 \description{
 Vectorised helper to format numeric p-values into readable strings.
 }
 \examples{
-# Default behavior: HTML formatting for small pvalues using scientific notation
-# This can more easily be added to ggplot2 plots compared to expression()/plotmath formatting
-format_pvalue(0.0005, html = TRUE)
+# Default behavior: plain text scientific notation
+format_pvalue(0.0005)
 format_pvalue(c(0.0005, 0.005, 0.02, 0.236))
+
+# HTML formatting for markdown/Quarto or ggtext::geom_richtext()
+format_pvalue(0.0005, html = TRUE)
 
 # Truncate small p-values<0.001 to "p<0.001"
 format_pvalue(0.0005, truncate_pvalue = TRUE)
 format_pvalue(c(0.0005, 0.005, 0.02, 0.236), truncate_pvalue = TRUE)
+
+# Plotmath notation for use with geom_text(parse = TRUE)
+format_pvalue(0.0005, format = "plotmath")
 
 # Custom p_text and p_symbol
 format_pvalue(0.0005, p_text = "q")

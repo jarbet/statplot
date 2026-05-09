@@ -121,11 +121,6 @@ plot_numeric_by_2groups <- function(
             c("pvalue", "qvalue", "both") &
             length(facet_pvalue) == 1
     )
-    stopifnot(
-        facet_pvalue %in%
-            c("pvalue", "qvalue", "both") &
-            length(facet_pvalue) == 1
-    )
     if (!is.null(facet_cols)) {
         missing_facet <- setdiff(facet_cols, names(d))
         if (length(missing_facet)) {
@@ -221,27 +216,16 @@ plot_numeric_by_2groups <- function(
             hi
         )
 
-        diff_expr <- sprintf('"%s%s"', text_effectsize_prefix, est_str)
-        if (pval < 0.001) {
-            sci <- formatC(pval, format = "e", digits = 2)
-            parts <- strsplit(sci, "e", fixed = TRUE)[[1]]
-            coef <- format(round(as.numeric(parts[1]), 1), nsmall = 1)
-            exp_val <- as.integer(parts[2])
-            p_expr <- sprintf(
-                '"p =" ~ %s %%*%% 10^{%d}',
-                coef,
-                exp_val
-            )
-        } else {
-            pval_str <- trimws(format_pvalue(
-                pval
-            ))
-            p_expr <- sprintf('"%s"', pval_str)
-        }
+        # Build effect size and p-value labels using HTML format
+        diff_str <- sprintf("%s%s", text_effectsize_prefix, est_str)
+        pval_str <- trimws(format_pvalue(pval, html = TRUE))
+
+        # Combine with HTML line break
+        anno_str <- sprintf("%s<br>%s", diff_str, pval_str)
 
         pval_anno <- data.frame(
             .x = mean(seq_along(group_levels)),
-            .lbl = sprintf("atop(%s, %s)", diff_expr, p_expr),
+            .lbl = anno_str,
             .y = yr[2] + diff(yr) * 0.15,
             stringsAsFactors = FALSE
         )
@@ -323,6 +307,14 @@ plot_numeric_by_2groups <- function(
             wilcox_list[!vapply(wilcox_list, is.null, logical(1))]
         )
 
+        if (is.null(wilcox_res) || nrow(wilcox_res) == 0L) {
+            stop(
+                "No successful Wilcoxon tests across facet groups. ",
+                "All facet groups either have <2 levels after filtering, ",
+                "or the test failed (e.g., due to ties or other issues)."
+            )
+        }
+
         if (!is.null(wilcox_res)) {
             wilcox_res$qvalue <- stats::p.adjust(
                 wilcox_res$p.value,
@@ -359,14 +351,16 @@ plot_numeric_by_2groups <- function(
     # -------------------------------------------------------------------------
     if (is.null(facet_cols)) {
         # Add text annotations for effect size (top) and n= (bottom)
+        # Use geom_richtext for HTML formatting
         p <- p +
-            ggplot2::geom_text(
+            ggtext::geom_richtext(
                 data = pval_anno,
                 ggplot2::aes(x = .x, y = Inf, label = .lbl),
                 inherit.aes = FALSE,
                 size = 3.2,
                 vjust = text_effectsize_vjust,
-                parse = TRUE
+                label.color = NA,
+                fill = NA
             ) +
             ggplot2::geom_text(
                 data = n_anno,
@@ -392,9 +386,8 @@ plot_numeric_by_2groups <- function(
             range(d_sub[[yvar]][mask], na.rm = TRUE)
         })
 
-        # Stats annotation (top): line 1 = "Median diff: ...", line 2 = p-value
-        # Uses plotmath atop() + parse=TRUE for superscript exponents on small p.
-        # n= labels are placed separately near the x-axis (see n_anno below).
+        # Stats annotation (top): uses HTML formatting with geom_richtext
+        # Line breaks using <br>, scientific notation with <sup> for superscripts
         pval_anno <- do.call(
             rbind,
             lapply(seq_len(nrow(facet_groups)), function(i) {
@@ -425,50 +418,40 @@ plot_numeric_by_2groups <- function(
                     lo,
                     hi
                 )
-                diff_expr <- sprintf("%s%s", text_effectsize_prefix, est_str)
+                diff_str <- sprintf("%s%s", text_effectsize_prefix, est_str)
                 qval <- if ("qvalue" %in% names(wr)) wr$qvalue[1] else NA_real_
 
-                # Build p-value label
-                pval_str <- trimws(format_pvalue(
-                    pval
-                ))
-                p_lbl <- sprintf("%s", pval_str)
+                # Build p-value label using HTML format
+                pval_str <- trimws(format_pvalue(pval, html = TRUE))
 
                 # Build q-value label if available
                 q_lbl <- NULL
                 if (!is.na(qval)) {
-                    if (qval < 0.001) {
-                        sci <- formatC(qval, format = "e", digits = 2)
-                        parts <- strsplit(sci, "e", fixed = TRUE)[[1]]
-                        coef <- format(
-                            round(as.numeric(parts[1]), 1),
-                            nsmall = 1
-                        )
-                        exp_val <- as.integer(parts[2])
-                        q_lbl <- sprintf("q = %s \u00d7 10^%d", coef, exp_val)
-                    } else {
-                        qval_str <- trimws(format_pvalue(
-                            qval,
-                            p_text = "q"
-                        ))
-                        q_lbl <- sprintf("%s", qval_str)
-                    }
+                    qval_str <- trimws(format_pvalue(
+                        qval,
+                        p_text = "q",
+                        html = TRUE
+                    ))
+                    q_lbl <- qval_str
                 }
 
                 # Build label based on facet_pvalue
+                # Use HTML <br> for line breaks
                 if (facet_pvalue == "pvalue") {
-                    lbl <- paste(diff_expr, p_lbl, sep = "\n")
+                    lbl <- sprintf("%s<br>%s", diff_str, pval_str)
                 } else if (facet_pvalue == "qvalue") {
-                    lbl <- paste(
-                        diff_expr,
-                        if (!is.null(q_lbl)) q_lbl else p_lbl,
-                        sep = "\n"
-                    )
+                    q_str <- if (!is.null(q_lbl)) q_lbl else pval_str
+                    lbl <- sprintf("%s<br>%s", diff_str, q_str)
                 } else if (facet_pvalue == "both") {
                     if (!is.null(q_lbl)) {
-                        lbl <- paste(diff_expr, p_lbl, q_lbl, sep = "\n")
+                        lbl <- sprintf(
+                            "%s<br>%s<br>%s",
+                            diff_str,
+                            pval_str,
+                            q_lbl
+                        )
                     } else {
-                        lbl <- paste(diff_expr, p_lbl, sep = "\n")
+                        lbl <- sprintf("%s<br>%s", diff_str, pval_str)
                     }
                 }
                 anno <- data.frame(
@@ -513,12 +496,14 @@ plot_numeric_by_2groups <- function(
         )
 
         p <- p +
-            ggplot2::geom_text(
+            ggtext::geom_richtext(
                 data = pval_anno,
                 ggplot2::aes(x = .x, y = Inf, label = .lbl),
                 inherit.aes = FALSE,
                 size = 3.2,
                 vjust = text_effectsize_vjust,
+                label.color = NA,
+                fill = NA
             ) +
             ggplot2::geom_text(
                 data = n_anno,
