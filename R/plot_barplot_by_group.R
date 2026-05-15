@@ -25,14 +25,14 @@
 #' @param p_col Column name for p-values. When faceting, the value should be
 #'   the same for both condition rows within each facet group (i.e. repeated).
 #'   Set to \code{NULL} to suppress brackets entirely. Default \code{"p_value"}.
-#' @param format_pvalue Logical. When \code{TRUE} (default), p-values are
+#' @param use_format_pvalue Logical. When \code{TRUE} (default), p-values are
 #'   formatted using \code{\link{format_pvalue}()}. When \code{FALSE}, p-values
 #'   are formatted using \code{paste0("p = ", signif(p, 2))}. Ignored if
 #'   \code{label_col} is supplied. Default \code{TRUE}.
 #' @param label_col Optional column name supplying custom bracket label text
 #'   (e.g. \code{"OR = 1.5 [1.1-2.0], p = 0.012"}). Labels can include HTML
 #'   formatting for rich text rendering (e.g., superscripts like \code{10<sup>-4</sup>}).
-#'   When \code{NULL}, labels are auto-formatted based on the \code{format_pvalue}
+#'   When \code{NULL}, labels are auto-formatted based on the \code{use_format_pvalue}
 #'   argument. Default \code{NULL}.
 #' @param condition_order Length-2 character vector setting the left-to-right
 #'   display order of the two conditions. Defaults to the existing factor level
@@ -229,7 +229,7 @@ plot_barplot_by_group <- function(
     p_col,
     facet_cols = NULL,
     label_col = NULL,
-    format_pvalue = TRUE,
+    use_format_pvalue = TRUE,
     error_direction = "up",
     condition_order = NULL,
     p_cutoff = 0.05,
@@ -361,16 +361,23 @@ plot_barplot_by_group <- function(
         if (!is.null(label_col)) {
             df$.lbl <- df[[label_col]]
         } else {
-            if (format_pvalue) {
-                pval_labels <- format_pvalue(df[[p_col]])
+            # Only format p-values that pass the cutoff to avoid hard-errors from
+            # out-of-range values in format_pvalue()
+            meets_cutoff <- !is.na(df[[p_col]]) & df[[p_col]] < p_cutoff
+
+            if (use_format_pvalue) {
+                # Call format_pvalue only on rows that pass the cutoff
+                pval_labels <- rep(NA_character_, nrow(df))
+                if (any(meets_cutoff)) {
+                    pval_labels[meets_cutoff] <- format_pvalue(df[[p_col]][
+                        meets_cutoff
+                    ])
+                }
             } else {
                 pval_labels <- paste0("p = ", signif(df[[p_col]], 2))
             }
-            df$.lbl <- ifelse(
-                !is.na(df[[p_col]]) & df[[p_col]] < p_cutoff,
-                pval_labels,
-                NA_character_
-            )
+
+            df$.lbl <- ifelse(meets_cutoff, pval_labels, NA_character_)
         }
 
         # Summarise to one row per bracket (one per unique combination of
@@ -525,16 +532,27 @@ plot_barplot_by_group <- function(
                 label.color = NA
             )
 
-        # Add padding above text to prevent clipping
+        # Expand y-axis to prevent text clipping at top
+        # Compute lower bound from actual error-bar bottoms (or mean if no error direction)
         if (!is.null(text_df) && nrow(text_df) > 0) {
             y_max_text <- max(text_df$y, na.rm = TRUE)
-            y_min_data <- min(c(df[[mean_col]], 0), na.rm = TRUE)
+
+            # Lower bound: account for error bars in both directions
+            y_lower_bars <- if (error_direction == "both") {
+                min(df[[mean_col]] - df[[error_col]], na.rm = TRUE)
+            } else {
+                min(df[[mean_col]], na.rm = TRUE)
+            }
+            y_min_data <- min(y_lower_bars, 0)
+
             y_range <- y_max_text - y_min_data
-            y_padding <- y_range * y_expand_top
+            y_top_expand <- y_range * y_expand_top
 
             p <- p +
-                ggplot2::coord_cartesian(
-                    ylim = c(y_min_data, y_max_text + y_padding)
+                ggplot2::scale_y_continuous(
+                    expand = ggplot2::expansion(
+                        add = c(0, y_top_expand)
+                    )
                 )
         }
     }

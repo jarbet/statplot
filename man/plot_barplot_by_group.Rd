@@ -12,7 +12,7 @@ plot_barplot_by_group(
   p_col,
   facet_cols = NULL,
   label_col = NULL,
-  format_pvalue = TRUE,
+  use_format_pvalue = TRUE,
   error_direction = "up",
   condition_order = NULL,
   p_cutoff = 0.05,
@@ -56,10 +56,10 @@ Default \code{NULL} (single panel, no grouping for brackets).}
 \item{label_col}{Optional column name supplying custom bracket label text
 (e.g. \code{"OR = 1.5 [1.1-2.0], p = 0.012"}). Labels can include HTML
 formatting for rich text rendering (e.g., superscripts like \code{10<sup>-4</sup>}).
-When \code{NULL}, labels are auto-formatted based on the \code{format_pvalue}
+When \code{NULL}, labels are auto-formatted based on the \code{use_format_pvalue}
 argument. Default \code{NULL}.}
 
-\item{format_pvalue}{Logical. When \code{TRUE} (default), p-values are
+\item{use_format_pvalue}{Logical. When \code{TRUE} (default), p-values are
 formatted using \code{\link{format_pvalue}()}. When \code{FALSE}, p-values
 are formatted using \code{paste0("p = ", signif(p, 2))}. Ignored if
 \code{label_col} is supplied. Default \code{TRUE}.}

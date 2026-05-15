@@ -38,8 +38,6 @@
 
 * `plot_barplot_by_group`: bracket labels now use `ggtext::geom_richtext()` instead of `ggplot2::geom_text()` to support HTML-formatted labels with rich text features (e.g., superscripts, HTML line breaks).
 
-* `plot_numeric_by_3plusgroups`: refactored effect size display to use `format_pvalue()` for flexible p-value formatting instead of `BoutrosLab.plotting.general::display.statistical.result()`. Effect size is now displayed with unicode epsilon (ε²) instead of plotmath notation, and subtitle uses `ggtext::element_markdown()` for enhanced rendering.
-
 ## Fixed
 
 ...
