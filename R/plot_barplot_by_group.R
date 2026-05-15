@@ -25,9 +25,15 @@
 #' @param p_col Column name for p-values. When faceting, the value should be
 #'   the same for both condition rows within each facet group (i.e. repeated).
 #'   Set to \code{NULL} to suppress brackets entirely. Default \code{"p_value"}.
+#' @param use_format_pvalue Logical. When \code{TRUE} (default), p-values are
+#'   formatted using \code{\link{format_pvalue}()}. When \code{FALSE}, p-values
+#'   are formatted using \code{paste0("p = ", signif(p, 2))}. Ignored if
+#'   \code{label_col} is supplied. Default \code{TRUE}.
 #' @param label_col Optional column name supplying custom bracket label text
-#'   (e.g. \code{"OR = 1.5 [1.1-2.0], p = 0.012"}). When \code{NULL} labels
-#'   are auto-formatted as \code{"p = <value>"} using \code{\link{signif}}.
+#'   (e.g. \code{"OR = 1.5 [1.1-2.0], p = 0.012"}). Labels can include HTML
+#'   formatting for rich text rendering (e.g., superscripts like \code{10<sup>-4</sup>}).
+#'   When \code{NULL}, labels are auto-formatted based on the \code{use_format_pvalue}
+#'   argument. Default \code{NULL}.
 #' @param condition_order Length-2 character vector setting the left-to-right
 #'   display order of the two conditions. Defaults to the existing factor level
 #'   order or alphabetical.
@@ -74,6 +80,8 @@
 #'   proportional spacing across facets with \code{scales = "free_y"}.
 #'   \code{"absolute"} uses the values as data units, most useful when
 #'   multiple plots share the same y limits and scale.
+#' @param y_expand_top Fraction of the y-axis range to add above the bracket
+#'   text to prevent clipping at the top of the plot. Default \code{0.1}.
 #'
 #' @return A \code{\link[ggplot2]{ggplot}} object. Add
 #'   \code{+ ggplot2::facet_wrap()} or \code{+ ggplot2::facet_grid()} to
@@ -87,7 +95,7 @@
 #'     group     = rep(c("Exercise", "Control"), 2),
 #'     mean      = c(10.2, 14.8, 12.5, 13.1),
 #'     se        = c(0.9, 1.0, 1.1, 1.0),
-#'     p_value   = c(0.004, 0.004, 0.18, 0.18)
+#'     p_value   = c(0.0004, 0.0004, 0.18, 0.18)
 #' )
 #' df$group <- factor(df$group, levels = c("Exercise", "Control"))
 #' ggplot2::theme_set(theme_bw2())
@@ -155,7 +163,7 @@
 #' # Custom bracket label from a column
 #' df$label <- ifelse(
 #'     df$p_value < 0.05,
-#'     paste0("d = 1.5 [1.1-2.1]\n", format_pvalue(df$p_value)),
+#'     paste0("d = 1.5 [1.1-2.1]<br>", format_pvalue(df$p_value)),
 #'     NA
 #' )
 #' plot_barplot_by_group(
@@ -212,6 +220,7 @@
 #'
 #' @importFrom stats setNames
 #' @importFrom rlang %||%
+#' @importFrom ggtext geom_richtext
 plot_barplot_by_group <- function(
     df,
     condition_col,
@@ -220,6 +229,7 @@ plot_barplot_by_group <- function(
     p_col,
     facet_cols = NULL,
     label_col = NULL,
+    use_format_pvalue = TRUE,
     error_direction = "up",
     condition_order = NULL,
     p_cutoff = 0.05,
@@ -231,8 +241,9 @@ plot_barplot_by_group <- function(
     text_size = 3.5,
     bracket_offset = 0.05,
     bracket_gap = 0.04,
-    bracket_text_gap = 0.05,
-    bracket_scale = c("relative", "absolute")
+    bracket_text_gap = 0.01,
+    bracket_scale = c("relative", "absolute"),
+    y_expand_top = 0.1
 ) {
     # -- Input validation --
     stopifnot(is.data.frame(df))
@@ -318,6 +329,14 @@ plot_barplot_by_group <- function(
     error_direction <- match.arg(error_direction, c("both", "up"))
     bracket_scale <- match.arg(bracket_scale)
 
+    # Validate numeric parameters
+    if (!is.numeric(y_expand_top) || length(y_expand_top) != 1L) {
+        stop("`y_expand_top` must be a numeric scalar")
+    }
+    if (is.na(y_expand_top) || y_expand_top < 0) {
+        stop("`y_expand_top` must be non-negative and not NA")
+    }
+
     # -- Bar x positions (continuous axis) --
     x_left <- 1
     x_right <- x_left + bar_width + bar_gap
@@ -350,11 +369,23 @@ plot_barplot_by_group <- function(
         if (!is.null(label_col)) {
             df$.lbl <- df[[label_col]]
         } else {
-            df$.lbl <- ifelse(
-                !is.na(df[[p_col]]) & df[[p_col]] < p_cutoff,
-                paste0("p = ", signif(df[[p_col]], 2)),
-                NA_character_
-            )
+            # Only format p-values that pass the cutoff to avoid hard-errors from
+            # out-of-range values in format_pvalue()
+            meets_cutoff <- !is.na(df[[p_col]]) & df[[p_col]] < p_cutoff
+
+            if (use_format_pvalue) {
+                # Call format_pvalue only on rows that pass the cutoff
+                pval_labels <- rep(NA_character_, nrow(df))
+                if (any(meets_cutoff)) {
+                    pval_labels[meets_cutoff] <- format_pvalue(df[[p_col]][
+                        meets_cutoff
+                    ])
+                }
+            } else {
+                pval_labels <- paste0("p = ", signif(df[[p_col]], 2))
+            }
+
+            df$.lbl <- ifelse(meets_cutoff, pval_labels, NA_character_)
         }
 
         # Summarise to one row per bracket (one per unique combination of
@@ -500,13 +531,26 @@ plot_barplot_by_group <- function(
                 inherit.aes = FALSE,
                 linewidth = 0.5
             ) +
-            ggplot2::geom_text(
+            ggtext::geom_richtext(
                 data = text_df,
                 ggplot2::aes(x = x, y = y, label = lbl),
                 inherit.aes = FALSE,
                 size = text_size,
-                vjust = 0
+                vjust = 0,
+                label.color = NA
             )
+
+        # Allow text to extend beyond plot area without clipping
+        # Use clip = "off" to permit bracket labels to appear in the margin
+        # Multiplicative expansion preserves default bottom padding and allows
+        # caller to add their own scale_y_continuous() without conflicts
+        if (!is.null(text_df) && nrow(text_df) > 0) {
+            p <- p +
+                ggplot2::scale_y_continuous(
+                    expand = ggplot2::expansion(mult = c(0.05, y_expand_top))
+                ) +
+                ggplot2::coord_cartesian(clip = "off")
+        }
     }
 
     p

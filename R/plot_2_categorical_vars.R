@@ -51,6 +51,7 @@
 #'   the pooled bar when `include_overall_bar = TRUE`.
 #' @return A list of the ggplot2 object, Cramer's V effect size, p-value.
 #'
+#' @importFrom ggtext element_markdown
 #' @examples
 #' ggplot2::theme_set(theme_bw2())
 #' data(mtcars)
@@ -300,13 +301,6 @@ plot_2_categorical_vars <- function(
         adjust = TRUE,
         alternative = 'two.sided'
     )
-    v_text <- sprintf(
-        'V = %.2f (%.2f, %.2f), p',
-        as.numeric(v['Cramers_v_adjusted']),
-        as.numeric(v['CI_low']),
-        as.numeric(v['CI_high'])
-    )
-
     ### test pvalue
     ch <- suppressWarnings(chisq.test(tab))
     pval <- ch$p.value
@@ -315,10 +309,21 @@ plot_2_categorical_vars <- function(
         pval <- ft$p.value
     }
 
-    pval_text <- BoutrosLab.plotting.general::display.statistical.result(
-        x = pval,
-        statistic.type = v_text,
-        symbol = '= '
+    # Format p-value with HTML for small values
+    pval_formatted <- format_pvalue(
+        pval,
+        p_text = "p",
+        p_symbol = "= ",
+        html = TRUE
+    )
+
+    # Combine effect size and p-value as plain string
+    pval_text <- sprintf(
+        "V = %.2f (%.2f, %.2f), %s",
+        as.numeric(v['Cramers_v_adjusted']),
+        as.numeric(v['CI_low']),
+        as.numeric(v['CI_high']),
+        pval_formatted
     )
     ### Make plot
 
@@ -528,6 +533,7 @@ plot_2_categorical_vars <- function(
         ) +
         ggplot2::theme(
             plot.title = ggplot2::element_text(face = "bold"),
+            plot.subtitle = ggtext::element_markdown(),
             axis.title.x = ggplot2::element_text(face = "bold"),
             axis.title.y = ggplot2::element_text(face = "bold")
         )

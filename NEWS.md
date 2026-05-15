@@ -16,6 +16,10 @@
   - `html` (default `TRUE`) to format scientific notation with HTML `<sup>` tags for use in markdown/Quarto or with `ggtext::geom_richtext()`
   - `format` parameter supporting `"text"` (default) or `"plotmath"` for use with `ggplot2::geom_text(parse = TRUE)`
 
+* `plot_barplot_by_group`: new `use_format_pvalue` parameter (default `TRUE`) controls p-value formatting in bracket labels — when `TRUE`, p-values are formatted using `format_pvalue()`; when `FALSE`, uses simple formatting.
+
+* `plot_barplot_by_group`: new `y_expand_top` parameter (default `0.1`) controls the fraction of y-axis range to add above bracket text to prevent clipping at the top of the plot.
+
 ## Changed
 
 * `plot_numeric_by_2groups`: **Breaking change** — removed `title` parameter. Plots no longer include a default title; use `+ ggplot2::ggtitle()` to customize.
@@ -29,6 +33,10 @@
 * `plot_numeric_by_2groups`: new `facet_pvalue` parameter (default `"both"`) controls whether faceted plots display p-values, q-values (FDR-adjusted), or both; q-values are automatically computed when faceting is used.
 
 * `format_pvalue`: **Breaking change** — removed `p_symbol` and `include_p_symbol` parameters (now use `p_text`, `p_symbol`, `truncate_pvalue`, `html`, and `format`). The function now supports HTML/plotmath output formats and scientific notation with flexible customization.
+
+* `plot_barplot_by_group`: changed default `bracket_text_gap` from `0.05` to `0.01` for tighter text spacing.
+
+* `plot_barplot_by_group`: bracket labels now use `ggtext::geom_richtext()` instead of `ggplot2::geom_text()` to support HTML-formatted labels with rich text features (e.g., superscripts, HTML line breaks).
 
 ## Fixed
 
