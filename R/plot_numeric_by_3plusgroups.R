@@ -32,7 +32,6 @@
 #'     \code{pairwise_wilcoxon_test_letters} was FALSE.}
 #' }
 #' @importFrom stats reformulate
-#' @importFrom ggtext element_markdown
 #' @examples
 #' ggplot2::theme_set(theme_bw2())
 #' data(mtcars)
@@ -167,22 +166,19 @@ plot_numeric_by_3plusgroups <- function(
         es_ci_low <- as.numeric(es$CI_low)
         es_ci_high <- as.numeric(es$CI_high)
 
-        # Format p-value with HTML for small values
-        pval_formatted <- format_pvalue(
-            p_val,
-            p_text = "p",
-            p_symbol = "= ",
-            html = TRUE
-        )
-
-        # Combine effect size and p-value as plain string using unicode epsilon squared
-        p_text <- sprintf(
-            "ε² = %.2f (%.2f, %.2f), %s",
+        es_text <- sprintf(
+            " = %.2f (%.2f, %.2f), p",
             es_est,
             es_ci_low,
-            es_ci_high,
-            pval_formatted
+            es_ci_high
         )
+        p_text <- BoutrosLab.plotting.general::display.statistical.result(
+            x = p_val,
+            statistic.type = es_text,
+            symbol = '= '
+        )
+        es_plotmath <- expression(epsilon^2)
+        p_text <- as.expression(bquote(.(es_plotmath[[1]]) ~ .(p_text[[1]])))
     } else {
         p_text <- NULL
         es <- NULL
@@ -272,7 +268,6 @@ plot_numeric_by_3plusgroups <- function(
         ggplot2::theme_bw() +
         ggplot2::theme(
             plot.title = ggplot2::element_text(face = "bold"),
-            plot.subtitle = ggtext::element_markdown(),
             axis.title.x = ggplot2::element_text(face = "bold"),
             axis.title.y = ggplot2::element_text(face = "bold")
         )
