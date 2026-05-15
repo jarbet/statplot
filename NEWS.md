@@ -16,7 +16,7 @@
   - `html` (default `TRUE`) to format scientific notation with HTML `<sup>` tags for use in markdown/Quarto or with `ggtext::geom_richtext()`
   - `format` parameter supporting `"text"` (default) or `"plotmath"` for use with `ggplot2::geom_text(parse = TRUE)`
 
-* `plot_barplot_by_group`: new `format_pvalue` parameter (default `TRUE`) controls p-value formatting in bracket labels — when `TRUE`, p-values are formatted using `format_pvalue()`; when `FALSE`, uses simple formatting.
+* `plot_barplot_by_group`: new `use_format_pvalue` parameter (default `TRUE`) controls p-value formatting in bracket labels — when `TRUE`, p-values are formatted using `format_pvalue()`; when `FALSE`, uses simple formatting.
 
 * `plot_barplot_by_group`: new `y_expand_top` parameter (default `0.1`) controls the fraction of y-axis range to add above bracket text to prevent clipping at the top of the plot.
 

@@ -329,6 +329,14 @@ plot_barplot_by_group <- function(
     error_direction <- match.arg(error_direction, c("both", "up"))
     bracket_scale <- match.arg(bracket_scale)
 
+    # Validate numeric parameters
+    if (!is.numeric(y_expand_top) || length(y_expand_top) != 1L) {
+        stop("`y_expand_top` must be a numeric scalar")
+    }
+    if (is.na(y_expand_top) || y_expand_top < 0) {
+        stop("`y_expand_top` must be non-negative and not NA")
+    }
+
     # -- Bar x positions (continuous axis) --
     x_left <- 1
     x_right <- x_left + bar_width + bar_gap
@@ -532,28 +540,16 @@ plot_barplot_by_group <- function(
                 label.color = NA
             )
 
-        # Expand y-axis to prevent text clipping at top
-        # Compute lower bound from actual error-bar bottoms (or mean if no error direction)
+        # Allow text to extend beyond plot area without clipping
+        # Use clip = "off" to permit bracket labels to appear in the margin
+        # Multiplicative expansion preserves default bottom padding and allows
+        # caller to add their own scale_y_continuous() without conflicts
         if (!is.null(text_df) && nrow(text_df) > 0) {
-            y_max_text <- max(text_df$y, na.rm = TRUE)
-
-            # Lower bound: account for error bars in both directions
-            y_lower_bars <- if (error_direction == "both") {
-                min(df[[mean_col]] - df[[error_col]], na.rm = TRUE)
-            } else {
-                min(df[[mean_col]], na.rm = TRUE)
-            }
-            y_min_data <- min(y_lower_bars, 0)
-
-            y_range <- y_max_text - y_min_data
-            y_top_expand <- y_range * y_expand_top
-
             p <- p +
                 ggplot2::scale_y_continuous(
-                    expand = ggplot2::expansion(
-                        add = c(0, y_top_expand)
-                    )
-                )
+                    expand = ggplot2::expansion(mult = c(0.05, y_expand_top))
+                ) +
+                ggplot2::coord_cartesian(clip = "off")
         }
     }
 

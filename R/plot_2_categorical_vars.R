@@ -51,6 +51,7 @@
 #'   the pooled bar when `include_overall_bar = TRUE`.
 #' @return A list of the ggplot2 object, Cramer's V effect size, p-value.
 #'
+#' @importFrom ggtext element_markdown
 #' @examples
 #' ggplot2::theme_set(theme_bw2())
 #' data(mtcars)
@@ -183,7 +184,6 @@
 #'   guides = "collect"
 #' ) & ggplot2::theme(legend.position = "right")
 #'
-#' @importFrom ggtext element_markdown
 #' @export
 plot_2_categorical_vars <- function(
     d,
