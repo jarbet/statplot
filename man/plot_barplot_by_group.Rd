@@ -12,6 +12,7 @@ plot_barplot_by_group(
   p_col,
   facet_cols = NULL,
   label_col = NULL,
+  format_pvalue = TRUE,
   error_direction = "up",
   condition_order = NULL,
   p_cutoff = 0.05,
@@ -23,8 +24,9 @@ plot_barplot_by_group(
   text_size = 3.5,
   bracket_offset = 0.05,
   bracket_gap = 0.04,
-  bracket_text_gap = 0.05,
-  bracket_scale = c("relative", "absolute")
+  bracket_text_gap = 0.01,
+  bracket_scale = c("relative", "absolute"),
+  y_expand_top = 0.1
 )
 }
 \arguments{
@@ -52,8 +54,15 @@ that \code{+ facet_wrap()} or \code{+ facet_grid()} work correctly.
 Default \code{NULL} (single panel, no grouping for brackets).}
 
 \item{label_col}{Optional column name supplying custom bracket label text
-(e.g. \code{"OR = 1.5 [1.1-2.0], p = 0.012"}). When \code{NULL} labels
-are auto-formatted as \code{"p = <value>"} using \code{\link{signif}}.}
+(e.g. \code{"OR = 1.5 [1.1-2.0], p = 0.012"}). Labels can include HTML
+formatting for rich text rendering (e.g., superscripts like \code{10<sup>-4</sup>}).
+When \code{NULL}, labels are auto-formatted based on the \code{format_pvalue}
+argument. Default \code{NULL}.}
+
+\item{format_pvalue}{Logical. When \code{TRUE} (default), p-values are
+formatted using \code{\link{format_pvalue}()}. When \code{FALSE}, p-values
+are formatted using \code{paste0("p = ", signif(p, 2))}. Ignored if
+\code{label_col} is supplied. Default \code{TRUE}.}
 
 \item{error_direction}{Direction of error bars. \code{"both"} draws
 \code{mean +/- error}; \code{"up"} draws only the upper whisker
@@ -110,6 +119,9 @@ multiplies each value by the per-facet y range, giving consistent
 proportional spacing across facets with \code{scales = "free_y"}.
 \code{"absolute"} uses the values as data units, most useful when
 multiple plots share the same y limits and scale.}
+
+\item{y_expand_top}{Fraction of the y-axis range to add above the bracket
+text to prevent clipping at the top of the plot. Default \code{0.1}.}
 }
 \value{
 A \code{\link[ggplot2]{ggplot}} object. Add
@@ -136,7 +148,7 @@ df <- data.frame(
     group     = rep(c("Exercise", "Control"), 2),
     mean      = c(10.2, 14.8, 12.5, 13.1),
     se        = c(0.9, 1.0, 1.1, 1.0),
-    p_value   = c(0.004, 0.004, 0.18, 0.18)
+    p_value   = c(0.0004, 0.0004, 0.18, 0.18)
 )
 df$group <- factor(df$group, levels = c("Exercise", "Control"))
 ggplot2::theme_set(theme_bw2())
@@ -204,7 +216,7 @@ plot_barplot_by_group(
 # Custom bracket label from a column
 df$label <- ifelse(
     df$p_value < 0.05,
-    paste0("d = 1.5 [1.1-2.1]\n", format_pvalue(df$p_value)),
+    paste0("d = 1.5 [1.1-2.1]<br>", format_pvalue(df$p_value)),
     NA
 )
 plot_barplot_by_group(

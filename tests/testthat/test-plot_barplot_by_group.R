@@ -184,7 +184,7 @@ test_that("significance brackets appear when p < p_cutoff", {
     p <- barplot(p_cutoff = 0.05)
     layer_classes <- vapply(p$layers, \(l) class(l$geom)[1], character(1))
     expect_true("GeomSegment" %in% layer_classes)
-    expect_true("GeomText" %in% layer_classes)
+    expect_true("GeomRichText" %in% layer_classes)
 })
 
 test_that("no brackets when all p-values exceed p_cutoff", {
@@ -193,7 +193,7 @@ test_that("no brackets when all p-values exceed p_cutoff", {
     p <- barplot(df, p_cutoff = 0.05)
     layer_classes <- vapply(p$layers, \(l) class(l$geom)[1], character(1))
     expect_false("GeomSegment" %in% layer_classes)
-    expect_false("GeomText" %in% layer_classes)
+    expect_false("GeomRichText" %in% layer_classes)
 })
 
 test_that("p_col = NULL suppresses brackets entirely", {
@@ -206,7 +206,7 @@ test_that("p_col = NULL suppresses brackets entirely", {
     )
     layer_classes <- vapply(p$layers, \(l) class(l$geom)[1], character(1))
     expect_false("GeomSegment" %in% layer_classes)
-    expect_false("GeomText" %in% layer_classes)
+    expect_false("GeomRichText" %in% layer_classes)
 })
 
 test_that("custom label_col is used in bracket text", {
@@ -214,7 +214,7 @@ test_that("custom label_col is used in bracket text", {
     df$label <- c("OR=1.5, p=0.004", NA)
     p <- barplot(df, label_col = "label", p_cutoff = 0.05)
     layer_classes <- vapply(p$layers, \(l) class(l$geom)[1], character(1))
-    text_layer <- p$layers[[which(layer_classes == "GeomText")]]
+    text_layer <- p$layers[[which(layer_classes == "GeomRichText")]]
     expect_true("lbl" %in% names(text_layer$data))
     expect_true(any(grepl("OR=1.5", text_layer$data$lbl, fixed = TRUE)))
 })
@@ -415,7 +415,7 @@ test_that("bracket_scale = 'absolute' does not affect text_gap proportionally", 
     )
     layer_classes <- vapply(p$layers, \(l) class(l$geom)[1], character(1))
     seg_layer <- p$layers[[which(layer_classes == "GeomSegment")]]
-    text_layer <- p$layers[[which(layer_classes == "GeomText")]]
+    text_layer <- p$layers[[which(layer_classes == "GeomRichText")]]
 
     caps <- seg_layer$data[seg_layer$data$y == seg_layer$data$yend, ]
     y_top <- caps$y[[1]]
