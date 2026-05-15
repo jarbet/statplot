@@ -17,6 +17,7 @@ plot_barplot_by_group(
   p_col,
   facet_cols = NULL,
   label_col = NULL,
+  use_format_pvalue = TRUE,
   error_direction = "up",
   condition_order = NULL,
   p_cutoff = 0.05,
@@ -28,8 +29,9 @@ plot_barplot_by_group(
   text_size = 3.5,
   bracket_offset = 0.05,
   bracket_gap = 0.04,
-  bracket_text_gap = 0.05,
-  bracket_scale = c("relative", "absolute")
+  bracket_text_gap = 0.01,
+  bracket_scale = c("relative", "absolute"),
+  y_expand_top = 0.1
 )
 ```
 
@@ -71,9 +73,18 @@ plot_barplot_by_group(
 - label_col:
 
   Optional column name supplying custom bracket label text (e.g.
-  `"OR = 1.5 [1.1-2.0], p = 0.012"`). When `NULL` labels are
-  auto-formatted as `"p = <value>"` using
-  [`signif`](https://rdrr.io/r/base/Round.html).
+  `"OR = 1.5 [1.1-2.0], p = 0.012"`). Labels can include HTML formatting
+  for rich text rendering (e.g., superscripts like `10<sup>-4</sup>`).
+  When `NULL`, labels are auto-formatted based on the
+  `use_format_pvalue` argument. Default `NULL`.
+
+- use_format_pvalue:
+
+  Logical. When `TRUE` (default), p-values are formatted using
+  [`format_pvalue()`](https://github.com/jarbet/statplot/reference/format_pvalue.md).
+  When `FALSE`, p-values are formatted using
+  `paste0("p = ", signif(p, 2))`. Ignored if `label_col` is supplied.
+  Default `TRUE`.
 
 - error_direction:
 
@@ -154,6 +165,11 @@ plot_barplot_by_group(
   units, most useful when multiple plots share the same y limits and
   scale.
 
+- y_expand_top:
+
+  Fraction of the y-axis range to add above the bracket text to prevent
+  clipping at the top of the plot. Default `0.1`.
+
 ## Value
 
 A [`ggplot`](https://ggplot2.tidyverse.org/reference/ggplot.html)
@@ -177,7 +193,7 @@ df <- data.frame(
     group     = rep(c("Exercise", "Control"), 2),
     mean      = c(10.2, 14.8, 12.5, 13.1),
     se        = c(0.9, 1.0, 1.1, 1.0),
-    p_value   = c(0.004, 0.004, 0.18, 0.18)
+    p_value   = c(0.0004, 0.0004, 0.18, 0.18)
 )
 df$group <- factor(df$group, levels = c("Exercise", "Control"))
 ggplot2::theme_set(theme_bw2())
@@ -249,7 +265,7 @@ plot_barplot_by_group(
 # Custom bracket label from a column
 df$label <- ifelse(
     df$p_value < 0.05,
-    paste0("d = 1.5 [1.1-2.1]\n", format_pvalue(df$p_value)),
+    paste0("d = 1.5 [1.1-2.1]<br>", format_pvalue(df$p_value)),
     NA
 )
 plot_barplot_by_group(
@@ -264,6 +280,8 @@ plot_barplot_by_group(
 ) +
     ggplot2::facet_wrap(~study) +
     ggplot2::coord_cartesian(ylim = c(0, 20))
+#> Coordinate system already present.
+#> ℹ Adding new coordinate system, which will replace the existing one.
 
 
 # Using theme_classic2 with strip bars positioned below the plot

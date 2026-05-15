@@ -53,6 +53,8 @@
 <code>format</code> parameter supporting <code>"text"</code> (default) or <code>"plotmath"</code> for use with <code>ggplot2::geom_text(parse = TRUE)</code>
 </li>
 </ul></li>
+<li><p><code>plot_barplot_by_group</code>: new <code>use_format_pvalue</code> parameter (default <code>TRUE</code>) controls p-value formatting in bracket labels — when <code>TRUE</code>, p-values are formatted using <code><a href="../reference/format_pvalue.html">format_pvalue()</a></code>; when <code>FALSE</code>, uses simple formatting.</p></li>
+<li><p><code>plot_barplot_by_group</code>: new <code>y_expand_top</code> parameter (default <code>0.1</code>) controls the fraction of y-axis range to add above bracket text to prevent clipping at the top of the plot.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
@@ -62,6 +64,8 @@
 <li><p><code>plot_numeric_by_2groups</code>: default <code>digits</code> parameter now depends on <code>effect_size</code> — 1 for median difference, 2 for C-index.</p></li>
 <li><p><code>plot_numeric_by_2groups</code>: new <code>facet_pvalue</code> parameter (default <code>"both"</code>) controls whether faceted plots display p-values, q-values (FDR-adjusted), or both; q-values are automatically computed when faceting is used.</p></li>
 <li><p><code>format_pvalue</code>: <strong>Breaking change</strong> — removed <code>p_symbol</code> and <code>include_p_symbol</code> parameters (now use <code>p_text</code>, <code>p_symbol</code>, <code>truncate_pvalue</code>, <code>html</code>, and <code>format</code>). The function now supports HTML/plotmath output formats and scientific notation with flexible customization.</p></li>
+<li><p><code>plot_barplot_by_group</code>: changed default <code>bracket_text_gap</code> from <code>0.05</code> to <code>0.01</code> for tighter text spacing.</p></li>
+<li><p><code>plot_barplot_by_group</code>: bracket labels now use <code><a href="https://wilkelab.org/ggtext/reference/geom_richtext.html" class="external-link">ggtext::geom_richtext()</a></code> instead of <code><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">ggplot2::geom_text()</a></code> to support HTML-formatted labels with rich text features (e.g., superscripts, HTML line breaks).</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>

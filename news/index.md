@@ -37,6 +37,16 @@
   - `format` parameter supporting `"text"` (default) or `"plotmath"` for
     use with `ggplot2::geom_text(parse = TRUE)`
 
+- `plot_barplot_by_group`: new `use_format_pvalue` parameter (default
+  `TRUE`) controls p-value formatting in bracket labels — when `TRUE`,
+  p-values are formatted using
+  [`format_pvalue()`](https://github.com/jarbet/statplot/reference/format_pvalue.md);
+  when `FALSE`, uses simple formatting.
+
+- `plot_barplot_by_group`: new `y_expand_top` parameter (default `0.1`)
+  controls the fraction of y-axis range to add above bracket text to
+  prevent clipping at the top of the plot.
+
 ### Changed
 
 - `plot_numeric_by_2groups`: **Breaking change** — removed `title`
@@ -65,6 +75,16 @@
   `truncate_pvalue`, `html`, and `format`). The function now supports
   HTML/plotmath output formats and scientific notation with flexible
   customization.
+
+- `plot_barplot_by_group`: changed default `bracket_text_gap` from
+  `0.05` to `0.01` for tighter text spacing.
+
+- `plot_barplot_by_group`: bracket labels now use
+  [`ggtext::geom_richtext()`](https://wilkelab.org/ggtext/reference/geom_richtext.html)
+  instead of
+  [`ggplot2::geom_text()`](https://ggplot2.tidyverse.org/reference/geom_text.html)
+  to support HTML-formatted labels with rich text features (e.g.,
+  superscripts, HTML line breaks).
 
 ### Fixed
 
