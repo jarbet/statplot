@@ -114,6 +114,8 @@
 #'
 #' @examples
 #' ggplot2::theme_set(theme_bw2())
+#'
+#' # example data output from statplot::run_gsea()
 #' data(ex_gsea_result)
 #' res <- ex_gsea_result
 #'
