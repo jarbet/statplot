@@ -242,12 +242,10 @@ A ggplot2 object.
 ``` r
 # \donttest{
 ggplot2::theme_set(theme_bw2())
-data(hallmark_t2g)
-set.seed(1)
-all_genes <- unique(hallmark_t2g$gene)
-gene_vec  <- setNames(rnorm(length(all_genes)), all_genes)
-res <- run_gsea(gene_vec, term2gene = hallmark_t2g)
-#> 
+
+# example data output from statplot::run_gsea()
+data(ex_gsea_result)
+res <- ex_gsea_result
 
 # Basic usage
 plot_pathways(
@@ -256,6 +254,7 @@ plot_pathways(
     show_pathways         = 5,
     effect_size_threshold = 1.5
 )
+#> 
 #> Scale for colour is already present.
 #> Adding another scale for colour, which will replace the existing scale.
 

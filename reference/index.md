@@ -10,6 +10,9 @@
   : Example tidy expression dataset for heatmap plotting
 - [`ex_expr_pathway`](https://github.com/jarbet/statplot/reference/ex_expr_pathway.md)
   : Example expression matrix for pathway correlation network plots
+- [`ex_gsea_result`](https://github.com/jarbet/statplot/reference/ex_gsea_result.md)
+  : Example GSEA result for plot_pathways and
+  plot_pathway_correlation_network
 - [`ex_log2fc_pathway`](https://github.com/jarbet/statplot/reference/ex_log2fc_pathway.md)
   : Example log2 fold-change vector for pathway correlation network
   plots
