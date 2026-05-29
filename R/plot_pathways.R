@@ -115,11 +115,10 @@
 #' @examples
 #' \donttest{
 #' ggplot2::theme_set(theme_bw2())
-#' data(hallmark_t2g)
-#' set.seed(1)
-#' all_genes <- unique(hallmark_t2g$gene)
-#' gene_vec  <- setNames(rnorm(length(all_genes)), all_genes)
-#' res <- run_gsea(gene_vec, term2gene = hallmark_t2g)
+#'
+#' # example data output from statplot::run_gsea()
+#' data(ex_gsea_result)
+#' res <- ex_gsea_result
 #'
 #' # Basic usage
 #' plot_pathways(
@@ -491,7 +490,16 @@ plot_pathways <- function(
         size_edge = line_size,
         node_label = "none", # labels added separately below
         fc_threshold = effective_threshold
-    ) +
+    )
+
+    # geom_cnet_label() retrieves the igraph via plot$plot_env$data, but some
+    # versions of enrichplot/ggtangle store it under plot$plot_env$graph instead.
+    # Ensure both keys are set so the label layer resolves universally.
+    if (is.null(p$plot_env$data) && !is.null(p$plot_env$graph)) {
+        p$plot_env$data <- p$plot_env$graph
+    }
+
+    p <- p +
         # gene labels: smaller, subdued (draw first)
         ggtangle::geom_cnet_label(
             node_label = "item",
