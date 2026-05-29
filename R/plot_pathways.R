@@ -113,7 +113,6 @@
 #' @return A ggplot2 object.
 #'
 #' @examples
-#' \donttest{
 #' ggplot2::theme_set(theme_bw2())
 #' data(hallmark_t2g)
 #' set.seed(1)
@@ -229,7 +228,6 @@
 #'     legend_pathway_fill_title = "Pathway category",
 #'     effect_size_threshold     = 1.5
 #' )
-#' }
 #'
 #' @importFrom ggplot2 ggtitle geom_point scale_fill_identity
 #' @export
@@ -491,7 +489,16 @@ plot_pathways <- function(
         size_edge = line_size,
         node_label = "none", # labels added separately below
         fc_threshold = effective_threshold
-    ) +
+    )
+
+    # geom_cnet_label() retrieves the igraph via plot$plot_env$data, but some
+    # versions of enrichplot/ggtangle store it under plot$plot_env$graph instead.
+    # Ensure both keys are set so the label layer resolves universally.
+    if (is.null(p$plot_env$data) && !is.null(p$plot_env$graph)) {
+        p$plot_env$data <- p$plot_env$graph
+    }
+
+    p <- p +
         # gene labels: smaller, subdued (draw first)
         ggtangle::geom_cnet_label(
             node_label = "item",

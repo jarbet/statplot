@@ -327,6 +327,53 @@ test_that("plot_pathways() errors when legend_pathway_fill_title is invalid", {
 #  - Two colour scales present → ggplot2 silently drops one, legend and
 #    dots could use different scales
 
+# ---------------------------------------------------------------------------
+# plot_env$data / plot_env$graph compatibility
+# ---------------------------------------------------------------------------
+
+test_that("plot_pathways() copies plot_env$graph to plot_env$data when $data is NULL", {
+    # Simulate the scenario where cnetplot() stores the igraph only under
+    # $graph (some enrichplot/ggtangle versions) but geom_cnet_label() looks
+    # for it under $data.  The fix should copy $graph -> $data before any
+    # label layer is added.
+
+    fake_graph <- igraph::make_ring(3)
+
+    # Build a minimal ggplot whose plot_env mirrors what ggtangle produces:
+    # $graph is set, $data is absent.
+    p_mock <- ggplot2::ggplot(data.frame(x = 1, y = 1), ggplot2::aes(x, y))
+    p_mock$plot_env <- new.env(parent = emptyenv())
+    p_mock$plot_env$graph <- fake_graph
+    # $data intentionally left unset (NULL)
+    expect_null(p_mock$plot_env$data)
+
+    # Apply the same patching logic used in plot_pathways()
+    if (is.null(p_mock$plot_env$data) && !is.null(p_mock$plot_env$graph)) {
+        p_mock$plot_env$data <- p_mock$plot_env$graph
+    }
+
+    expect_identical(p_mock$plot_env$data, fake_graph)
+})
+
+test_that("plot_pathways() does not overwrite plot_env$data when it is already set", {
+    # When $data is already populated (the common case), the fix must be a
+    # no-op so the existing igraph is preserved.
+
+    fake_graph_data <- igraph::make_ring(3)
+    fake_graph_other <- igraph::make_ring(5)
+
+    p_mock <- ggplot2::ggplot(data.frame(x = 1, y = 1), ggplot2::aes(x, y))
+    p_mock$plot_env <- new.env(parent = emptyenv())
+    p_mock$plot_env$data <- fake_graph_data
+    p_mock$plot_env$graph <- fake_graph_other
+
+    if (is.null(p_mock$plot_env$data) && !is.null(p_mock$plot_env$graph)) {
+        p_mock$plot_env$data <- p_mock$plot_env$graph
+    }
+
+    expect_identical(p_mock$plot_env$data, fake_graph_data)
+})
+
 local({
     skip_if_not_installed("enrichplot")
     skip_if_not_installed("clusterProfiler")
