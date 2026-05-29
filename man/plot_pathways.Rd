@@ -176,6 +176,7 @@ gene–gene correlation — see \code{\link[=plot_pathway_correlation_network]{p
 co-expression structure.
 }
 \examples{
+\donttest{
 ggplot2::theme_set(theme_bw2())
 
 # example data output from statplot::run_gsea()
@@ -290,5 +291,6 @@ plot_pathways(
     legend_pathway_fill_title = "Pathway category",
     effect_size_threshold     = 1.5
 )
+}
 
 }

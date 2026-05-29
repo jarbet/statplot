@@ -113,6 +113,7 @@
 #' @return A ggplot2 object.
 #'
 #' @examples
+#' \donttest{
 #' ggplot2::theme_set(theme_bw2())
 #'
 #' # example data output from statplot::run_gsea()
@@ -227,6 +228,7 @@
 #'     legend_pathway_fill_title = "Pathway category",
 #'     effect_size_threshold     = 1.5
 #' )
+#' }
 #'
 #' @importFrom ggplot2 ggtitle geom_point scale_fill_identity
 #' @export
