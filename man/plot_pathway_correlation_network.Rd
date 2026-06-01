@@ -66,8 +66,8 @@ scale.  Defaults to the 10th color of the \code{PiYG} palette.}
 
 \item{color_mid}{character(1) Node color at the midpoint of the scale
 (default: 6th color of \code{PiYG}).  Set to \code{NULL} for a 2-color sequential
-scale (\code{\link[ggplot2:scale_gradient]{ggplot2::scale_color_gradient()}}) instead of the default 3-color
-diverging scale (\code{\link[ggplot2:scale_gradient]{ggplot2::scale_color_gradient2()}}).}
+scale (\code{\link[ggplot2:scale_color_gradient]{ggplot2::scale_color_gradient()}}) instead of the default 3-color
+diverging scale (\code{\link[ggplot2:scale_color_gradient2]{ggplot2::scale_color_gradient2()}}).}
 
 \item{color_high}{character(1) Node color for the high end of the effect
 size scale.  Defaults to the 2nd color of the \code{PiYG} palette.}

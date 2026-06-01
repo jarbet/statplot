@@ -98,11 +98,11 @@ Default \code{3.5}.}
 When \code{bracket_scale = "relative"} (default), this is a fraction of
 the per-facet y range, ensuring consistent proportional spacing across
 facets even with \code{scales = "free_y"}. When \code{bracket_scale
-  = "absolute"}, this is an absolute data unit. Default \code{0.05}.}
+= "absolute"}, this is an absolute data unit. Default \code{0.05}.}
 
 \item{bracket_gap}{White space between the top of each error bar and the
 start of the significance bracket tick. When \code{bracket_scale
-  = "relative"} (default), this is a fraction of the per-facet y range.
+= "relative"} (default), this is a fraction of the per-facet y range.
 When \code{bracket_scale = "absolute"}, this is an absolute data unit.
 Default \code{0.04}.}
 

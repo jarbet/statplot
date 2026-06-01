@@ -146,8 +146,8 @@ specified).}
 
 \item{color_mid}{character(1) Color for the midpoint of the scale (default
 \code{"white"}).  When non-\code{NULL}, a 3-color diverging
-\code{\link[ggplot2:scale_gradient]{ggplot2::scale_color_gradient2()}} is used.  Set to \code{NULL} to use a
-2-color \code{\link[ggplot2:scale_gradient]{ggplot2::scale_color_gradient()}} when \code{color_low} or
+\code{\link[ggplot2:scale_color_gradient2]{ggplot2::scale_color_gradient2()}} is used.  Set to \code{NULL} to use a
+2-color \code{\link[ggplot2:scale_color_gradient]{ggplot2::scale_color_gradient()}} when \code{color_low} or
 \code{color_high} are set.  To restore cnetplot's original palette, set all
 \verb{color_*} arguments to \code{NULL}.}
 

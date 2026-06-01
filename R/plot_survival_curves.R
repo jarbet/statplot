@@ -22,28 +22,28 @@
 #'   default y_label is "Probability of Event".
 #'
 #' @examples
-#' ggplot2::theme_set(theme_bw2())
 #' data(cancer, package = "survival")
 #'
 #' # Example with two groups
 #' lung$sex <- factor(lung$sex, labels = c("Male", "Female"))
 #' surv_obj <- with(lung, survival::Surv(time, status == 2))
-#' plot_survival_curves(surv_obj, lung, group_var = "sex")
+#' plot_survival_curves(surv_obj, lung, group_var = "sex") + theme_bw2()
 #'
 #' # Example with more than two groups
 #' lung$ph.ecog[lung$ph.ecog == 3] <- NA
 #' lung$ph.ecog <- factor(lung$ph.ecog)
 #' surv_obj <- with(lung, survival::Surv(time, status == 2))
-#' plot_survival_curves(surv_obj, lung, group_var = "ph.ecog")
+#' plot_survival_curves(surv_obj, lung, group_var = "ph.ecog") + theme_bw2()
 #'
 #' # Cumulative incidence plot
-#' plot_survival_curves(surv_obj, lung, group_var = "ph.ecog")
+#' plot_survival_curves(surv_obj, lung, group_var = "ph.ecog") + theme_bw2()
 #' @return A ggplot object (ggsurvfit).
 #'
 #' @importFrom survival Surv coxph survdiff
 #' @importFrom broom tidy
 #' @importFrom ggsurvfit survfit2 ggsurvfit add_confidence_interval add_risktable
 #' @importFrom stats pchisq
+#' @importFrom ggtext geom_richtext
 #' @export
 plot_survival_curves <- function(
     surv_obj,
@@ -165,22 +165,16 @@ plot_survival_curves <- function(
             fit_res$conf.low[1],
             fit_res$conf.high[1]
         )
-        pval_text <- BoutrosLab.plotting.general::display.statistical.result(
+        annot_label <- format_pvalue(
             x = fit_res$p.value[1],
-            statistic.type = hr_text,
-            symbol = "= "
+            p_text = hr_text,
+            p_symbol = "= "
         )
-        annot_label <- as.character(pval_text)[1]
     } else {
         sd_formula <- as.formula(sprintf(".surv_obj ~ `%s`", group_var))
         sd <- survival::survdiff(sd_formula, data = d_sub)
         p_val <- stats::pchisq(sd$chisq, length(sd$n) - 1, lower.tail = FALSE)
-        pval_text <- BoutrosLab.plotting.general::display.statistical.result(
-            x = p_val,
-            statistic.type = "p",
-            symbol = "= "
-        )
-        annot_label <- pval_text[1]
+        annot_label <- format_pvalue(p_val)
     }
 
     # if user provided custom text, override the computed annotation
@@ -201,14 +195,18 @@ plot_survival_curves <- function(
         annotate_x <- time_limits[2]
     }
     kmplot <- kmplot +
-        ggplot2::annotate(
-            "text",
-            x = annotate_x,
-            y = annotate_y,
-            label = annot_label,
+        ggtext::geom_richtext(
+            data = data.frame(
+                x = annotate_x,
+                y = annotate_y,
+                label = annot_label
+            ),
+            ggplot2::aes(x = x, y = y, label = label),
             hjust = 1,
             vjust = 1,
-            size = 3.5
+            size = 3.5,
+            fill = NA,
+            label.color = NA
         )
 
     kmplot
