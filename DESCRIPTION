@@ -8,7 +8,6 @@ Description: statplot is an R package designed to simplify the creation of commo
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Suggests: 
     cluster,
     clusterProfiler,
@@ -56,3 +55,4 @@ BugReports: https://github.com/jarbet/statplot/issues
 Depends: 
     R (>= 4.1)
 LazyData: true
+Config/roxygen2/version: 8.0.0

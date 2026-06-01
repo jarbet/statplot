@@ -38,6 +38,8 @@
 
 * `plot_barplot_by_group`: bracket labels now use `ggtext::geom_richtext()` instead of `ggplot2::geom_text()` to support HTML-formatted labels with rich text features (e.g., superscripts, HTML line breaks).
 
+* `plot_survival_curves`: replaced `BoutrosLab.plotting.general` annotation formatting with `format_pvalue()` and now places p-value/hazard-ratio labels with `ggtext::geom_richtext()`.
+
 ## Fixed
 
 ...
