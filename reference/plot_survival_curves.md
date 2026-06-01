@@ -88,22 +88,21 @@ A ggplot object (ggsurvfit).
 ## Examples
 
 ``` r
-ggplot2::theme_set(theme_bw2())
 data(cancer, package = "survival")
 
 # Example with two groups
 lung$sex <- factor(lung$sex, labels = c("Male", "Female"))
 surv_obj <- with(lung, survival::Surv(time, status == 2))
-plot_survival_curves(surv_obj, lung, group_var = "sex")
+plot_survival_curves(surv_obj, lung, group_var = "sex") + theme_bw2()
 
 
 # Example with more than two groups
 lung$ph.ecog[lung$ph.ecog == 3] <- NA
 lung$ph.ecog <- factor(lung$ph.ecog)
 surv_obj <- with(lung, survival::Surv(time, status == 2))
-plot_survival_curves(surv_obj, lung, group_var = "ph.ecog")
+plot_survival_curves(surv_obj, lung, group_var = "ph.ecog") + theme_bw2()
 
 
 # Cumulative incidence plot
-plot_survival_curves(surv_obj, lung, group_var = "ph.ecog")
+plot_survival_curves(surv_obj, lung, group_var = "ph.ecog") + theme_bw2()
 ```

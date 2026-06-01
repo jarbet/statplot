@@ -86,6 +86,12 @@
   to support HTML-formatted labels with rich text features (e.g.,
   superscripts, HTML line breaks).
 
+- `plot_survival_curves`: replaced `BoutrosLab.plotting.general`
+  annotation formatting with
+  [`format_pvalue()`](https://github.com/jarbet/statplot/reference/format_pvalue.md)
+  and now places p-value/hazard-ratio labels with
+  [`ggtext::geom_richtext()`](https://wilkelab.org/ggtext/reference/geom_richtext.html).
+
 ### Fixed
 
 …

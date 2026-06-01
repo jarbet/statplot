@@ -66,6 +66,7 @@
 <li><p><code>format_pvalue</code>: <strong>Breaking change</strong> — removed <code>p_symbol</code> and <code>include_p_symbol</code> parameters (now use <code>p_text</code>, <code>p_symbol</code>, <code>truncate_pvalue</code>, <code>html</code>, and <code>format</code>). The function now supports HTML/plotmath output formats and scientific notation with flexible customization.</p></li>
 <li><p><code>plot_barplot_by_group</code>: changed default <code>bracket_text_gap</code> from <code>0.05</code> to <code>0.01</code> for tighter text spacing.</p></li>
 <li><p><code>plot_barplot_by_group</code>: bracket labels now use <code><a href="https://wilkelab.org/ggtext/reference/geom_richtext.html" class="external-link">ggtext::geom_richtext()</a></code> instead of <code><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">ggplot2::geom_text()</a></code> to support HTML-formatted labels with rich text features (e.g., superscripts, HTML line breaks).</p></li>
+<li><p><code>plot_survival_curves</code>: replaced <code>BoutrosLab.plotting.general</code> annotation formatting with <code><a href="../reference/format_pvalue.html">format_pvalue()</a></code> and now places p-value/hazard-ratio labels with <code><a href="https://wilkelab.org/ggtext/reference/geom_richtext.html" class="external-link">ggtext::geom_richtext()</a></code>.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
