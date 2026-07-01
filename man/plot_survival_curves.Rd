@@ -16,45 +16,73 @@ plot_survival_curves(
   y_label = NULL,
   title = NULL,
   custom_hr_pvalue_text = NULL,
-  type = c("survival", "risk")
+  type = c("survival", "risk"),
+  show_risktable = TRUE,
+  risktable_stats = c("n.risk", "cum.event"),
+  ristable_text_size = 3.5
 )
 }
 \arguments{
-\item{surv_obj}{A \code{Surv} object (can be right‑censored or left‑truncated).}
+\item{surv_obj}{A \code{Surv} object (can be right-censored or left-truncated).}
 
-\item{data}{A data frame containing the variables referenced by \code{surv_obj} and \code{group_var}.}
+\item{data}{A data frame containing the variables referenced by
+\code{surv_obj} and \code{group_var}.}
 
 \item{group_var}{Character, name of the grouping column in \code{data}.}
 
-\item{time_limits}{Numeric(2), x-axis limits for the plot (default c(50, 100)).}
+\item{time_limits}{Numeric(2), x-axis limits for the plot. If \code{NULL},
+sensible limits are estimated from the observed event times.}
 
-\item{x_breaks}{Numeric, breaks for the x axis.}
+\item{x_breaks}{Numeric vector of x-axis breaks. If \code{NULL}, reasonable
+breaks are selected automatically.}
 
-\item{annotate_y}{Numeric, y position for the annotation text (default 0.99).}
+\item{annotate_y}{Numeric, y position for annotation text (default 0.99).}
 
-\item{annotate_x}{Numeric or NULL, x position for annotation; if NULL uses rightmost \code{time_limits}.}
+\item{annotate_x}{Numeric or \code{NULL}, x position for annotation; if
+\code{NULL} uses the rightmost value of \code{time_limits}.}
 
-\item{x_label}{Character, label for the x axis (default \"Time\").}
+\item{x_label}{Character, label for the x axis.}
 
-\item{y_label}{Character, label for the y axis (default \"Probability Event-free\").}
+\item{y_label}{Character, label for the y axis. If \code{NULL}, a default
+label is chosen based on \code{type}.}
 
-\item{title}{Character or NULL, plot title (default NULL).}
+\item{title}{Character or \code{NULL}, plot title.}
 
-\item{custom_hr_pvalue_text}{Character or NULL; if provided, this string will be used for the annotation
-instead of the automatically computed HR/p-value (for two groups) or log‑rank p-value (for >2 groups).}
+\item{custom_hr_pvalue_text}{Character or \code{NULL}; if supplied, overrides
+the automatically generated HR/log-rank annotation text.}
 
-\item{type}{Character, one of "survival" or "risk"; passed to ggsurvfit(). If
-"survival" the default y_label is "Probability Event-Free"; if "risk" the
-default y_label is "Probability of Event".}
+\item{type}{Character, one of \code{"survival"} or \code{"risk"}; passed to
+\code{ggsurvfit()}. If \code{"survival"}, the default y-axis label is
+\code{"Probability Event-Free"}. If \code{"risk"}, the default y-axis
+label is \code{"Probability of Event"}.}
+
+\item{show_risktable}{Logical; if \code{TRUE} (default), display a risk table
+beneath the survival curve.}
+
+\item{risktable_stats}{Character vector specifying statistics shown in the
+risk table. Must contain one or more of:
+\code{c("n.risk", "cum.event", "cum.censor", "n.event", "n.censor")}.
+The default is \code{c("n.risk", "cum.event")}.}
+
+\item{ristable_text_size}{Numeric, text size for the risk table (default 3.5).
+
+Available statistics:
+\itemize{
+\item \code{"n.risk"} Number of patients at risk
+\item \code{"cum.event"} Cumulative number of observed events
+\item \code{"cum.censor"} Cumulative number of censored observations
+\item \code{"n.event"} Number of events in each time interval
+\item \code{"n.censor"} Number of censored observations in each time interval
+}}
 }
 \value{
-A ggplot object (ggsurvfit).
+A ggsurvfit ggplot object.
 }
 \description{
-Plot a Kaplan–Meier curve (with confidence intervals and risk table) using a supplied
-\code{Surv} object. If the grouping variable has exactly two levels the function fits
-a Cox model and annotates hazard ratio (95\% CI) and p-value; if more than two groups
-it displays only the log‑rank p-value.
+Plot a Kaplan–Meier curve (with confidence intervals and optional risk table)
+using a supplied \code{Surv} object. If the grouping variable has exactly two
+levels the function fits a Cox model and annotates hazard ratio (95\% CI) and
+p-value; if more than two groups it displays only the log-rank p-value.
 }
 \examples{
 data(cancer, package = "survival")
@@ -62,14 +90,45 @@ data(cancer, package = "survival")
 # Example with two groups
 lung$sex <- factor(lung$sex, labels = c("Male", "Female"))
 surv_obj <- with(lung, survival::Surv(time, status == 2))
-plot_survival_curves(surv_obj, lung, group_var = "sex") + theme_bw2()
+
+plot_survival_curves(
+    surv_obj,
+    lung,
+    group_var = "sex"
+) + theme_bw2()
+
+# Hide the risk table
+plot_survival_curves(
+    surv_obj,
+    lung,
+    group_var = "sex",
+    show_risktable = FALSE
+) + theme_bw2()
+
+# Show only number at risk
+plot_survival_curves(
+    surv_obj,
+    lung,
+    group_var = "sex",
+    risktable_stats = "n.risk"
+) + theme_bw2()
 
 # Example with more than two groups
 lung$ph.ecog[lung$ph.ecog == 3] <- NA
 lung$ph.ecog <- factor(lung$ph.ecog)
-surv_obj <- with(lung, survival::Surv(time, status == 2))
-plot_survival_curves(surv_obj, lung, group_var = "ph.ecog") + theme_bw2()
+
+plot_survival_curves(
+    surv_obj,
+    lung,
+    group_var = "ph.ecog"
+) + theme_bw2()
 
 # Cumulative incidence plot
-plot_survival_curves(surv_obj, lung, group_var = "ph.ecog") + theme_bw2()
+plot_survival_curves(
+    surv_obj,
+    lung,
+    group_var = "ph.ecog",
+    type = "risk"
+) + theme_bw2()
+
 }
