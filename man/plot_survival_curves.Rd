@@ -62,7 +62,9 @@ beneath the survival curve.}
 \item{risktable_stats}{Character vector specifying statistics shown in the
 risk table. Must contain one or more of:
 \code{c("n.risk", "cum.event", "cum.censor", "n.event", "n.censor")}.
-The default is \code{c("n.risk", "cum.event")}.
+The default is \code{c("n.risk", "cum.event")}.}
+
+\item{ristable_text_size}{Numeric, text size for the risk table (default 3.5).
 
 Available statistics:
 \itemize{
