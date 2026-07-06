@@ -7,7 +7,9 @@
 table_overall(
   d,
   missing = c("ifany", "no", "always"),
-  stats_col_label = "Summary"
+  stats_col_label = "Summary",
+  statistic = list(gtsummary::all_continuous() ~ c("{median} ({p25}, {p75})",
+    "{mean} +/- {sd}", "{min}, {max}"), gtsummary::all_categorical() ~ c("{n} ({p}\%)"))
 )
 }
 \arguments{
@@ -16,9 +18,11 @@ table_overall(
 \item{missing}{character(1) How to display missing data. Options are "ifany", "no", or "always". Default is "ifany".}
 
 \item{stats_col_label}{character(1) Label for the summary column in the table. Default is "Summary".}
+
+\item{statistic}{Specifies summary statistics to display for each variable.  See \code{gtsummary::tbl_summmary} documentation for details.}
 }
 \value{
-A gtsummary::tbl_summary object for the overall cohort.
+A \code{gtsummary::tbl_summary} object for the overall cohort.
 }
 \description{
 Convenience wrapper that builds a gtsummary::tbl_summary for the overall

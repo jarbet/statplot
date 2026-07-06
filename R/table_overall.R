@@ -6,7 +6,8 @@
 #' @param d data.frame Dataset containing variables to summarize.
 #' @param missing character(1) How to display missing data. Options are "ifany", "no", or "always". Default is "ifany".
 #' @param stats_col_label character(1) Label for the summary column in the table. Default is "Summary".
-#' @return A gtsummary::tbl_summary object for the overall cohort.
+#' @param statistic Specifies summary statistics to display for each variable.  See `gtsummary::tbl_summmary` documentation for details.
+#' @return A `gtsummary::tbl_summary` object for the overall cohort.
 #' @examples
 #' df <- data.frame(age = rnorm(20, 50, 10), sex = sample(c("M","F"), 20, TRUE))
 #' table_overall(df)
@@ -14,7 +15,15 @@
 table_overall <- function(
     d,
     missing = c("ifany", "no", "always"),
-    stats_col_label = 'Summary'
+    stats_col_label = 'Summary',
+    statistic = list(
+        gtsummary::all_continuous() ~ c(
+            '{median} ({p25}, {p75})',
+            '{mean} +/- {sd}',
+            '{min}, {max}'
+        ),
+        gtsummary::all_categorical() ~ c('{n} ({p}%)')
+    )
 ) {
     missing <- match.arg(missing)
     stopifnot(is.data.frame(d))
@@ -29,14 +38,7 @@ table_overall <- function(
         ),
         missing = missing,
         missing_text = 'N missing',
-        statistic = list(
-            gtsummary::all_continuous() ~ c(
-                '{median} ({p25}, {p75})',
-                '{mean} +/- {sd}',
-                '{min}, {max}'
-            ),
-            gtsummary::all_categorical() ~ c('{n} ({p}%)')
-        ),
+        statistic = statistic,
         digits = list(
             gtsummary::all_continuous() ~ c(rep(1, 7))
         )
