@@ -9,7 +9,8 @@ table_overall(
   missing = c("ifany", "no", "always"),
   stats_col_label = "Summary",
   statistic = list(gtsummary::all_continuous() ~ c("{median} ({p25}, {p75})",
-    "{mean} +/- {sd}", "{min}, {max}"), gtsummary::all_categorical() ~ c("{n} ({p}\%)"))
+    "{mean} +/- {sd}", "{min}, {max}"), gtsummary::all_categorical() ~ c("{n} ({p}\%)")),
+  digits = list(gtsummary::all_continuous() ~ c(rep(1, 7)))
 )
 }
 \arguments{
@@ -20,6 +21,8 @@ table_overall(
 \item{stats_col_label}{character(1) Label for the summary column in the table. Default is "Summary".}
 
 \item{statistic}{Specifies summary statistics to display for each variable.  See \code{gtsummary::tbl_summmary} documentation for details.}
+
+\item{digits}{Specifies the number of decimal places to display for each summary statistic in \code{statistic}.}
 }
 \value{
 A \code{gtsummary::tbl_summary} object for the overall cohort.
