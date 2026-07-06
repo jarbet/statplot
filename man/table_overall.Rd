@@ -4,10 +4,12 @@
 \alias{table_overall}
 \title{Create a table that summarizes the entire cohort.}
 \usage{
-table_overall(d)
+table_overall(d, missing = c("ifany", "no", "always"))
 }
 \arguments{
 \item{d}{data.frame Dataset containing variables to summarize.}
+
+\item{missing}{character(1) How to display missing data. Options are "ifany", "no", or "always". Default is "ifany".}
 }
 \value{
 A gtsummary::tbl_summary object for the overall cohort.

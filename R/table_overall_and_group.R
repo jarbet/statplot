@@ -8,6 +8,7 @@
 #'   name) in `d` used to produce the grouped summary.
 #' @param group_header character(1). Label used as the tab spanner for the
 #'   grouped columns in the merged table.
+#' @param missing character(1) How to display missing data. Options are "ifany", "no", or "always". Default is "ifany".
 #'
 #' @return A gtsummary table object
 #'
@@ -28,8 +29,10 @@
 table_overall_and_group <- function(
     d,
     name_groupvar,
-    group_header = '**Group**'
+    group_header = '**Group**',
+    missing = c("ifany", "no", "always")
 ) {
+    missing <- match.arg(missing)
     gtsummary::theme_gtsummary_language("en", big.mark = ",")
     gtsummary::theme_gtsummary_compact()
     tab_overall <- gtsummary::tbl_summary(
@@ -38,7 +41,7 @@ table_overall_and_group <- function(
             gtsummary::all_continuous() ~ 'continuous2',
             gtsummary::all_dichotomous() ~ 'categorical'
         ),
-        missing = 'ifany',
+        missing = missing,
         missing_text = 'N missing',
         statistic = list(
             gtsummary::all_continuous() ~ c(

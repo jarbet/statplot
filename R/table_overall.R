@@ -4,12 +4,14 @@
 #' dataset.
 #'
 #' @param d data.frame Dataset containing variables to summarize.
+#' @param missing character(1) How to display missing data. Options are "ifany", "no", or "always". Default is "ifany".
 #' @return A gtsummary::tbl_summary object for the overall cohort.
 #' @examples
 #' df <- data.frame(age = rnorm(20, 50, 10), sex = sample(c("M","F"), 20, TRUE))
 #' table_overall(df)
 #' @export
-table_overall <- function(d) {
+table_overall <- function(d, missing = c("ifany", "no", "always")) {
+    missing <- match.arg(missing)
     gtsummary::theme_gtsummary_language("en", big.mark = ",")
     gtsummary::theme_gtsummary_compact()
     tab_overall <- gtsummary::tbl_summary(
@@ -18,7 +20,7 @@ table_overall <- function(d) {
             gtsummary::all_continuous() ~ 'continuous2',
             gtsummary::all_dichotomous() ~ 'categorical'
         ),
-        missing = 'ifany',
+        missing = missing,
         missing_text = 'N missing',
         statistic = list(
             gtsummary::all_continuous() ~ c(
