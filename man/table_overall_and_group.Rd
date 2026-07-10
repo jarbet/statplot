@@ -4,7 +4,12 @@
 \alias{table_overall_and_group}
 \title{Create overall and by-group summary table}
 \usage{
-table_overall_and_group(d, name_groupvar, group_header = "**Group**")
+table_overall_and_group(
+  d,
+  name_groupvar,
+  group_header = "**Group**",
+  missing = c("ifany", "no", "always")
+)
 }
 \arguments{
 \item{d}{data.frame. Dataset containing variables to summarize.}
@@ -14,6 +19,8 @@ name) in \code{d} used to produce the grouped summary.}
 
 \item{group_header}{character(1). Label used as the tab spanner for the
 grouped columns in the merged table.}
+
+\item{missing}{character(1) How to display missing data. Options are "ifany", "no", or "always". Default is "ifany".}
 }
 \value{
 A gtsummary table object
