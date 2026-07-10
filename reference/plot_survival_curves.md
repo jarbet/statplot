@@ -13,6 +13,8 @@ plot_survival_curves(
   surv_obj,
   data,
   group_var = "met_exercise_guidelines",
+  confidence_bands = TRUE,
+  line_size = 1,
   time_limits = NULL,
   x_breaks = NULL,
   annotate_y = 0.99,
@@ -42,6 +44,14 @@ plot_survival_curves(
 - group_var:
 
   Character, name of the grouping column in `data`.
+
+- confidence_bands:
+
+  Logical, if `TRUE` (default) display confidence bands
+
+- line_size:
+
+  Numeric, line size for the survival curves (default 1).
 
 - time_limits:
 
@@ -133,6 +143,10 @@ plot_survival_curves(
     lung,
     group_var = "sex"
 ) + theme_bw2()
+#> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+#> ℹ Please use `linewidth` instead.
+#> ℹ The deprecated feature was likely used in the ggsurvfit package.
+#>   Please report the issue at <https://github.com/pharmaverse/ggsurvfit/issues>.
 
 
 # Hide the risk table
