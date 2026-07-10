@@ -9,6 +9,7 @@ plot_survival_curves(
   data,
   group_var = "met_exercise_guidelines",
   confidence_bands = TRUE,
+  line_size = 1,
   time_limits = NULL,
   x_breaks = NULL,
   annotate_y = 0.99,
@@ -31,7 +32,9 @@ plot_survival_curves(
 
 \item{group_var}{Character, name of the grouping column in \code{data}.}
 
-\item{confidence_bands}{Logical, if \code{TRUE} (default) display confidence bands around the}
+\item{confidence_bands}{Logical, if \code{TRUE} (default) display confidence bands}
+
+\item{line_size}{Numeric, line size for the survival curves (default 1).}
 
 \item{time_limits}{Numeric(2), x-axis limits for the plot. If \code{NULL},
 sensible limits are estimated from the observed event times.}
