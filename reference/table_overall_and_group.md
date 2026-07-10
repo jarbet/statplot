@@ -6,7 +6,12 @@ columns report row-wise percentages.
 ## Usage
 
 ``` r
-table_overall_and_group(d, name_groupvar, group_header = "**Group**")
+table_overall_and_group(
+  d,
+  name_groupvar,
+  group_header = "**Group**",
+  missing = c("ifany", "no", "always")
+)
 ```
 
 ## Arguments
@@ -24,6 +29,11 @@ table_overall_and_group(d, name_groupvar, group_header = "**Group**")
 
   character(1). Label used as the tab spanner for the grouped columns in
   the merged table.
+
+- missing:
+
+  character(1) How to display missing data. Options are "ifany", "no",
+  or "always". Default is "ifany".
 
 ## Value
 
