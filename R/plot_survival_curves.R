@@ -9,6 +9,7 @@
 #' @param data A data frame containing the variables referenced by
 #'   \code{surv_obj} and \code{group_var}.
 #' @param group_var Character, name of the grouping column in \code{data}.
+#' @param confidence_bands Logical, if \code{TRUE} (default) display confidence bands around the
 #' @param time_limits Numeric(2), x-axis limits for the plot. If \code{NULL},
 #'   sensible limits are estimated from the observed event times.
 #' @param x_breaks Numeric vector of x-axis breaks. If \code{NULL}, reasonable
@@ -102,6 +103,7 @@ plot_survival_curves <- function(
     surv_obj,
     data,
     group_var = "met_exercise_guidelines",
+    confidence_bands = TRUE,
     time_limits = NULL,
     x_breaks = NULL,
     annotate_y = 0.99,
@@ -349,8 +351,11 @@ plot_survival_curves <- function(
         surv_formula,
         data = d_sub
     ) |>
-        ggsurvfit::ggsurvfit(type = type) +
-        ggsurvfit::add_confidence_interval()
+        ggsurvfit::ggsurvfit(type = type)
+
+    if (confidence_bands) {
+        kmplot <- kmplot + ggsurvfit::add_confidence_interval()
+    }
 
     if (show_risktable) {
         kmplot <- kmplot +
