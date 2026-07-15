@@ -10,7 +10,7 @@ format_pvalue(
   p_symbol = "= ",
   truncate_pvalue = FALSE,
   html = TRUE,
-  rm_ws = TRUE,
+  rm_ws = FALSE,
   format = c("text", "plotmath")
 )
 }
@@ -43,8 +43,8 @@ format_pvalue(c(0.0005, 0.005, 0.02, 0.236))
 # HTML formatting for markdown/Quarto or ggtext::geom_richtext()
 format_pvalue(0.0005, html = TRUE)
 
-# Dont remove whitespace:
-format_pvalue(0.0005, rm_ws = FALSE)
+# remove whitespace:
+format_pvalue(0.0005, rm_ws = TRUE)
 
 # Truncate small p-values<0.001 to "p<0.001"
 format_pvalue(0.0005, truncate_pvalue = TRUE)
