@@ -10,6 +10,7 @@ format_pvalue(
   p_symbol = "= ",
   truncate_pvalue = FALSE,
   html = TRUE,
+  rm_ws = FALSE,
   format = c("text", "plotmath")
 )
 }
@@ -23,6 +24,8 @@ format_pvalue(
 \item{truncate_pvalue}{Logical; whether to truncate pvalues <0.001 to "p<0.001". If FALSE, scientific notation is used (default FALSE).}
 
 \item{html}{Logical; whether to format scientific notation as HTML for small p-values (default TRUE). HTML output is suitable for markdown documents, Quarto, or with \code{ggtext::geom_richtext()}, but not with standard \code{ggplot2::geom_text()}. Ignored when \code{format = "plotmath"}.}
+
+\item{rm_ws}{Logical; whether to remove white space.}
 
 \item{format}{Character; output format for small p-values. One of "text" (default; plain scientific notation), or "plotmath" (suitable for ggplot2 with parse=TRUE). When "plotmath", returns a quoted string with plotmath notation (e.g., \code{"p =" ~ 5.0 \%*\% 10^{-5}}).}
 }
@@ -39,6 +42,9 @@ format_pvalue(c(0.0005, 0.005, 0.02, 0.236))
 
 # HTML formatting for markdown/Quarto or ggtext::geom_richtext()
 format_pvalue(0.0005, html = TRUE)
+
+# remove whitespace:
+format_pvalue(0.0005, rm_ws = TRUE)
 
 # Truncate small p-values<0.001 to "p<0.001"
 format_pvalue(0.0005, truncate_pvalue = TRUE)
