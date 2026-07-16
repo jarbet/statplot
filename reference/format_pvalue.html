@@ -45,6 +45,7 @@
 <span>  p_symbol <span class="op">=</span> <span class="st">"= "</span>,</span>
 <span>  truncate_pvalue <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  html <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  rm_ws <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"text"</span>, <span class="st">"plotmath"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -73,6 +74,10 @@
 <dd><p>Logical; whether to format scientific notation as HTML for small p-values (default TRUE). HTML output is suitable for markdown documents, Quarto, or with <code><a href="https://wilkelab.org/ggtext/reference/geom_richtext.html" class="external-link">ggtext::geom_richtext()</a></code>, but not with standard <code><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">ggplot2::geom_text()</a></code>. Ignored when <code>format = "plotmath"</code>.</p></dd>
 
 
+<dt id="arg-rm-ws">rm_ws<a class="anchor" aria-label="anchor" href="#arg-rm-ws"></a></dt>
+<dd><p>Logical; whether to remove white space.</p></dd>
+
+
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
 <dd><p>Character; output format for small p-values. One of "text" (default; plain scientific notation), or "plotmath" (suitable for ggplot2 with parse=TRUE). When "plotmath", returns a quoted string with plotmath notation (e.g., <code>"p =" ~ 5.0 %*% 10^{-5}</code>).</p></dd>
 
@@ -94,6 +99,10 @@
 <span class="r-in"><span><span class="co"># HTML formatting for markdown/Quarto or ggtext::geom_richtext()</span></span></span>
 <span class="r-in"><span><span class="fu">format_pvalue</span><span class="op">(</span><span class="fl">0.0005</span>, html <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "p= 5.0 × 10&lt;sup&gt;-4&lt;/sup&gt;"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># remove whitespace:</span></span></span>
+<span class="r-in"><span><span class="fu">format_pvalue</span><span class="op">(</span><span class="fl">0.0005</span>, rm_ws <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "p=5.0×10&lt;sup&gt;-4&lt;/sup&gt;"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Truncate small p-values&lt;0.001 to "p&lt;0.001"</span></span></span>
 <span class="r-in"><span><span class="fu">format_pvalue</span><span class="op">(</span><span class="fl">0.0005</span>, truncate_pvalue <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>

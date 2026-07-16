@@ -11,6 +11,7 @@ format_pvalue(
   p_symbol = "= ",
   truncate_pvalue = FALSE,
   html = TRUE,
+  rm_ws = FALSE,
   format = c("text", "plotmath")
 )
 ```
@@ -45,6 +46,10 @@ format_pvalue(
   [`ggplot2::geom_text()`](https://ggplot2.tidyverse.org/reference/geom_text.html).
   Ignored when `format = "plotmath"`.
 
+- rm_ws:
+
+  Logical; whether to remove white space.
+
 - format:
 
   Character; output format for small p-values. One of "text" (default;
@@ -72,6 +77,10 @@ format_pvalue(c(0.0005, 0.005, 0.02, 0.236))
 # HTML formatting for markdown/Quarto or ggtext::geom_richtext()
 format_pvalue(0.0005, html = TRUE)
 #> [1] "p= 5.0 × 10<sup>-4</sup>"
+
+# remove whitespace:
+format_pvalue(0.0005, rm_ws = TRUE)
+#> [1] "p=5.0×10<sup>-4</sup>"
 
 # Truncate small p-values<0.001 to "p<0.001"
 format_pvalue(0.0005, truncate_pvalue = TRUE)
