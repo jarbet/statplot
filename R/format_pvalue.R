@@ -7,6 +7,7 @@
 #' @param p_symbol Character; symbol/operator to display including spacing (default "= "). When truncate_pvalue=TRUE and p<0.001, "<" is used instead.
 #' @param truncate_pvalue Logical; whether to truncate pvalues <0.001 to "p<0.001". If FALSE, scientific notation is used (default FALSE).
 #' @param html Logical; whether to format scientific notation as HTML for small p-values (default TRUE). HTML output is suitable for markdown documents, Quarto, or with `ggtext::geom_richtext()`, but not with standard `ggplot2::geom_text()`. Ignored when `format = "plotmath"`.
+#' @param rm_ws Logical; whether to remove white space.
 #' @param format Character; output format for small p-values. One of "text" (default; plain scientific notation), or "plotmath" (suitable for ggplot2 with parse=TRUE). When "plotmath", returns a quoted string with plotmath notation (e.g., `"p =" ~ 5.0 %*% 10^{-5}`).
 #'
 #' @return Character vector of formatted p-values. For p >= 0.001, returns values formatted to 2-3 decimal places. For p < 0.001 with truncate_pvalue = TRUE, returns "p<0.001". For p < 0.001 with truncate_pvalue = FALSE, returns scientific notation in the format specified by `format`.
@@ -18,6 +19,9 @@
 #'
 #' # HTML formatting for markdown/Quarto or ggtext::geom_richtext()
 #' format_pvalue(0.0005, html = TRUE)
+#'
+#' # remove whitespace:
+#' format_pvalue(0.0005, rm_ws = TRUE)
 #'
 #' # Truncate small p-values<0.001 to "p<0.001"
 #' format_pvalue(0.0005, truncate_pvalue = TRUE)
@@ -39,6 +43,7 @@ format_pvalue <- function(
     p_symbol = "= ",
     truncate_pvalue = FALSE,
     html = TRUE,
+    rm_ws = FALSE,
     format = c("text", "plotmath")
 ) {
     stopifnot(
@@ -57,6 +62,11 @@ format_pvalue <- function(
     )
     format <- match.arg(format)
     stopifnot(format %in% c("text", "plotmath"))
+
+    stopifnot(
+        is.logical(rm_ws),
+        length(rm_ws) == 1
+    )
 
     # Format the numeric values
     fmt_numeric <- ifelse(
@@ -162,5 +172,10 @@ format_pvalue <- function(
         return(fmt_numeric)
     }
 
-    paste0(p_text, symbol, fmt_numeric)
+    p <- paste0(p_text, symbol, fmt_numeric)
+
+    if (rm_ws) {
+        p <- gsub("\\s+", "", p)
+    }
+    return(p)
 }
