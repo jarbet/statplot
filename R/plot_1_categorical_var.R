@@ -127,7 +127,8 @@ plot_1_categorical_var <- function(
         ) +
         ggplot2::theme(
             axis.text.x = ggplot2::element_blank(),
-            axis.ticks.x = ggplot2::element_blank()
+            axis.ticks.x = ggplot2::element_blank(),
+            legend.position = if (include_cat_labels) "none" else "right"
         )
 
     if (!is.null(fill_palette)) {
