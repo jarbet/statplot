@@ -2,6 +2,20 @@
 
 ## Added
 
+...
+
+## Changed
+
+...
+
+## Fixed
+
+...
+
+# statplot 0.8.0 - 2026-07-16
+
+## Added
+
 - `plot_1_categorical_var`: visualize the distribution of a single categorical variable as a 100% stacked bar. It includes options for text labels inside the bars (counts, percentages, or both).
 
 - `data(hallmark_pathway_categories)` has 2 new columns that give more human-readable labels that can be used for plots or in-text reference
@@ -64,10 +78,6 @@
 - `plot_barplot_by_group`: bracket labels now use `ggtext::geom_richtext()` instead of `ggplot2::geom_text()` to support HTML-formatted labels with rich text features (e.g., superscripts, HTML line breaks).
 
 - `plot_survival_curves`: replaced `BoutrosLab.plotting.general` annotation formatting with `format_pvalue()` and now places p-value/hazard-ratio labels with `ggtext::geom_richtext()`.
-
-## Fixed
-
-...
 
 # statplot 0.7.0 - 2026-05-04
 
