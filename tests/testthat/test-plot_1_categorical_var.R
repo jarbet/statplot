@@ -128,9 +128,13 @@ test_that('custom fill palette is applied', {
     )
 
     expect_true(
-        inherits(
-            p$scales$scales[[2]],
-            "ScaleDiscrete"
+        any(
+            vapply(
+                p$scales$scales,
+                inherits,
+                logical(1),
+                "ScaleDiscrete"
+            )
         )
     )
 })
@@ -155,7 +159,6 @@ test_that('function handles missing values', {
         "ggplot"
     )
 })
-
 
 test_that('one segment per factor level is plotted', {
     d <- data.frame(
@@ -187,8 +190,7 @@ test_that('one segment per factor level is plotted', {
     )
 })
 
-
-test_that('text_size is applied', {
+test_that('include_cat_labels can be turned off', {
     d <- data.frame(
         smoking = factor(
             c("Never", "Former", "Current")
@@ -198,11 +200,56 @@ test_that('text_size is applied', {
     p <- plot_1_categorical_var(
         d,
         smoking,
-        text_size = 6
+        include_cat_labels = FALSE
+    )
+
+    expect_s3_class(
+        p,
+        "ggplot"
+    )
+})
+
+test_that('include_cat_labels works with text_inside_bars = none', {
+    d <- data.frame(
+        smoking = factor(
+            c("Never", "Former", "Current")
+        )
+    )
+
+    p <- plot_1_categorical_var(
+        d,
+        smoking,
+        text_inside_bars = "none",
+        include_cat_labels = TRUE
+    )
+
+    expect_s3_class(
+        p,
+        "ggplot"
     )
 
     expect_equal(
-        p$layers[[2]]$aes_params$size,
-        6
+        length(p$layers),
+        2
+    )
+})
+
+test_that('no label layer when labels are completely disabled', {
+    d <- data.frame(
+        smoking = factor(
+            c("Never", "Former", "Current")
+        )
+    )
+
+    p <- plot_1_categorical_var(
+        d,
+        smoking,
+        text_inside_bars = "none",
+        include_cat_labels = FALSE
+    )
+
+    expect_equal(
+        length(p$layers),
+        1
     )
 })

@@ -13,6 +13,9 @@
 #' @param bar_width Width of the stacked bar.
 #' @param border_color Color of borders separating bar segments.
 #' @param text_size Size of text labels displayed within bar segments.
+#' @param include_cat_labels Logical. If TRUE, display the category name
+#'   above the count/percent label inside each bar segment. Category names
+#'   are shown in bold.
 #'
 #' @return A ggplot object.
 #'
@@ -50,7 +53,8 @@ plot_1_categorical_var <- function(
     fill_palette = NULL,
     bar_width = 0.8,
     border_color = "white",
-    text_size = 4
+    text_size = 4,
+    include_cat_labels = TRUE
 ) {
     text_inside_bars <- match.arg(text_inside_bars)
 
@@ -60,7 +64,7 @@ plot_1_categorical_var <- function(
         dplyr::count({{ var }}, name = "n") |>
         dplyr::mutate(
             pct = n / sum(n),
-            label = dplyr::case_when(
+            value_label = dplyr::case_when(
                 text_inside_bars == "count" ~ sprintf(
                     "%s",
                     scales::comma(n)
@@ -74,8 +78,29 @@ plot_1_categorical_var <- function(
                     scales::comma(n),
                     pct * 100
                 ),
-                TRUE ~ NA_character_
+                TRUE ~ ""
+            ),
+            cat_label = as.character({{ var }}),
+            label = dplyr::case_when(
+                include_cat_labels &
+                    text_inside_bars != "none" ~
+                    sprintf(
+                        "<b>%s</b><br>%s",
+                        cat_label,
+                        value_label
+                    ),
+                include_cat_labels &
+                    text_inside_bars == "none" ~
+                    sprintf(
+                        "<b>%s</b>",
+                        cat_label
+                    ),
+                TRUE ~ value_label
             )
+        ) |>
+        dplyr::arrange(dplyr::desc({{ var }})) |>
+        dplyr::mutate(
+            y_pos = cumsum(pct) - pct / 2
         )
 
     p <- ggplot2::ggplot(
@@ -112,14 +137,19 @@ plot_1_categorical_var <- function(
             )
     }
 
-    if (text_inside_bars != "none") {
+    if (text_inside_bars != "none" || include_cat_labels) {
         p <- p +
-            ggplot2::geom_text(
-                ggplot2::aes(label = label),
-                position = ggplot2::position_stack(
-                    vjust = 0.5
+            ggtext::geom_richtext(
+                data = d_plot,
+                ggplot2::aes(
+                    x = "",
+                    y = y_pos,
+                    label = label
                 ),
-                size = text_size
+                inherit.aes = FALSE,
+                size = text_size,
+                fill = NA,
+                label.color = NA
             )
     }
 

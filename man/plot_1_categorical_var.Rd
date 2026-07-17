@@ -11,7 +11,8 @@ plot_1_categorical_var(
   fill_palette = NULL,
   bar_width = 0.8,
   border_color = "white",
-  text_size = 4
+  text_size = 4,
+  include_cat_labels = TRUE
 )
 }
 \arguments{
@@ -31,6 +32,10 @@ segments. One of \code{"count_and_percent"}, \code{"count"}, \code{"percent"}, o
 \item{border_color}{Color of borders separating bar segments.}
 
 \item{text_size}{Size of text labels displayed within bar segments.}
+
+\item{include_cat_labels}{Logical. If TRUE, display the category name
+above the count/percent label inside each bar segment. Category names
+are shown in bold.}
 }
 \value{
 A ggplot object.
