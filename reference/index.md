@@ -24,6 +24,8 @@
   : Hallmark gene sets (Human) from MSigDB
 - [`patchwork_rowtitle()`](https://github.com/jarbet/statplot/reference/patchwork_rowtitle.md)
   : Create a Row Title for Patchwork
+- [`plot_1_categorical_var()`](https://github.com/jarbet/statplot/reference/plot_1_categorical_var.md)
+  : Plot Distribution of a Categorical Variable as a Stacked Bar
 - [`plot_2_categorical_vars()`](https://github.com/jarbet/statplot/reference/plot_2_categorical_vars.md)
   : Stacked percent bar chart for two categorical variables
 - [`plot_barplot_by_group()`](https://github.com/jarbet/statplot/reference/plot_barplot_by_group.md)

@@ -4,6 +4,24 @@
 
 ### Added
 
+…
+
+### Changed
+
+…
+
+### Fixed
+
+…
+
+## statplot 0.8.0 - 2026-07-16
+
+### Added
+
+- `plot_1_categorical_var`: visualize the distribution of a single
+  categorical variable as a 100% stacked bar. It includes options for
+  text labels inside the bars (counts, percentages, or both).
+
 - `data(hallmark_pathway_categories)` has 2 new columns that give more
   human-readable labels that can be used for plots or in-text reference
 
@@ -49,6 +67,44 @@
 
 ### Changed
 
+- features in **`format_pvalue:`**
+
+  - **Whitespace control**: An option was added to handle
+    whitespace/formatting for HTML p-values more flexibly.
+
+- features in `table_overall, table_overall_and_group`:
+
+  - **`binary_01_only_show1`**: A new parameter in
+    [`table_overall()`](https://github.com/jarbet/statplot/reference/table_overall.md)
+    that, when `TRUE` (default), only displays the summary for the “1”
+    or “Yes” value of binary variables.
+
+  - **`missing`**: Added to both
+    [`table_overall()`](https://github.com/jarbet/statplot/reference/table_overall.md)
+    and
+    [`table_overall_and_group()`](https://github.com/jarbet/statplot/reference/table_overall_and_group.md)
+    to control how missing data is displayed (options: `"ifany"`,
+    `"no"`, or `"always"`).
+
+  - **`statistic`**: Now a required argument in
+    [`table_overall()`](https://github.com/jarbet/statplot/reference/table_overall.md)
+    allowing for customizable summary statistics.
+
+  - **`stats_col_label`**: Added to
+    [`table_overall()`](https://github.com/jarbet/statplot/reference/table_overall.md)
+    with input validation to customize the header of the summary column.
+
+  - **`digits`**: Now explicitly exposed as a parameter in
+    [`table_overall()`](https://github.com/jarbet/statplot/reference/table_overall.md).
+
+- features in **`plot_survival_curves:`**
+
+  - **`line_size`**: A new parameter allows for controlling the
+    thickness of the survival curve lines.
+
+  - **`confidence_bands`**: Added a parameter to toggle the display of
+    confidence bands (default is `TRUE`).
+
 - `plot_numeric_by_2groups`: **Breaking change** — removed `title`
   parameter. Plots no longer include a default title; use
   `+ ggplot2::ggtitle()` to customize.
@@ -91,10 +147,6 @@
   [`format_pvalue()`](https://github.com/jarbet/statplot/reference/format_pvalue.md)
   and now places p-value/hazard-ratio labels with
   [`ggtext::geom_richtext()`](https://wilkelab.org/ggtext/reference/geom_richtext.html).
-
-### Fixed
-
-…
 
 ## statplot 0.7.0 - 2026-05-04
 
@@ -269,7 +321,7 @@
 - `hallmark_pathway_categories`: new internal dataset mapping Hallmark
   pathway names (the `term` column, with the `HALLMARK_` prefix removed)
   to biological process categories as defined in Table 1 of Liberzon et
-  al. (2015). The dataset includes a runtime validation step against the
+  al. (2015). The dataset includes a runtime validation step against the
   bundled `hallmark_t2g` data to ensure pathway names align with MSigDB.
 
 - `plot_covariate_heatmap`: new function to draw vertical covariate
