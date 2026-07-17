@@ -2,6 +2,8 @@
 
 ## Added
 
+* `plot_1_categorical_var`: visualize distribution of a single categorical variable
+
 * `data(hallmark_pathway_categories)` has 2 new columns that give more human-readable labels that can be used for plots or in-text reference
 
 * `plot_numeric_by_2groups`: new `facet_cols` parameter enables faceting by additional variables. When supplied, a separate Wilcoxon test is computed within each unique combination of facet columns, with annotations automatically retained for use with `ggplot2::facet_wrap()` or `ggplot2::facet_grid()`.
