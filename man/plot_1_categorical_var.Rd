@@ -30,7 +30,8 @@ segments. One of \code{"count_and_percent"}, \code{"count"}, \code{"percent"}, o
 
 \item{bar_width}{Width of the stacked bar.}
 
-\item{border_color}{Color of borders separating bar segments.}
+\item{border_color}{Color of borders separating bar segments. Use \code{NA} for
+no borders.}
 
 \item{text_size}{Size of text labels displayed within bar segments.}
 

@@ -11,7 +11,8 @@
 #' @param fill_palette Optional named vector of fill colors passed to
 #'   `ggplot2::scale_fill_manual()`.
 #' @param bar_width Width of the stacked bar.
-#' @param border_color Color of borders separating bar segments.
+#' @param border_color Color of borders separating bar segments. Use `NA` for
+#'   no borders.
 #' @param text_size Size of text labels displayed within bar segments.
 #' @param include_cat_labels Logical. If TRUE, display the category name
 #'   above the count/percent label inside each bar segment. Category names
@@ -70,8 +71,7 @@ plot_1_categorical_var <- function(
         !is.na(bar_width),
         bar_width > 0,
         length(border_color) == 1,
-        is.character(border_color),
-        !is.na(border_color),
+        is.character(border_color) || is.na(border_color),
         length(text_size) == 1,
         is.numeric(text_size),
         !is.na(text_size),
@@ -102,7 +102,7 @@ plot_1_categorical_var <- function(
                 ),
                 none = ""
             ),
-            cat_label = as.character({{ var }}),
+            cat_label = escape_richtext(as.character({{ var }})),
             label = if (!include_cat_labels) {
                 value_label
             } else if (text_inside_bars == "none") {
@@ -172,4 +172,21 @@ plot_1_categorical_var <- function(
     }
 
     p
+}
+
+# Escape characters that `ggtext::geom_richtext()` would otherwise interpret as
+# HTML or Markdown, so category names are displayed literally.
+escape_richtext <- function(x) {
+    x <- gsub("&", "&amp;", x, fixed = TRUE)
+    x <- gsub("<", "&lt;", x, fixed = TRUE)
+    x <- gsub(">", "&gt;", x, fixed = TRUE)
+    for (ch in c("\\", "*", "_", "`", "~", "[", "]")) {
+        x <- gsub(
+            ch,
+            sprintf("&#%d;", utf8ToInt(ch)),
+            x,
+            fixed = TRUE
+        )
+    }
+    x
 }

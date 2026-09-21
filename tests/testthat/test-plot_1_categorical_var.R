@@ -333,3 +333,30 @@ test_that('invalid small_pct_threshold errors', {
     d <- data.frame(smoking = factor(c("Never", "Former")))
     expect_error(plot_1_categorical_var(d, smoking, small_pct_threshold = 2))
 })
+
+test_that('border_color = NA is allowed', {
+    d <- data.frame(smoking = factor(c("Never", "Former")))
+    expect_s3_class(
+        plot_1_categorical_var(d, smoking, border_color = NA),
+        "ggplot"
+    )
+    expect_s3_class(
+        plot_1_categorical_var(d, smoking, border_color = NA_character_),
+        "ggplot"
+    )
+    expect_error(plot_1_categorical_var(d, smoking, border_color = 1))
+})
+
+test_that('category names with markup characters are escaped', {
+    d <- data.frame(
+        grp = factor(c("A & B", "<10", "*x* a_b_c", "<i>tag</i>"))
+    )
+
+    labs <- get_labels(plot_1_categorical_var(d, grp, small_pct_threshold = 0))
+
+    expect_true(any(grepl("<b>A &amp; B</b>", labs, fixed = TRUE)))
+    expect_true(any(grepl("<b>&lt;10</b>", labs, fixed = TRUE)))
+    expect_true(any(grepl("<b>&#42;x&#42; a&#95;b&#95;c</b>", labs, fixed = TRUE)))
+    expect_true(any(grepl("<b>&lt;i&gt;tag&lt;/i&gt;</b>", labs, fixed = TRUE)))
+    expect_false(any(grepl("<i>", labs, fixed = TRUE)))
+})
