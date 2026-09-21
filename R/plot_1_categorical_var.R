@@ -91,47 +91,29 @@ plot_1_categorical_var <- function(
         dplyr::count({{ var }}, name = "n") |>
         dplyr::mutate(
             pct = n / sum(n),
-            value_label = dplyr::case_when(
-                text_inside_bars == "count" ~ sprintf(
-                    "%s",
-                    scales::comma(n)
-                ),
-                text_inside_bars == "percent" ~ scales::percent(
-                    pct,
-                    accuracy = 0.1
-                ),
-                text_inside_bars == "count_and_percent" ~ sprintf(
+            value_label = switch(
+                text_inside_bars,
+                count = scales::comma(n),
+                percent = scales::percent(pct, accuracy = 0.1),
+                count_and_percent = sprintf(
                     "%s (%.1f%%)",
                     scales::comma(n),
                     pct * 100
                 ),
-                TRUE ~ ""
+                none = ""
             ),
             cat_label = as.character({{ var }}),
-            label = dplyr::case_when(
-                include_cat_labels &
-                    text_inside_bars != "none" &
-                    pct < small_pct_threshold ~
-                    sprintf(
-                        "<b>%s</b>: %s",
-                        cat_label,
-                        value_label
-                    ),
-                include_cat_labels &
-                    text_inside_bars != "none" ~
-                    sprintf(
-                        "<b>%s</b><br>%s",
-                        cat_label,
-                        value_label
-                    ),
-                include_cat_labels &
-                    text_inside_bars == "none" ~
-                    sprintf(
-                        "<b>%s</b>",
-                        cat_label
-                    ),
-                TRUE ~ value_label
-            )
+            label = if (!include_cat_labels) {
+                value_label
+            } else if (text_inside_bars == "none") {
+                sprintf("<b>%s</b>", cat_label)
+            } else {
+                ifelse(
+                    pct < small_pct_threshold,
+                    sprintf("<b>%s</b>: %s", cat_label, value_label),
+                    sprintf("<b>%s</b><br>%s", cat_label, value_label)
+                )
+            }
         ) |>
         dplyr::arrange(dplyr::desc({{ var }})) |>
         dplyr::mutate(
