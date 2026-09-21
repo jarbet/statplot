@@ -31,7 +31,7 @@ categorical variable."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Plot Distribution of a Categorical Variable as a Stacked Bar</h1>
-      <small class="dont-index">Source: <a href="https://github.com/jarbet/statplot/blob/v0.8.0/R/plot_1_categorical_var.R"><code>R/plot_1_categorical_var.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/jarbet/statplot/blob/main/R/plot_1_categorical_var.R"><code>R/plot_1_categorical_var.R</code></a></small>
       <div class="d-none name"><code>plot_1_categorical_var.Rd</code></div>
     </div>
 
@@ -49,7 +49,9 @@ categorical variable.</p>
 <span>  fill_palette <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  bar_width <span class="op">=</span> <span class="fl">0.8</span>,</span>
 <span>  border_color <span class="op">=</span> <span class="st">"white"</span>,</span>
-<span>  text_size <span class="op">=</span> <span class="fl">4</span></span>
+<span>  text_size <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  include_cat_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  small_pct_threshold <span class="op">=</span> <span class="fl">0.05</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -81,11 +83,24 @@ segments. One of <code>"count_and_percent"</code>, <code>"count"</code>, <code>"
 
 
 <dt id="arg-border-color">border_color<a class="anchor" aria-label="anchor" href="#arg-border-color"></a></dt>
-<dd><p>Color of borders separating bar segments.</p></dd>
+<dd><p>Color of borders separating bar segments. Use <code>NA</code> for
+no borders.</p></dd>
 
 
 <dt id="arg-text-size">text_size<a class="anchor" aria-label="anchor" href="#arg-text-size"></a></dt>
 <dd><p>Size of text labels displayed within bar segments.</p></dd>
+
+
+<dt id="arg-include-cat-labels">include_cat_labels<a class="anchor" aria-label="anchor" href="#arg-include-cat-labels"></a></dt>
+<dd><p>Logical. If TRUE, display the category name
+above the count/percent label inside each bar segment. Category names
+are shown in bold.</p></dd>
+
+
+<dt id="arg-small-pct-threshold">small_pct_threshold<a class="anchor" aria-label="anchor" href="#arg-small-pct-threshold"></a></dt>
+<dd><p>Proportion threshold below which category
+labels are displayed on a single line to improve readability for
+small bar segments. Default is 0.05 (5%).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -103,7 +118,7 @@ segments. One of <code>"count_and_percent"</code>, <code>"count"</code>, <code>"
 <span class="r-in"><span>            <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Never"</span>, <span class="st">"Former"</span>, <span class="st">"Current"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>            size <span class="op">=</span> <span class="fl">1000</span>,</span></span>
 <span class="r-in"><span>            replace <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>            prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.55</span>, <span class="fl">0.30</span>, <span class="fl">0.15</span><span class="op">)</span></span></span>
+<span class="r-in"><span>            prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.56</span>, <span class="fl">0.40</span>, <span class="fl">0.04</span><span class="op">)</span></span></span>
 <span class="r-in"><span>        <span class="op">)</span>,</span></span>
 <span class="r-in"><span>        levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Never"</span>, <span class="st">"Former"</span>, <span class="st">"Current"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="op">)</span></span></span>

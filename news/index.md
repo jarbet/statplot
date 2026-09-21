@@ -8,7 +8,8 @@
 
 ### Changed
 
-…
+- `plot_1_categorical_var`: add option to include category labels as
+  text inside bar segments (TRUE by default)
 
 ### Fixed
 

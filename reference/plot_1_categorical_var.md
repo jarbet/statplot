@@ -13,7 +13,9 @@ plot_1_categorical_var(
   fill_palette = NULL,
   bar_width = 0.8,
   border_color = "white",
-  text_size = 4
+  text_size = 4,
+  include_cat_labels = TRUE,
+  small_pct_threshold = 0.05
 )
 ```
 
@@ -43,11 +45,22 @@ plot_1_categorical_var(
 
 - border_color:
 
-  Color of borders separating bar segments.
+  Color of borders separating bar segments. Use `NA` for no borders.
 
 - text_size:
 
   Size of text labels displayed within bar segments.
+
+- include_cat_labels:
+
+  Logical. If TRUE, display the category name above the count/percent
+  label inside each bar segment. Category names are shown in bold.
+
+- small_pct_threshold:
+
+  Proportion threshold below which category labels are displayed on a
+  single line to improve readability for small bar segments. Default is
+  0.05 (5%).
 
 ## Value
 
@@ -64,7 +77,7 @@ d <- data.frame(
             c("Never", "Former", "Current"),
             size = 1000,
             replace = TRUE,
-            prob = c(0.55, 0.30, 0.15)
+            prob = c(0.56, 0.40, 0.04)
         ),
         levels = c("Never", "Former", "Current")
     )
