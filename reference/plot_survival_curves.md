@@ -4,7 +4,9 @@ Plot a Kaplan–Meier curve (with confidence intervals and optional risk
 table) using a supplied `Surv` object. If the grouping variable has
 exactly two levels the function fits a Cox model and annotates hazard
 ratio (95% CI) and p-value; if more than two groups it displays only the
-log-rank p-value.
+log-rank p-value. Optional weights (e.g. IPTW) can be supplied to
+produce weighted survival curves and a weighted Cox model annotation;
+see `weights` below.
 
 ## Usage
 
@@ -13,6 +15,7 @@ plot_survival_curves(
   surv_obj,
   data,
   group_var = "met_exercise_guidelines",
+  weights = NULL,
   confidence_bands = TRUE,
   line_size = 1,
   time_limits = NULL,
@@ -26,6 +29,7 @@ plot_survival_curves(
   type = c("survival", "risk"),
   show_risktable = TRUE,
   risktable_stats = c("n.risk", "cum.event"),
+  risktable_counts = c("both", "weighted", "unweighted"),
   ristable_text_size = 3.5
 )
 ```
@@ -44,6 +48,34 @@ plot_survival_curves(
 - group_var:
 
   Character, name of the grouping column in `data`.
+
+- weights:
+
+  Optional weights for producing weighted survival curves (e.g. inverse
+  probability of treatment weights, IPTW). Either the name of a numeric
+  column in `data`, or a numeric vector with length equal to
+  `nrow(data)`. Weights must be strictly positive (an error is thrown
+  otherwise);
+  [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html),
+  which this function always fits when weights are supplied, requires
+  weights `> 0`, and
+  [`survival::survfit.formula()`](https://rdrr.io/pkg/survival/man/survfit.formula.html)
+  treats zero weights as ambiguous, so observations that should be
+  excluded should be filtered out of `data` beforehand rather than given
+  a zero weight. There is no required scale/normalization (e.g. weights
+  do not need to sum to 1 or to `nrow(data)`); IPTW weights are commonly
+  left unstabilized or stabilized to a mean of 1, and either is fine
+  here. If `NULL` (default), curves are unweighted. When supplied, the
+  Cox model used for the HR/p-value annotation is fit with
+  `robust = TRUE` (sandwich variance), as is standard practice for
+  IPTW-type weights. If `group_var` has more than two levels, the
+  omnibus p-value is a robust Wald test from a weighted Cox model rather
+  than a log-rank test, since
+  [`survival::survdiff()`](https://rdrr.io/pkg/survival/man/survdiff.html)
+  does not support weights. When `show_risktable = TRUE`, the risk table
+  statistics are rounded to 1 decimal place (they are non-integer
+  "effective" counts when weighted); see `risktable_counts` to show
+  unweighted counts instead of or alongside the weighted ones.
 
 - confidence_bands:
 
@@ -108,6 +140,20 @@ plot_survival_curves(
   contain one or more of:
   `c("n.risk", "cum.event", "cum.censor", "n.event", "n.censor")`. The
   default is `c("n.risk", "cum.event")`.
+
+- risktable_counts:
+
+  Character, one of `"both"` (default), `"weighted"`, or `"unweighted"`.
+  Only relevant when `weights` is supplied and `show_risktable = TRUE`.
+  `"weighted"` shows the (rounded) weighted counts as usual.
+  `"unweighted"` shows the raw unweighted subject counts in the risk
+  table instead (curves, CI, and the HR/p-value annotation remain
+  weighted). `"both"` shows each cell as `"weighted (unweighted)"`; this
+  is exact for `"n.risk"`, `"cum.event"`, and `"cum.censor"`, but for
+  the raw (non-cumulative) `"n.event"`/`"n.censor"` the unweighted count
+  in parentheses is only guaranteed exact at actual event/censoring
+  times (use `"cum.event"`/`"cum.censor"` for exact `"both"` counts at
+  arbitrary risk table times).
 
 - ristable_text_size:
 
@@ -186,6 +232,42 @@ plot_survival_curves(
     lung,
     group_var = "ph.ecog",
     type = "risk"
+) + theme_bw2()
+
+
+# Weighted survival curves (e.g. IPTW)
+lung$iptw <- runif(nrow(lung), 0.5, 2)
+
+# risktable_counts = "both" (the default) shows each risk table cell as
+# "weighted (unweighted)", so the actual number of observed events/at-risk
+# subjects stays visible alongside the weighted ("effective") Ns used for
+# the curves/CI/HR
+plot_survival_curves(
+    surv_obj,
+    lung,
+    group_var = "sex",
+    weights = "iptw",
+    risktable_counts = "both"
+) + theme_bw2()
+
+
+# Weighted curves with only the (rounded) weighted Ns in the risk table
+plot_survival_curves(
+    surv_obj,
+    lung,
+    group_var = "sex",
+    weights = "iptw",
+    risktable_counts = "weighted"
+) + theme_bw2()
+
+
+# Weighted curves with only the raw unweighted Ns in the risk table
+plot_survival_curves(
+    surv_obj,
+    lung,
+    group_var = "sex",
+    weights = "iptw",
+    risktable_counts = "unweighted"
 ) + theme_bw2()
 
 ```

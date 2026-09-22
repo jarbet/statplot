@@ -4,7 +4,24 @@
 
 ### Added
 
-…
+- `plot_survival_curves`: new `weights` argument to produce weighted
+  survival curves (e.g. inverse probability of treatment weighting,
+  IPTW). Accepts either the name of a numeric column in `data` or a
+  numeric vector of length `nrow(data)`; weights must be strictly
+  positive (matching the requirements of the underlying
+  [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html)/[`survival::survfit.formula()`](https://rdrr.io/pkg/survival/man/survfit.formula.html)
+  calls). When supplied, the Cox model used for the HR/p-value
+  annotation is fit with `robust = TRUE` (sandwich variance), and for
+  `group_var` with more than 2 levels the omnibus p-value is a robust
+  Wald test from a weighted Cox model rather than a log-rank test, since
+  [`survival::survdiff()`](https://rdrr.io/pkg/survival/man/survdiff.html)
+  does not support weights.
+
+- `plot_survival_curves`: new `risktable_counts` argument (default
+  `"both"`) controls how the risk table displays counts when `weights`
+  is supplied: `"weighted"` shows the rounded weighted (“effective”)
+  counts, `"unweighted"` shows the raw unweighted subject counts, and
+  `"both"` shows each cell as `"weighted (unweighted)"`.
 
 ### Changed
 
@@ -13,7 +30,13 @@
 
 ### Fixed
 
-…
+- `plot_survival_curves`: fixed the log-rank p-value degrees of freedom
+  for `group_var` with more than 2 levels. Previously computed as
+  `length(sd$n) - 1`, which is only correct when every group has at
+  least one expected event; now uses
+  [`survival::survdiff()`](https://rdrr.io/pkg/survival/man/survdiff.html)’s
+  own `pvalue`, which correctly handles groups with zero expected
+  events.
 
 ## statplot 0.8.0 - 2026-07-16
 
