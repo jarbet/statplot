@@ -20,8 +20,11 @@
 - `plot_survival_curves`: new `risktable_counts` argument (default
   `"both"`) controls how the risk table displays counts when `weights`
   is supplied: `"weighted"` shows the rounded weighted (“effective”)
-  counts, `"unweighted"` shows the raw unweighted subject counts, and
-  `"both"` shows each cell as `"weighted (unweighted)"`.
+  counts with row labels suffixed `": Weighted"`
+  (e.g. `"At Risk: Weighted"`), `"unweighted"` shows the raw unweighted
+  subject counts with unsuffixed labels, and `"both"` shows each cell as
+  `"weighted (unweighted)"` with row labels suffixed
+  `": Weighted (Raw)"`.
 
 ### Changed
 

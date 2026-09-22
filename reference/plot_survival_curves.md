@@ -145,15 +145,22 @@ plot_survival_curves(
 
   Character, one of `"both"` (default), `"weighted"`, or `"unweighted"`.
   Only relevant when `weights` is supplied and `show_risktable = TRUE`.
-  `"weighted"` shows the (rounded) weighted counts as usual.
+  `"weighted"` shows the (rounded) weighted counts, with row labels
+  suffixed `": Weighted"` (e.g. `"At Risk: Weighted"`) to flag that they
+  are non-integer "effective" counts rather than raw subject counts.
   `"unweighted"` shows the raw unweighted subject counts in the risk
   table instead (curves, CI, and the HR/p-value annotation remain
-  weighted). `"both"` shows each cell as `"weighted (unweighted)"`; this
-  is exact for `"n.risk"`, `"cum.event"`, and `"cum.censor"`, but for
-  the raw (non-cumulative) `"n.event"`/`"n.censor"` the unweighted count
-  in parentheses is only guaranteed exact at actual event/censoring
-  times (use `"cum.event"`/`"cum.censor"` for exact `"both"` counts at
-  arbitrary risk table times).
+  weighted), with unsuffixed row labels (e.g. `"At Risk"`). `"both"`
+  shows each cell as `"weighted (unweighted)"` with row labels suffixed
+  `": Weighted (Raw)"`; this is exact for `"n.risk"`, `"cum.event"`, and
+  `"cum.censor"`, but the raw (non-cumulative) `"n.event"`/`"n.censor"`
+  counts are totals over each displayed risk table interval, and the
+  unweighted side of `"both"` can only be computed exactly at actual
+  event/censoring times. Combining `risktable_counts = "both"` with
+  `risktable_stats` containing `"n.event"` or `"n.censor"` therefore
+  throws an error; use `"cum.event"`/`"cum.censor"` instead (exact in
+  `"both"` mode), or set `risktable_counts` to `"weighted"` or
+  `"unweighted"`.
 
 - ristable_text_size:
 

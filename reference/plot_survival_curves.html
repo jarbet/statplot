@@ -188,15 +188,24 @@ The default is <code>c("n.risk", "cum.event")</code>.</p></dd>
 <dd><p>Character, one of <code>"both"</code> (default),
 <code>"weighted"</code>, or <code>"unweighted"</code>. Only relevant when <code>weights</code>
 is supplied and <code>show_risktable = TRUE</code>. <code>"weighted"</code> shows
-the (rounded) weighted counts as usual. <code>"unweighted"</code> shows the
-raw unweighted subject counts in the risk table instead (curves, CI,
-and the HR/p-value annotation remain weighted). <code>"both"</code> shows
-each cell as <code>"weighted (unweighted)"</code>; this is exact for
-<code>"n.risk"</code>, <code>"cum.event"</code>, and <code>"cum.censor"</code>, but for
-the raw (non-cumulative) <code>"n.event"</code>/<code>"n.censor"</code> the
-unweighted count in parentheses is only guaranteed exact at actual
-event/censoring times (use <code>"cum.event"</code>/<code>"cum.censor"</code> for
-exact <code>"both"</code> counts at arbitrary risk table times).</p></dd>
+the (rounded) weighted counts, with row labels suffixed
+<code>": Weighted"</code> (e.g. <code>"At Risk: Weighted"</code>) to flag that
+they are non-integer "effective" counts rather than raw subject
+counts. <code>"unweighted"</code> shows the raw unweighted subject counts in
+the risk table instead (curves, CI, and the HR/p-value annotation
+remain weighted), with unsuffixed row labels (e.g. <code>"At Risk"</code>).
+<code>"both"</code> shows each cell as <code>"weighted (unweighted)"</code> with
+row labels suffixed <code>": Weighted (Raw)"</code>; this is exact for
+<code>"n.risk"</code>, <code>"cum.event"</code>, and <code>"cum.censor"</code>, but the
+raw (non-cumulative) <code>"n.event"</code>/<code>"n.censor"</code> counts are
+totals over each displayed risk table interval, and the unweighted
+side of <code>"both"</code> can only be computed exactly at actual
+event/censoring times. Combining <code>risktable_counts = "both"</code>
+with <code>risktable_stats</code> containing <code>"n.event"</code> or
+<code>"n.censor"</code> therefore throws an error; use
+<code>"cum.event"</code>/<code>"cum.censor"</code> instead (exact in
+<code>"both"</code> mode), or set <code>risktable_counts</code> to
+<code>"weighted"</code> or <code>"unweighted"</code>.</p></dd>
 
 
 <dt id="arg-ristable-text-size">ristable_text_size<a class="anchor" aria-label="anchor" href="#arg-ristable-text-size"></a></dt>
