@@ -376,7 +376,7 @@ plot_survival_curves <- function(
         }
     }
 
-    if (!is.null(id)) {
+    if (has_weights && !is.null(id)) {
         d_sub$.id <- data[[id]]
     }
 
@@ -387,7 +387,7 @@ plot_survival_curves <- function(
         keep <- keep & !is.na(d_sub$.weights)
     }
 
-    if (!is.null(id)) {
+    if (has_weights && !is.null(id)) {
         keep <- keep & !is.na(d_sub$.id)
     }
 

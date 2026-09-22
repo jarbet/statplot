@@ -420,6 +420,37 @@ testthat::test_that("rows with missing group values are removed", {
     )
 })
 
+testthat::test_that("id with missing values is ignored (not filtered) for unweighted calls", {
+    dat <- survival::lung
+
+    dat$sex <- factor(dat$sex, labels = c("Male", "Female"))
+    dat$subj_id <- seq_len(nrow(dat))
+    dat$subj_id[1:10] <- NA
+
+    surv_obj <- with(
+        dat,
+        survival::Surv(time, status == 2)
+    )
+
+    p_with_id <- plot_survival_curves(
+        surv_obj,
+        dat,
+        group_var = "sex",
+        id = "subj_id"
+    )
+
+    p_without_id <- plot_survival_curves(
+        surv_obj,
+        dat,
+        group_var = "sex"
+    )
+
+    testthat::expect_equal(
+        ggplot2::ggplot_build(p_with_id)$data,
+        ggplot2::ggplot_build(p_without_id)$data
+    )
+})
+
 testthat::test_that("weighted survival curves work with a weights column name", {
     dat <- survival::lung
 
