@@ -4,11 +4,48 @@
 #' using a supplied \code{Surv} object. If the grouping variable has exactly two
 #' levels the function fits a Cox model and annotates hazard ratio (95% CI) and
 #' p-value; if more than two groups it displays only the log-rank p-value.
+#' Optional weights (e.g. IPTW) can be supplied to produce weighted survival
+#' curves and a weighted Cox model annotation; see \code{weights} below.
 #'
 #' @param surv_obj A \code{Surv} object (can be right-censored or left-truncated).
 #' @param data A data frame containing the variables referenced by
 #'   \code{surv_obj} and \code{group_var}.
 #' @param group_var Character, name of the grouping column in \code{data}.
+#' @param weights Optional weights for producing weighted survival curves
+#'   (e.g. inverse probability of treatment weights, IPTW). Either the name
+#'   of a numeric column in \code{data}, or a numeric vector with length
+#'   equal to \code{nrow(data)}. Weights must be strictly positive (an error
+#'   is thrown otherwise); \code{survival::coxph()}, which this function
+#'   always fits when weights are supplied, requires weights \code{> 0}, and
+#'   \code{survival::survfit.formula()} treats zero weights as ambiguous, so
+#'   observations that should be excluded should be filtered out of
+#'   \code{data} beforehand rather than given a zero weight. There is no
+#'   required scale/normalization (e.g. weights do not need to sum to 1 or
+#'   to \code{nrow(data)}); IPTW weights are commonly left unstabilized or
+#'   stabilized to a mean of 1, and either is fine here. If \code{NULL}
+#'   (default), curves are unweighted. When supplied, the Cox model used for
+#'   the HR/p-value annotation is fit with \code{robust = TRUE} (sandwich
+#'   variance), as is
+#'   standard practice for IPTW-type weights. If \code{group_var} has more
+#'   than two levels, the omnibus p-value is a robust Wald test from a
+#'   weighted Cox model rather than a log-rank test, since
+#'   \code{survival::survdiff()} does not support weights. When
+#'   \code{show_risktable = TRUE}, the risk table statistics are rounded to
+#'   1 decimal place (they are non-integer "effective" counts when
+#'   weighted); see \code{risktable_counts} to show unweighted counts
+#'   instead of or alongside the weighted ones.
+#' @param risktable_counts Character, one of \code{"both"} (default),
+#'   \code{"weighted"}, or \code{"unweighted"}. Only relevant when \code{weights}
+#'   is supplied and \code{show_risktable = TRUE}. \code{"weighted"} shows
+#'   the (rounded) weighted counts as usual. \code{"unweighted"} shows the
+#'   raw unweighted subject counts in the risk table instead (curves, CI,
+#'   and the HR/p-value annotation remain weighted). \code{"both"} shows
+#'   each cell as \code{"weighted (unweighted)"}; this is exact for
+#'   \code{"n.risk"}, \code{"cum.event"}, and \code{"cum.censor"}, but for
+#'   the raw (non-cumulative) \code{"n.event"}/\code{"n.censor"} the
+#'   unweighted count in parentheses is only guaranteed exact at actual
+#'   event/censoring times (use \code{"cum.event"}/\code{"cum.censor"} for
+#'   exact \code{"both"} counts at arbitrary risk table times).
 #' @param confidence_bands Logical, if \code{TRUE} (default) display confidence bands
 #' @param line_size Numeric, line size for the survival curves (default 1).
 #' @param time_limits Numeric(2), x-axis limits for the plot. If \code{NULL},
@@ -92,6 +129,39 @@
 #'     type = "risk"
 #' ) + theme_bw2()
 #'
+#' # Weighted survival curves (e.g. IPTW)
+#' lung$iptw <- runif(nrow(lung), 0.5, 2)
+#'
+#' # risktable_counts = "both" (the default) shows each risk table cell as
+#' # "weighted (unweighted)", so the actual number of observed events/at-risk
+#' # subjects stays visible alongside the weighted ("effective") Ns used for
+#' # the curves/CI/HR
+#' plot_survival_curves(
+#'     surv_obj,
+#'     lung,
+#'     group_var = "sex",
+#'     weights = "iptw",
+#'     risktable_counts = "both"
+#' ) + theme_bw2()
+#'
+#' # Weighted curves with only the (rounded) weighted Ns in the risk table
+#' plot_survival_curves(
+#'     surv_obj,
+#'     lung,
+#'     group_var = "sex",
+#'     weights = "iptw",
+#'     risktable_counts = "weighted"
+#' ) + theme_bw2()
+#'
+#' # Weighted curves with only the raw unweighted Ns in the risk table
+#' plot_survival_curves(
+#'     surv_obj,
+#'     lung,
+#'     group_var = "sex",
+#'     weights = "iptw",
+#'     risktable_counts = "unweighted"
+#' ) + theme_bw2()
+#'
 #' @return A ggsurvfit ggplot object.
 #'
 #' @importFrom survival Surv coxph survdiff
@@ -104,6 +174,7 @@ plot_survival_curves <- function(
     surv_obj,
     data,
     group_var = "met_exercise_guidelines",
+    weights = NULL,
     confidence_bands = TRUE,
     line_size = 1,
     time_limits = NULL,
@@ -117,6 +188,7 @@ plot_survival_curves <- function(
     type = c("survival", "risk"),
     show_risktable = TRUE,
     risktable_stats = c("n.risk", "cum.event"),
+    risktable_counts = c("both", "weighted", "unweighted"),
     ristable_text_size = 3.5
 ) {
     stopifnot(
@@ -126,6 +198,12 @@ plot_survival_curves <- function(
         is.character(group_var),
         length(group_var) == 1,
         group_var %in% names(data),
+
+        (is.null(weights) ||
+            (is.character(weights) &&
+                length(weights) == 1 &&
+                weights %in% names(data)) ||
+            (is.numeric(weights) && length(weights) == nrow(data))),
 
         (is.null(time_limits) ||
             (is.numeric(time_limits) &&
@@ -178,6 +256,9 @@ plot_survival_curves <- function(
                     "n.censor"
                 )
         ),
+
+        is.character(risktable_counts),
+        risktable_counts %in% c("weighted", "unweighted", "both"),
         is.numeric(ristable_text_size),
         length(ristable_text_size) == 1,
         is.finite(ristable_text_size),
@@ -191,6 +272,7 @@ plot_survival_curves <- function(
     )
 
     type <- match.arg(type)
+    risktable_counts <- match.arg(risktable_counts)
 
     if (is.null(y_label)) {
         y_label <- if (identical(type, "survival")) {
@@ -200,13 +282,42 @@ plot_survival_curves <- function(
         }
     }
 
+    has_weights <- !is.null(weights)
+
     d_sub <- data
     d_sub$.surv_obj <- surv_obj
+
+    if (has_weights) {
+        d_sub$.weights <- if (is.character(weights)) {
+            data[[weights]]
+        } else {
+            weights
+        }
+
+        if (!is.numeric(d_sub$.weights)) {
+            stop(
+                "weights must be numeric, or the name of a numeric column in data"
+            )
+        }
+    }
 
     keep <- !is.na(d_sub$.surv_obj) &
         !is.na(d_sub[[group_var]])
 
+    if (has_weights) {
+        keep <- keep & !is.na(d_sub$.weights)
+    }
+
     d_sub <- d_sub[keep, , drop = FALSE]
+
+    if (has_weights && any(d_sub$.weights <= 0)) {
+        stop(
+            "weights must be strictly positive (survival::coxph() requires ",
+            "weights > 0; zero weights are also ambiguous in ",
+            "survival::survfit.formula() and are better handled by ",
+            "filtering the data before calling this function)"
+        )
+    }
 
     if (nrow(d_sub) == 0) {
         stop("No rows remaining after filtering NA surv or group")
@@ -307,7 +418,9 @@ plot_survival_curves <- function(
 
         fit <- survival::coxph(
             cox_formula,
-            data = d_sub
+            data = d_sub,
+            weights = if (has_weights) d_sub$.weights else NULL,
+            robust = has_weights
         )
 
         fit_res <- broom::tidy(
@@ -333,16 +446,31 @@ plot_survival_curves <- function(
             sprintf(".surv_obj ~ `%s`", group_var)
         )
 
-        sd <- survival::survdiff(
-            sd_formula,
-            data = d_sub
-        )
+        if (has_weights) {
+            # survival::survdiff() has no weights argument, so the
+            # log-rank test is replaced with a robust Wald test from a
+            # weighted Cox model for the omnibus group comparison
+            fit <- survival::coxph(
+                sd_formula,
+                data = d_sub,
+                weights = d_sub$.weights,
+                robust = TRUE
+            )
 
-        p_val <- stats::pchisq(
-            sd$chisq,
-            length(sd$n) - 1,
-            lower.tail = FALSE
-        )
+            p_val <- summary(fit)$waldtest["pvalue"]
+        } else {
+            sd <- survival::survdiff(
+                sd_formula,
+                data = d_sub
+            )
+
+            # survdiff() already computes the correct p-value itself
+            # (its degrees of freedom is the number of groups with
+            # nonzero *expected* events minus 1, which is only
+            # equivalent to length(sd$n) - 1 when every group has at
+            # least one expected event)
+            p_val <- sd$pvalue
+        }
 
         annot_label <- format_pvalue(p_val)
     }
@@ -357,7 +485,8 @@ plot_survival_curves <- function(
 
     kmplot <- ggsurvfit::survfit2(
         surv_formula,
-        data = d_sub
+        data = d_sub,
+        weights = if (has_weights) d_sub$.weights else NULL
     ) |>
         ggsurvfit::ggsurvfit(type = type, size = line_size)
 
@@ -366,11 +495,110 @@ plot_survival_curves <- function(
     }
 
     if (show_risktable) {
-        kmplot <- kmplot +
-            ggsurvfit::add_risktable(
-                risktable_stats = risktable_stats,
-                size = ristable_text_size
+        if (has_weights) {
+            risktable_labels <- c(
+                n.risk = "At Risk",
+                n.event = "Interval Events",
+                n.censor = "Interval Censored",
+                cum.event = "Events",
+                cum.censor = "Censored"
             )
+
+            if (risktable_counts %in% c("unweighted", "both")) {
+                # weighted and unweighted survfit2 fits land on identical
+                # time/strata grids (weights don't change event times or
+                # grouping, only risk-set sizes), so the unweighted stats
+                # can be attached row-for-row to kmplot$data
+                unweighted_data <- ggsurvfit::ggsurvfit(
+                    ggsurvfit::survfit2(surv_formula, data = d_sub)
+                )$data
+            }
+
+            if (risktable_counts == "weighted") {
+                # weighted n.risk/n.event etc. are non-integer; round them
+                # so the risk table stays legible (see
+                # ggsurvfit::add_risktable() "Formatting Numbers" docs)
+                risktable_stats_fmt <- sprintf(
+                    "{trimws(format(round(%s, 1), nsmall = 1))}",
+                    risktable_stats
+                )
+
+                stats_label <- unname(risktable_labels[risktable_stats])
+            } else if (risktable_counts == "unweighted") {
+                # add_risktable() always recomputes cum.event/cum.censor
+                # as cumsum(n.event)/cumsum(n.censor), so overwriting
+                # those columns directly would be silently discarded;
+                # overwrite the underlying n.risk/n.event/n.censor
+                # instead and let the cumulative stats derive naturally
+                base_cols <- c("n.risk", "n.event", "n.censor")
+
+                kmplot$data[base_cols] <- unweighted_data[base_cols]
+
+                risktable_stats_fmt <- risktable_stats
+
+                stats_label <- unname(risktable_labels[risktable_stats])
+            } else {
+                # "both": add_risktable() always recomputes
+                # cum.event/cum.censor as cumsum(n.event)/cumsum(n.censor)
+                # and fills gaps in n.risk *upward* but every other column
+                # *downward*, so n.risk has to be combined into its native
+                # column (inheriting the correct upward fill) rather than a
+                # side column; cum.event/cum.censor happen to be exact via
+                # a side column since cumulative counts use the same
+                # downward fill as the side-column default. Raw n.event/
+                # n.censor can't be written to their native columns
+                # (cumsum() would error on the resulting character vector),
+                # so they use the side-column approach too, which is only
+                # guaranteed exact at actual event/censoring times (use
+                # cum.event/cum.censor for exact "both" counts elsewhere)
+                if ("n.risk" %in% risktable_stats) {
+                    kmplot$data$n.risk <- sprintf(
+                        "%s (%s)",
+                        trimws(
+                            format(round(kmplot$data$n.risk, 1), nsmall = 1)
+                        ),
+                        unweighted_data$n.risk
+                    )
+                }
+
+                other_stats <- setdiff(risktable_stats, "n.risk")
+
+                if (length(other_stats) > 0) {
+                    unweighted_cols <- paste0(".unweighted_", other_stats)
+
+                    kmplot$data[unweighted_cols] <-
+                        unweighted_data[other_stats]
+                }
+
+                risktable_stats_fmt <- ifelse(
+                    risktable_stats == "n.risk",
+                    "{n.risk}",
+                    sprintf(
+                        "{trimws(format(round(%s, 1), nsmall = 1))} ({.unweighted_%s})",
+                        risktable_stats,
+                        risktable_stats
+                    )
+                )
+
+                stats_label <- paste0(
+                    unname(risktable_labels[risktable_stats]),
+                    ": Weighted (Raw)"
+                )
+            }
+
+            kmplot <- kmplot +
+                ggsurvfit::add_risktable(
+                    risktable_stats = risktable_stats_fmt,
+                    stats_label = stats_label,
+                    size = ristable_text_size
+                )
+        } else {
+            kmplot <- kmplot +
+                ggsurvfit::add_risktable(
+                    risktable_stats = risktable_stats,
+                    size = ristable_text_size
+                )
+        }
     }
 
     kmplot <- kmplot +
