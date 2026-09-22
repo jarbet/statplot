@@ -697,6 +697,7 @@ testthat::test_that("weighted risk table builds without error for all statistics
                 dat,
                 group_var = "sex",
                 weights = "w",
+                risktable_counts = "unweighted",
                 risktable_stats = c(
                     "n.risk",
                     "cum.event",
@@ -895,7 +896,7 @@ testthat::test_that("risktable_counts = 'both' works with only cum.event request
     )
 })
 
-testthat::test_that("risktable_counts = 'both' works with all supported statistics", {
+testthat::test_that("risktable_counts = 'both' works with all statistics it supports", {
     dat <- survival::lung
 
     dat$sex <- factor(dat$sex)
@@ -914,14 +915,77 @@ testthat::test_that("risktable_counts = 'both' works with all supported statisti
                 group_var = "sex",
                 weights = "w",
                 risktable_counts = "both",
-                risktable_stats = c(
-                    "n.risk",
-                    "cum.event",
-                    "cum.censor",
-                    "n.event",
-                    "n.censor"
-                )
+                risktable_stats = c("n.risk", "cum.event", "cum.censor")
             )
+        )
+    )
+})
+
+testthat::test_that("risktable_counts = 'both' with n.event/n.censor throws an error", {
+    dat <- survival::lung
+
+    dat$sex <- factor(dat$sex)
+    dat$w <- stats::runif(nrow(dat), 0.5, 2)
+
+    surv_obj <- with(
+        dat,
+        survival::Surv(time, status == 2)
+    )
+
+    # n.event/n.censor are interval totals in the risk table, but the
+    # unweighted side of "both" can only be attached row-wise at actual
+    # event/censoring times, so it can't reproduce the interval total;
+    # this combination is rejected rather than silently shown wrong
+    testthat::expect_error(
+        plot_survival_curves(
+            surv_obj,
+            dat,
+            group_var = "sex",
+            weights = "w",
+            risktable_counts = "both",
+            risktable_stats = c("n.risk", "n.event")
+        ),
+        "n\\.event"
+    )
+
+    testthat::expect_error(
+        plot_survival_curves(
+            surv_obj,
+            dat,
+            group_var = "sex",
+            weights = "w",
+            risktable_counts = "both",
+            risktable_stats = c("n.risk", "n.censor")
+        ),
+        "n\\.censor"
+    )
+
+    # weighted/unweighted-only modes are unaffected, since there's no
+    # side column to misalign with the interval binning
+    testthat::expect_no_error(
+        ggplot2::ggplot_build(
+            plot_survival_curves(
+                surv_obj,
+                dat,
+                group_var = "sex",
+                weights = "w",
+                risktable_counts = "weighted",
+                risktable_stats = c("n.event", "n.censor")
+            )
+        )
+    )
+
+    # the error only applies when the risk table (and thus
+    # risktable_stats) is actually used
+    testthat::expect_no_error(
+        plot_survival_curves(
+            surv_obj,
+            dat,
+            group_var = "sex",
+            weights = "w",
+            risktable_counts = "both",
+            risktable_stats = c("n.event", "n.censor"),
+            show_risktable = FALSE
         )
     )
 })
@@ -1032,4 +1096,113 @@ testthat::test_that("weights need not sum to 1 or to nrow(data)", {
             weights = rep(1000, nrow(dat))
         )
     )
+})
+
+# helper: pull the stats_label vector out of a plot's add_risktable() layer
+get_risktable_labels <- function(p) {
+    for (l in p$layers) {
+        a <- attr(l, "add_risktable")
+        if (!is.null(a)) {
+            return(a$stats_label)
+        }
+    }
+    NULL
+}
+
+testthat::test_that("risktable_counts = 'weighted' labels indicate weighting", {
+    dat <- survival::lung
+
+    dat$sex <- factor(dat$sex, labels = c("Male", "Female"))
+    dat$w <- stats::runif(nrow(dat), 0.5, 2)
+
+    surv_obj <- with(
+        dat,
+        survival::Surv(time, status == 2)
+    )
+
+    p <- plot_survival_curves(
+        surv_obj,
+        dat,
+        group_var = "sex",
+        weights = "w",
+        risktable_counts = "weighted",
+        risktable_stats = c("n.risk", "cum.event")
+    )
+
+    testthat::expect_equal(
+        get_risktable_labels(p),
+        c("At Risk: Weighted", "Events: Weighted")
+    )
+})
+
+testthat::test_that("risktable_counts = 'unweighted' labels have no weighting suffix", {
+    dat <- survival::lung
+
+    dat$sex <- factor(dat$sex, labels = c("Male", "Female"))
+    dat$w <- stats::runif(nrow(dat), 0.5, 2)
+
+    surv_obj <- with(
+        dat,
+        survival::Surv(time, status == 2)
+    )
+
+    p <- plot_survival_curves(
+        surv_obj,
+        dat,
+        group_var = "sex",
+        weights = "w",
+        risktable_counts = "unweighted",
+        risktable_stats = c("n.risk", "cum.event")
+    )
+
+    testthat::expect_equal(
+        get_risktable_labels(p),
+        c("At Risk", "Events")
+    )
+})
+
+testthat::test_that("risktable_counts = 'both' labels indicate weighted/raw", {
+    dat <- survival::lung
+
+    dat$sex <- factor(dat$sex, labels = c("Male", "Female"))
+    dat$w <- stats::runif(nrow(dat), 0.5, 2)
+
+    surv_obj <- with(
+        dat,
+        survival::Surv(time, status == 2)
+    )
+
+    p <- plot_survival_curves(
+        surv_obj,
+        dat,
+        group_var = "sex",
+        weights = "w",
+        risktable_counts = "both",
+        risktable_stats = c("n.risk", "cum.event")
+    )
+
+    testthat::expect_equal(
+        get_risktable_labels(p),
+        c("At Risk: Weighted (Raw)", "Events: Weighted (Raw)")
+    )
+})
+
+testthat::test_that("unweighted risktable labels are unaffected by risktable_counts default", {
+    dat <- survival::lung
+
+    dat$sex <- factor(dat$sex)
+
+    surv_obj <- with(
+        dat,
+        survival::Surv(time, status == 2)
+    )
+
+    p <- plot_survival_curves(
+        surv_obj,
+        dat,
+        group_var = "sex",
+        risktable_stats = c("n.risk", "cum.event")
+    )
+
+    testthat::expect_null(get_risktable_labels(p))
 })

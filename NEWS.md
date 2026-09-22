@@ -4,7 +4,7 @@
 
 * `plot_survival_curves`: new `weights` argument to produce weighted survival curves (e.g. inverse probability of treatment weighting, IPTW). Accepts either the name of a numeric column in `data` or a numeric vector of length `nrow(data)`; weights must be strictly positive (matching the requirements of the underlying `survival::coxph()`/`survival::survfit.formula()` calls). When supplied, the Cox model used for the HR/p-value annotation is fit with `robust = TRUE` (sandwich variance), and for `group_var` with more than 2 levels the omnibus p-value is a robust Wald test from a weighted Cox model rather than a log-rank test, since `survival::survdiff()` does not support weights.
 
-* `plot_survival_curves`: new `risktable_counts` argument (default `"both"`) controls how the risk table displays counts when `weights` is supplied: `"weighted"` shows the rounded weighted ("effective") counts, `"unweighted"` shows the raw unweighted subject counts, and `"both"` shows each cell as `"weighted (unweighted)"`.
+* `plot_survival_curves`: new `risktable_counts` argument (default `"both"`) controls how the risk table displays counts when `weights` is supplied: `"weighted"` shows the rounded weighted ("effective") counts with row labels suffixed `": Weighted"` (e.g. `"At Risk: Weighted"`), `"unweighted"` shows the raw unweighted subject counts with unsuffixed labels, and `"both"` shows each cell as `"weighted (unweighted)"` with row labels suffixed `": Weighted (Raw)"`.
 
 ## Changed
 

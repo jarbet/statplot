@@ -45,7 +45,7 @@ Imports:
     rlang,
     scales,
     stringr,
-    survival,
+    survival (>= 3.4-0),
     tibble,
     tidyr,
     tinytable,
