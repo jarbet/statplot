@@ -37,15 +37,24 @@
 #' @param risktable_counts Character, one of \code{"both"} (default),
 #'   \code{"weighted"}, or \code{"unweighted"}. Only relevant when \code{weights}
 #'   is supplied and \code{show_risktable = TRUE}. \code{"weighted"} shows
-#'   the (rounded) weighted counts as usual. \code{"unweighted"} shows the
-#'   raw unweighted subject counts in the risk table instead (curves, CI,
-#'   and the HR/p-value annotation remain weighted). \code{"both"} shows
-#'   each cell as \code{"weighted (unweighted)"}; this is exact for
-#'   \code{"n.risk"}, \code{"cum.event"}, and \code{"cum.censor"}, but for
-#'   the raw (non-cumulative) \code{"n.event"}/\code{"n.censor"} the
-#'   unweighted count in parentheses is only guaranteed exact at actual
-#'   event/censoring times (use \code{"cum.event"}/\code{"cum.censor"} for
-#'   exact \code{"both"} counts at arbitrary risk table times).
+#'   the (rounded) weighted counts, with row labels suffixed
+#'   \code{": Weighted"} (e.g. \code{"At Risk: Weighted"}) to flag that
+#'   they are non-integer "effective" counts rather than raw subject
+#'   counts. \code{"unweighted"} shows the raw unweighted subject counts in
+#'   the risk table instead (curves, CI, and the HR/p-value annotation
+#'   remain weighted), with unsuffixed row labels (e.g. \code{"At Risk"}).
+#'   \code{"both"} shows each cell as \code{"weighted (unweighted)"} with
+#'   row labels suffixed \code{": Weighted (Raw)"}; this is exact for
+#'   \code{"n.risk"}, \code{"cum.event"}, and \code{"cum.censor"}, but the
+#'   raw (non-cumulative) \code{"n.event"}/\code{"n.censor"} counts are
+#'   totals over each displayed risk table interval, and the unweighted
+#'   side of \code{"both"} can only be computed exactly at actual
+#'   event/censoring times. Combining \code{risktable_counts = "both"}
+#'   with \code{risktable_stats} containing \code{"n.event"} or
+#'   \code{"n.censor"} therefore throws an error; use
+#'   \code{"cum.event"}/\code{"cum.censor"} instead (exact in
+#'   \code{"both"} mode), or set \code{risktable_counts} to
+#'   \code{"weighted"} or \code{"unweighted"}.
 #' @param confidence_bands Logical, if \code{TRUE} (default) display confidence bands
 #' @param line_size Numeric, line size for the survival curves (default 1).
 #' @param time_limits Numeric(2), x-axis limits for the plot. If \code{NULL},
@@ -198,6 +207,7 @@ plot_survival_curves <- function(
         is.character(group_var),
         length(group_var) == 1,
         group_var %in% names(data),
+        group_var != ".weights",
 
         (is.null(weights) ||
             (is.character(weights) &&
@@ -283,6 +293,24 @@ plot_survival_curves <- function(
     }
 
     has_weights <- !is.null(weights)
+
+    if (
+        show_risktable &&
+            has_weights &&
+            risktable_counts == "both" &&
+            any(risktable_stats %in% c("n.event", "n.censor"))
+    ) {
+        stop(
+            "risktable_counts = \"both\" cannot be combined with ",
+            "risktable_stats = \"n.event\"/\"n.censor\": the unweighted ",
+            "count shown in parentheses is only exact at actual ",
+            "event/censoring times, not at the risk table's displayed ",
+            "times, so it would misrepresent the true interval total. ",
+            "Use \"cum.event\"/\"cum.censor\" instead (exact in \"both\" ",
+            "mode), or set risktable_counts to \"weighted\" or ",
+            "\"unweighted\"."
+        )
+    }
 
     d_sub <- data
     d_sub$.surv_obj <- surv_obj
@@ -523,7 +551,10 @@ plot_survival_curves <- function(
                     risktable_stats
                 )
 
-                stats_label <- unname(risktable_labels[risktable_stats])
+                stats_label <- paste0(
+                    unname(risktable_labels[risktable_stats]),
+                    ": Weighted"
+                )
             } else if (risktable_counts == "unweighted") {
                 # add_risktable() always recomputes cum.event/cum.censor
                 # as cumsum(n.event)/cumsum(n.censor), so overwriting
@@ -543,14 +574,14 @@ plot_survival_curves <- function(
                 # and fills gaps in n.risk *upward* but every other column
                 # *downward*, so n.risk has to be combined into its native
                 # column (inheriting the correct upward fill) rather than a
-                # side column; cum.event/cum.censor happen to be exact via
-                # a side column since cumulative counts use the same
-                # downward fill as the side-column default. Raw n.event/
-                # n.censor can't be written to their native columns
-                # (cumsum() would error on the resulting character vector),
-                # so they use the side-column approach too, which is only
-                # guaranteed exact at actual event/censoring times (use
-                # cum.event/cum.censor for exact "both" counts elsewhere)
+                # side column; cum.event/cum.censor are exact via a side
+                # column since cumulative counts use the same downward
+                # fill as the side-column default. Raw (non-cumulative)
+                # n.event/n.censor are NOT handled here: they're totals
+                # over each displayed interval (via internal binning in
+                # add_risktable()), which a row-wise side column can't
+                # reproduce, so that combination is rejected above with
+                # an error before reaching this branch
                 if ("n.risk" %in% risktable_stats) {
                     kmplot$data$n.risk <- sprintf(
                         "%s (%s)",

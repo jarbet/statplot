@@ -99,15 +99,24 @@ The default is \code{c("n.risk", "cum.event")}.}
 \item{risktable_counts}{Character, one of \code{"both"} (default),
 \code{"weighted"}, or \code{"unweighted"}. Only relevant when \code{weights}
 is supplied and \code{show_risktable = TRUE}. \code{"weighted"} shows
-the (rounded) weighted counts as usual. \code{"unweighted"} shows the
-raw unweighted subject counts in the risk table instead (curves, CI,
-and the HR/p-value annotation remain weighted). \code{"both"} shows
-each cell as \code{"weighted (unweighted)"}; this is exact for
-\code{"n.risk"}, \code{"cum.event"}, and \code{"cum.censor"}, but for
-the raw (non-cumulative) \code{"n.event"}/\code{"n.censor"} the
-unweighted count in parentheses is only guaranteed exact at actual
-event/censoring times (use \code{"cum.event"}/\code{"cum.censor"} for
-exact \code{"both"} counts at arbitrary risk table times).}
+the (rounded) weighted counts, with row labels suffixed
+\code{": Weighted"} (e.g. \code{"At Risk: Weighted"}) to flag that
+they are non-integer "effective" counts rather than raw subject
+counts. \code{"unweighted"} shows the raw unweighted subject counts in
+the risk table instead (curves, CI, and the HR/p-value annotation
+remain weighted), with unsuffixed row labels (e.g. \code{"At Risk"}).
+\code{"both"} shows each cell as \code{"weighted (unweighted)"} with
+row labels suffixed \code{": Weighted (Raw)"}; this is exact for
+\code{"n.risk"}, \code{"cum.event"}, and \code{"cum.censor"}, but the
+raw (non-cumulative) \code{"n.event"}/\code{"n.censor"} counts are
+totals over each displayed risk table interval, and the unweighted
+side of \code{"both"} can only be computed exactly at actual
+event/censoring times. Combining \code{risktable_counts = "both"}
+with \code{risktable_stats} containing \code{"n.event"} or
+\code{"n.censor"} therefore throws an error; use
+\code{"cum.event"}/\code{"cum.censor"} instead (exact in
+\code{"both"} mode), or set \code{risktable_counts} to
+\code{"weighted"} or \code{"unweighted"}.}
 
 \item{ristable_text_size}{Numeric, text size for the risk table (default 3.5).
 
