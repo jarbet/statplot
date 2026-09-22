@@ -33,7 +33,30 @@
 #'   \code{show_risktable = TRUE}, the risk table statistics are rounded to
 #'   1 decimal place (they are non-integer "effective" counts when
 #'   weighted); see \code{risktable_counts} to show unweighted counts
-#'   instead of or alongside the weighted ones.
+#'   instead of or alongside the weighted ones. When \code{surv_obj} is a
+#'   counting-process (left-truncated) \code{Surv(time1, time2, event)}
+#'   object, the robust sandwich variance needs to know which rows belong
+#'   to the same subject, so \code{id} (below) is \strong{required} in
+#'   that case; it is optional for a plain right-censored
+#'   \code{Surv(time, event)} object, where each row is always its own
+#'   independent subject.
+#' @param id Character name of a subject identifier column in \code{data}.
+#'   Only relevant when \code{weights} is supplied, to correctly cluster
+#'   rows belonging to the same subject for the robust sandwich variance
+#'   used by the weighted Cox model. \strong{Required} when \code{weights}
+#'   is supplied and \code{surv_obj} is a counting-process
+#'   \code{Surv(time1, time2, event)} object (an error is thrown
+#'   otherwise), since such data may have a single subject contributing
+#'   multiple \code{(time1, time2]} intervals (e.g. time-varying
+#'   covariates) — silently guessing that every row is an independent
+#'   subject risks an anti-conservative HR/p-value (standard errors/CIs
+#'   too narrow). If every row of \code{data} is already its own
+#'   independent subject (e.g. simple left truncation with one row per
+#'   subject, such as age at entry/age at exit), add a row-number column
+#'   and pass its name here. Optional (default \code{NULL}) when
+#'   \code{surv_obj} is a plain right-censored \code{Surv(time, event)}
+#'   object, where each row is always its own independent subject and
+#'   \code{NULL} is equivalent to a row-number id.
 #' @param risktable_counts Character, one of \code{"both"} (default),
 #'   \code{"weighted"}, or \code{"unweighted"}. Only relevant when \code{weights}
 #'   is supplied and \code{show_risktable = TRUE}. \code{"weighted"} shows
@@ -184,6 +207,7 @@ plot_survival_curves <- function(
     data,
     group_var = "met_exercise_guidelines",
     weights = NULL,
+    id = NULL,
     confidence_bands = TRUE,
     line_size = 1,
     time_limits = NULL,
@@ -214,6 +238,11 @@ plot_survival_curves <- function(
                 length(weights) == 1 &&
                 weights %in% names(data)) ||
             (is.numeric(weights) && length(weights) == nrow(data))),
+
+        (is.null(id) ||
+            (is.character(id) &&
+                length(id) == 1 &&
+                id %in% names(data))),
 
         (is.null(time_limits) ||
             (is.numeric(time_limits) &&
@@ -295,6 +324,24 @@ plot_survival_curves <- function(
     has_weights <- !is.null(weights)
 
     if (
+        has_weights &&
+            is.null(id) &&
+            identical(attr(surv_obj, "type"), "counting")
+    ) {
+        stop(
+            "id is required when weights is supplied and surv_obj is a ",
+            "counting-process Surv(time1, time2, event) object (e.g. ",
+            "left-truncated data). The robust sandwich variance used for ",
+            "the weighted Cox model needs to know which rows belong to ",
+            "the same subject: pass the name of a subject identifier ",
+            "column via id. If every row of data is already its own ",
+            "independent subject (one row per subject, e.g. simple left ",
+            "truncation with age at entry/age at exit), add a row-number ",
+            "column and pass its name as id."
+        )
+    }
+
+    if (
         show_risktable &&
             has_weights &&
             risktable_counts == "both" &&
@@ -329,11 +376,19 @@ plot_survival_curves <- function(
         }
     }
 
+    if (!is.null(id)) {
+        d_sub$.id <- data[[id]]
+    }
+
     keep <- !is.na(d_sub$.surv_obj) &
         !is.na(d_sub[[group_var]])
 
     if (has_weights) {
         keep <- keep & !is.na(d_sub$.weights)
+    }
+
+    if (!is.null(id)) {
+        keep <- keep & !is.na(d_sub$.id)
     }
 
     d_sub <- d_sub[keep, , drop = FALSE]
@@ -449,7 +504,11 @@ plot_survival_curves <- function(
             data = d_sub,
             weights = if (has_weights) d_sub$.weights else NULL,
             robust = has_weights,
-            id = if (has_weights) seq_len(nrow(d_sub)) else NULL
+            id = if (has_weights) {
+                if (!is.null(id)) d_sub$.id else seq_len(nrow(d_sub))
+            } else {
+                NULL
+            }
         )
 
         fit_res <- broom::tidy(
@@ -484,7 +543,7 @@ plot_survival_curves <- function(
                 data = d_sub,
                 weights = d_sub$.weights,
                 robust = TRUE,
-                id = seq_len(nrow(d_sub))
+                id = if (!is.null(id)) d_sub$.id else seq_len(nrow(d_sub))
             )
 
             p_val <- summary(fit)$waldtest["pvalue"]

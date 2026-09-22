@@ -335,6 +335,7 @@ testthat::test_that("weighted survival curves work with left-truncated (counting
     dat$sex <- factor(dat$sex, labels = c("Male", "Female"))
     dat$entry <- pmax(0, dat$time - 50)
     dat$w <- stats::runif(nrow(dat), 0.5, 2)
+    dat$subj_id <- seq_len(nrow(dat))
 
     surv_obj <- with(
         dat,
@@ -346,7 +347,8 @@ testthat::test_that("weighted survival curves work with left-truncated (counting
             surv_obj,
             dat,
             group_var = "sex",
-            weights = "w"
+            weights = "w",
+            id = "subj_id"
         )
     )
 })
@@ -357,6 +359,7 @@ testthat::test_that("weighted survival curves work with left-truncated (counting
     dat$ph.ecog <- factor(dat$ph.ecog)
     dat$entry <- pmax(0, dat$time - 50)
     dat$w <- stats::runif(nrow(dat), 0.5, 2)
+    dat$subj_id <- seq_len(nrow(dat))
 
     surv_obj <- with(
         dat,
@@ -368,8 +371,32 @@ testthat::test_that("weighted survival curves work with left-truncated (counting
             surv_obj,
             dat,
             group_var = "ph.ecog",
-            weights = "w"
+            weights = "w",
+            id = "subj_id"
         )
+    )
+})
+
+testthat::test_that("weighted counting-process Surv objects without id throws an informative error", {
+    dat <- survival::lung
+
+    dat$sex <- factor(dat$sex, labels = c("Male", "Female"))
+    dat$entry <- pmax(0, dat$time - 50)
+    dat$w <- stats::runif(nrow(dat), 0.5, 2)
+
+    surv_obj <- with(
+        dat,
+        survival::Surv(entry, time, status == 2)
+    )
+
+    testthat::expect_error(
+        plot_survival_curves(
+            surv_obj,
+            dat,
+            group_var = "sex",
+            weights = "w"
+        ),
+        "id is required"
     )
 })
 
@@ -504,6 +531,97 @@ testthat::test_that("weighted HR annotation matches a robust weighted Cox model"
         hr_from_plot,
         round(hr_expected, 2),
         tolerance = 1e-6
+    )
+})
+
+testthat::test_that("id correctly clusters the robust variance for multi-row-per-subject counting-process data", {
+    set.seed(123)
+    n <- 30
+
+    subj_id <- seq_len(n)
+    grp <- rep(c("A", "B"), each = n / 2)
+    w <- stats::runif(n, 0.5, 2)
+    mid <- stats::runif(n, 2, 8)
+    final <- mid + stats::runif(n, 2, 8)
+    event <- stats::rbinom(n, 1, 0.7)
+
+    dat <- rbind(
+        data.frame(
+            subj_id = subj_id,
+            group = grp,
+            w = w,
+            time1 = 0,
+            time2 = mid,
+            event = 0
+        ),
+        data.frame(
+            subj_id = subj_id,
+            group = grp,
+            w = w,
+            time1 = mid,
+            time2 = final,
+            event = event
+        )
+    )
+
+    surv_obj <- with(
+        dat,
+        survival::Surv(time1, time2, event == 1)
+    )
+
+    p <- plot_survival_curves(
+        surv_obj,
+        dat,
+        group_var = "group",
+        weights = "w",
+        id = "subj_id"
+    )
+
+    built <- ggplot2::ggplot_build(p)
+
+    label_layers <- Filter(
+        function(d) "label" %in% names(d),
+        built$data
+    )
+
+    annot_label <- label_layers[[1]]$label
+
+    hr_from_plot <- as.numeric(
+        regmatches(
+            annot_label,
+            regexpr("(?<=HR = )[0-9.]+", annot_label, perl = TRUE)
+        )
+    )
+
+    fit_clustered <- survival::coxph(
+        surv_obj ~ dat$group,
+        weights = dat$w,
+        robust = TRUE,
+        id = dat$subj_id
+    )
+
+    hr_expected <- unname(exp(stats::coef(fit_clustered))[1])
+
+    testthat::expect_equal(
+        hr_from_plot,
+        round(hr_expected, 2),
+        tolerance = 1e-6
+    )
+
+    fit_unclustered <- survival::coxph(
+        surv_obj ~ dat$group,
+        weights = dat$w,
+        robust = TRUE,
+        id = seq_len(nrow(dat))
+    )
+
+    testthat::expect_false(
+        isTRUE(
+            all.equal(
+                unname(summary(fit_clustered)$coefficients[1, "robust se"]),
+                unname(summary(fit_unclustered)$coefficients[1, "robust se"])
+            )
+        )
     )
 })
 
