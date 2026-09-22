@@ -329,6 +329,50 @@ testthat::test_that("left truncated survival objects are supported", {
     )
 })
 
+testthat::test_that("weighted survival curves work with left-truncated (counting-process) Surv objects, 2 groups", {
+    dat <- survival::lung
+
+    dat$sex <- factor(dat$sex, labels = c("Male", "Female"))
+    dat$entry <- pmax(0, dat$time - 50)
+    dat$w <- stats::runif(nrow(dat), 0.5, 2)
+
+    surv_obj <- with(
+        dat,
+        survival::Surv(entry, time, status == 2)
+    )
+
+    testthat::expect_no_error(
+        plot_survival_curves(
+            surv_obj,
+            dat,
+            group_var = "sex",
+            weights = "w"
+        )
+    )
+})
+
+testthat::test_that("weighted survival curves work with left-truncated (counting-process) Surv objects, >2 groups", {
+    dat <- survival::lung
+
+    dat$ph.ecog <- factor(dat$ph.ecog)
+    dat$entry <- pmax(0, dat$time - 50)
+    dat$w <- stats::runif(nrow(dat), 0.5, 2)
+
+    surv_obj <- with(
+        dat,
+        survival::Surv(entry, time, status == 2)
+    )
+
+    testthat::expect_no_error(
+        plot_survival_curves(
+            surv_obj,
+            dat,
+            group_var = "ph.ecog",
+            weights = "w"
+        )
+    )
+})
+
 testthat::test_that("rows with missing group values are removed", {
     dat <- survival::lung
 

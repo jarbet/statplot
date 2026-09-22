@@ -448,7 +448,8 @@ plot_survival_curves <- function(
             cox_formula,
             data = d_sub,
             weights = if (has_weights) d_sub$.weights else NULL,
-            robust = has_weights
+            robust = has_weights,
+            id = if (has_weights) seq_len(nrow(d_sub)) else NULL
         )
 
         fit_res <- broom::tidy(
@@ -482,7 +483,8 @@ plot_survival_curves <- function(
                 sd_formula,
                 data = d_sub,
                 weights = d_sub$.weights,
-                robust = TRUE
+                robust = TRUE,
+                id = seq_len(nrow(d_sub))
             )
 
             p_val <- summary(fit)$waldtest["pvalue"]

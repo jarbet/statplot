@@ -14,6 +14,8 @@
 
 * `plot_survival_curves`: fixed the log-rank p-value degrees of freedom for `group_var` with more than 2 levels. Previously computed as `length(sd$n) - 1`, which is only correct when every group has at least one expected event; now uses `survival::survdiff()`'s own `pvalue`, which correctly handles groups with zero expected events.
 
+* `plot_survival_curves`: fixed an error ("one of cluster or id is needed") when `weights` was supplied together with a left-truncated / counting-process `Surv(time1, time2, event)` object. The weighted `survival::coxph()` calls used for the HR/p-value annotation now pass `id = seq_len(nrow(d_sub))` so the robust sandwich variance treats each row as its own independent subject, matching how `plot_survival_curves()` already treats the data.
+
 # statplot 0.8.0 - 2026-07-16
 
 ## Added
