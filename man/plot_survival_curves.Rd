@@ -9,6 +9,7 @@ plot_survival_curves(
   data,
   group_var = "met_exercise_guidelines",
   weights = NULL,
+  id = NULL,
   confidence_bands = TRUE,
   line_size = 1,
   time_limits = NULL,
@@ -56,7 +57,31 @@ weighted Cox model rather than a log-rank test, since
 \code{show_risktable = TRUE}, the risk table statistics are rounded to
 1 decimal place (they are non-integer "effective" counts when
 weighted); see \code{risktable_counts} to show unweighted counts
-instead of or alongside the weighted ones.}
+instead of or alongside the weighted ones. When \code{surv_obj} is a
+counting-process (left-truncated) \code{Surv(time1, time2, event)}
+object, the robust sandwich variance needs to know which rows belong
+to the same subject, so \code{id} (below) is \strong{required} in
+that case; it is optional for a plain right-censored
+\code{Surv(time, event)} object, where each row is always its own
+independent subject.}
+
+\item{id}{Character name of a subject identifier column in \code{data}.
+Only relevant when \code{weights} is supplied, to correctly cluster
+rows belonging to the same subject for the robust sandwich variance
+used by the weighted Cox model. \strong{Required} when \code{weights}
+is supplied and \code{surv_obj} is a counting-process
+\code{Surv(time1, time2, event)} object (an error is thrown
+otherwise), since such data may have a single subject contributing
+multiple \code{(time1, time2]} intervals (e.g. time-varying
+covariates) — silently guessing that every row is an independent
+subject risks an anti-conservative HR/p-value (standard errors/CIs
+too narrow). If every row of \code{data} is already its own
+independent subject (e.g. simple left truncation with one row per
+subject, such as age at entry/age at exit), add a row-number column
+and pass its name here. Optional (default \code{NULL}) when
+\code{surv_obj} is a plain right-censored \code{Surv(time, event)}
+object, where each row is always its own independent subject and
+\code{NULL} is equivalent to a row-number id.}
 
 \item{confidence_bands}{Logical, if \code{TRUE} (default) display confidence bands}
 

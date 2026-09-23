@@ -6,6 +6,8 @@
 
 * `plot_survival_curves`: new `risktable_counts` argument (default `"both"`) controls how the risk table displays counts when `weights` is supplied: `"weighted"` shows the rounded weighted ("effective") counts with row labels suffixed `": Weighted"` (e.g. `"At Risk: Weighted"`), `"unweighted"` shows the raw unweighted subject counts with unsuffixed labels, and `"both"` shows each cell as `"weighted (unweighted)"` with row labels suffixed `": Weighted (Raw)"`.
 
+* `plot_survival_curves`: new `id` argument, the name of a subject identifier column in `data`. It is required when `weights` is supplied and `surv_obj` is a counting-process `Surv(time1, time2, event)` object (e.g. left-truncated data), so the robust sandwich variance used for the weighted Cox model annotation knows which rows belong to the same subject; without it, a subject contributing more than one `(time1, time2]` interval (e.g. time-varying covariates) would be silently treated as multiple independent subjects, producing an anti-conservative HR/p-value. It is optional for a plain right-censored `Surv(time, event)` object, where each row is always its own independent subject.
+
 ## Changed
 
 * `plot_1_categorical_var`: add option to include category labels as text inside bar segments (TRUE by default)
@@ -13,6 +15,8 @@
 ## Fixed
 
 * `plot_survival_curves`: fixed the log-rank p-value degrees of freedom for `group_var` with more than 2 levels. Previously computed as `length(sd$n) - 1`, which is only correct when every group has at least one expected event; now uses `survival::survdiff()`'s own `pvalue`, which correctly handles groups with zero expected events.
+
+* `plot_survival_curves`: fixed an error ("one of cluster or id is needed") when `weights` was supplied together with a left-truncated / counting-process `Surv(time1, time2, event)` object. This now requires the new `id` argument (a subject identifier column), which is passed through to the weighted `survival::coxph()` calls used for the HR/p-value annotation so the robust sandwich variance correctly clusters by subject rather than assuming every row is independent.
 
 # statplot 0.8.0 - 2026-07-16
 
