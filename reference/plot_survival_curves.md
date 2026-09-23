@@ -16,6 +16,7 @@ plot_survival_curves(
   data,
   group_var = "met_exercise_guidelines",
   weights = NULL,
+  id = NULL,
   confidence_bands = TRUE,
   line_size = 1,
   time_limits = NULL,
@@ -75,7 +76,31 @@ plot_survival_curves(
   does not support weights. When `show_risktable = TRUE`, the risk table
   statistics are rounded to 1 decimal place (they are non-integer
   "effective" counts when weighted); see `risktable_counts` to show
-  unweighted counts instead of or alongside the weighted ones.
+  unweighted counts instead of or alongside the weighted ones. When
+  `surv_obj` is a counting-process (left-truncated)
+  `Surv(time1, time2, event)` object, the robust sandwich variance needs
+  to know which rows belong to the same subject, so `id` (below) is
+  **required** in that case; it is optional for a plain right-censored
+  `Surv(time, event)` object, where each row is always its own
+  independent subject.
+
+- id:
+
+  Character name of a subject identifier column in `data`. Only relevant
+  when `weights` is supplied, to correctly cluster rows belonging to the
+  same subject for the robust sandwich variance used by the weighted Cox
+  model. **Required** when `weights` is supplied and `surv_obj` is a
+  counting-process `Surv(time1, time2, event)` object (an error is
+  thrown otherwise), since such data may have a single subject
+  contributing multiple `(time1, time2]` intervals (e.g. time-varying
+  covariates) — silently guessing that every row is an independent
+  subject risks an anti-conservative HR/p-value (standard errors/CIs too
+  narrow). If every row of `data` is already its own independent subject
+  (e.g. simple left truncation with one row per subject, such as age at
+  entry/age at exit), add a row-number column and pass its name here.
+  Optional (default `NULL`) when `surv_obj` is a plain right-censored
+  `Surv(time, event)` object, where each row is always its own
+  independent subject and `NULL` is equivalent to a row-number id.
 
 - confidence_bands:
 

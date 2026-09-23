@@ -59,6 +59,7 @@ curves and a weighted Cox model annotation; see <code>weights</code> below.</p>
 <span>  <span class="va">data</span>,</span>
 <span>  group_var <span class="op">=</span> <span class="st">"met_exercise_guidelines"</span>,</span>
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  id <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  confidence_bands <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  line_size <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  time_limits <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -117,7 +118,33 @@ weighted Cox model rather than a log-rank test, since
 <code>show_risktable = TRUE</code>, the risk table statistics are rounded to
 1 decimal place (they are non-integer "effective" counts when
 weighted); see <code>risktable_counts</code> to show unweighted counts
-instead of or alongside the weighted ones.</p></dd>
+instead of or alongside the weighted ones. When <code>surv_obj</code> is a
+counting-process (left-truncated) <code>Surv(time1, time2, event)</code>
+object, the robust sandwich variance needs to know which rows belong
+to the same subject, so <code>id</code> (below) is <strong>required</strong> in
+that case; it is optional for a plain right-censored
+<code>Surv(time, event)</code> object, where each row is always its own
+independent subject.</p></dd>
+
+
+<dt id="arg-id">id<a class="anchor" aria-label="anchor" href="#arg-id"></a></dt>
+<dd><p>Character name of a subject identifier column in <code>data</code>.
+Only relevant when <code>weights</code> is supplied, to correctly cluster
+rows belonging to the same subject for the robust sandwich variance
+used by the weighted Cox model. <strong>Required</strong> when <code>weights</code>
+is supplied and <code>surv_obj</code> is a counting-process
+<code>Surv(time1, time2, event)</code> object (an error is thrown
+otherwise), since such data may have a single subject contributing
+multiple <code>(time1, time2]</code> intervals (e.g. time-varying
+covariates) — silently guessing that every row is an independent
+subject risks an anti-conservative HR/p-value (standard errors/CIs
+too narrow). If every row of <code>data</code> is already its own
+independent subject (e.g. simple left truncation with one row per
+subject, such as age at entry/age at exit), add a row-number column
+and pass its name here. Optional (default <code>NULL</code>) when
+<code>surv_obj</code> is a plain right-censored <code>Surv(time, event)</code>
+object, where each row is always its own independent subject and
+<code>NULL</code> is equivalent to a row-number id.</p></dd>
 
 
 <dt id="arg-confidence-bands">confidence_bands<a class="anchor" aria-label="anchor" href="#arg-confidence-bands"></a></dt>
