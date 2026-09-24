@@ -247,7 +247,9 @@ plot_numeric_by_3plusgroups <- function(
         ) +
         ## --- modified: bold title and axis labels like plot_2_categorical_vars ---
         ggplot2::ggtitle(
-            stringr::str_wrap(title, width = 50),
+            # plot.title is rendered via ggtext::element_markdown(), which
+            # ignores "\n"; use "<br>" for line breaks instead
+            gsub("\n", "<br>", stringr::str_wrap(title, width = 50), fixed = TRUE),
             subtitle = p_text
         ) +
         ggplot2::xlab(group_label) +
@@ -267,9 +269,9 @@ plot_numeric_by_3plusgroups <- function(
 
         ggplot2::theme_bw() +
         ggplot2::theme(
-            plot.title = ggplot2::element_text(face = "bold"),
-            axis.title.x = ggplot2::element_text(face = "bold"),
-            axis.title.y = ggplot2::element_text(face = "bold")
+            plot.title = ggtext::element_markdown(face = "bold"),
+            axis.title.x = ggtext::element_markdown(face = "bold"),
+            axis.title.y = ggtext::element_markdown(face = "bold")
         )
 
     # add compact-letter annotations above each group if generated

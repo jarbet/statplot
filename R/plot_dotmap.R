@@ -494,6 +494,15 @@ plot_dotmap <- function(
                 )
             )
         )
+
+    # legend.title is markdown by default (see theme_bw2()/theme_classic2()),
+    # which cannot render a plotmath expression() (used e.g. by the default
+    # fill_label/legend_dotsize_title below); fall back to a plain-text
+    # legend title for this plot when either legend title is an expression()
+    if (is.expression(fill_label) || is.expression(legend_dotsize_title)) {
+        p_obj <- plain_legend_title_theme(p_obj)
+    }
+
     y_levels <- if (is.factor(data[[y]])) {
         levels(data[[y]])
     } else {

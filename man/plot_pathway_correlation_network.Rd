@@ -22,8 +22,8 @@ plot_pathway_correlation_network(
   label_bold = TRUE,
   show_size_legend = TRUE,
   legend_gene_color_title = "Gene effect size",
-  legend_correlation_title = "Correlation\\nbetween genes",
-  legend_gene_size_title = "# connections",
+  legend_correlation_title = "Correlation<br>between genes",
+  legend_gene_size_title = "Num. connections",
   plot_margin = c(1, 1, 1, 1),
   seed = 42L
 )
@@ -89,7 +89,9 @@ size) legend (default \code{"Gene effect size"}).}
 (correlation) legend (default \code{"Correlation\\nbetween genes"}).}
 
 \item{legend_gene_size_title}{character(1) Title for the node size (# connections)
-legend (default \code{"# connections"}).  Ignored when \code{show_size_legend = FALSE}.}
+legend (default \code{"Num. connections"}).  Ignored when \code{show_size_legend = FALSE}. This is rendered via \code{\link[ggtext:element_markdown]{ggtext::element_markdown()}} (legend
+titles support markdown/HTML), so a leading \code{"#"} would otherwise be
+interpreted as a markdown heading; escape it as \code{"\\\\#"} if needed.}
 
 \item{plot_margin}{numeric vector of length 4 giving the plot margin in
 lines: \code{c(top, right, bottom, left)} (default \code{c(1, 1, 1, 1)}).  Increase

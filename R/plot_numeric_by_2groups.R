@@ -340,8 +340,8 @@ plot_numeric_by_2groups <- function(
         ggplot2::theme_bw() +
         ggplot2::theme(
             legend.position = "none",
-            axis.title.x = ggplot2::element_text(face = "bold"),
-            axis.title.y = ggplot2::element_text(face = "bold")
+            axis.title.x = ggtext::element_markdown(face = "bold"),
+            axis.title.y = ggtext::element_markdown(face = "bold")
         )
 
     # -------------------------------------------------------------------------

@@ -53,8 +53,10 @@
 #' @param legend_correlation_title character(1) Title for the edge color
 #'   (correlation) legend (default `"Correlation\nbetween genes"`).
 #' @param legend_gene_size_title character(1) Title for the node size (# connections)
-#'   legend (default `"# connections"`).  Ignored when `show_size_legend =
-#'   FALSE`.
+#'   legend (default `"Num. connections"`).  Ignored when `show_size_legend =
+#'   FALSE`. This is rendered via [ggtext::element_markdown()] (legend
+#'   titles support markdown/HTML), so a leading `"#"` would otherwise be
+#'   interpreted as a markdown heading; escape it as `"\\#"` if needed.
 #' @param plot_margin numeric vector of length 4 giving the plot margin in
 #'   lines: `c(top, right, bottom, left)` (default `c(1, 1, 1, 1)`).  Increase
 #'   the left/right values if node labels are being clipped at the edges.
@@ -108,8 +110,8 @@ plot_pathway_correlation_network <- function(
     label_bold = TRUE,
     show_size_legend = TRUE,
     legend_gene_color_title = "Gene effect size",
-    legend_correlation_title = "Correlation\nbetween genes",
-    legend_gene_size_title = "# connections",
+    legend_correlation_title = "Correlation<br>between genes",
+    legend_gene_size_title = "Num. connections",
     plot_margin = c(1, 1, 1, 1),
     seed = 42L
 ) {
@@ -275,8 +277,8 @@ plot_pathway_correlation_network <- function(
         ) +
         ggplot2::theme_void() +
         ggplot2::theme(
-            plot.title = ggplot2::element_text(face = "bold"),
-            legend.title = ggplot2::element_text(face = "bold"),
+            plot.title = ggtext::element_markdown(face = "bold"),
+            legend.title = ggtext::element_markdown(face = "bold"),
             plot.margin = ggplot2::margin(
                 t = plot_margin[1],
                 r = plot_margin[2],

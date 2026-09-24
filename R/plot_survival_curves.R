@@ -87,6 +87,14 @@
 #' @param annotate_y Numeric, y position for annotation text (default 0.99).
 #' @param annotate_x Numeric or \code{NULL}, x position for annotation; if
 #'   \code{NULL} uses the rightmost value of \code{time_limits}.
+#' @param annotate_hjust Numeric, horizontal justification of the annotation
+#'   text relative to \code{annotate_x} (default 1, i.e. \code{annotate_x} is
+#'   the text's right edge, matching the \code{NULL}/rightmost default of
+#'   \code{annotate_x}). Set to 0 to left-justify the text against
+#'   \code{annotate_x} instead (its left edge), e.g. when placing the
+#'   annotation at the left side of the plot -- with the default \code{1},
+#'   text placed near the left edge of \code{time_limits} extends further
+#'   left and is clipped out of the plot entirely.
 #' @param x_label Character, label for the x axis.
 #' @param y_label Character, label for the y axis. If \code{NULL}, a default
 #'   label is chosen based on \code{type}.
@@ -214,6 +222,7 @@ plot_survival_curves <- function(
     x_breaks = NULL,
     annotate_y = 0.99,
     annotate_x = NULL,
+    annotate_hjust = 1,
     x_label = "Time (units??)",
     y_label = NULL,
     title = NULL,
@@ -264,6 +273,10 @@ plot_survival_curves <- function(
             (is.numeric(annotate_x) &&
                 length(annotate_x) == 1 &&
                 is.finite(annotate_x))),
+
+        is.numeric(annotate_hjust),
+        length(annotate_hjust) == 1,
+        is.finite(annotate_hjust),
 
         is.character(x_label),
         length(x_label) == 1,
@@ -720,7 +733,7 @@ plot_survival_curves <- function(
                 y = y,
                 label = label
             ),
-            hjust = 1,
+            hjust = annotate_hjust,
             vjust = 1,
             size = 3.5,
             fill = NA,

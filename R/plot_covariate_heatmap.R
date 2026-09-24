@@ -360,7 +360,7 @@ plot_covariate_heatmap <- function(
                     y = if (isTRUE(show_column_names)) nm else NULL
                 ) +
                 ggplot2::theme(
-                    axis.title.y = ggplot2::element_text(
+                    axis.title.y = ggtext::element_markdown(
                         angle = 0,
                         vjust = 0.5,
                         hjust = if (column_labels_side == "right") 0 else 1,
@@ -434,12 +434,12 @@ plot_covariate_heatmap <- function(
                     }
                 ) +
                 ggplot2::theme(
-                    plot.title = ggplot2::element_text(
+                    plot.title = ggtext::element_markdown(
                         hjust = 0.5,
                         size = 10,
                         margin = ggplot2::margin(b = 2)
                     ),
-                    plot.caption = ggplot2::element_text(
+                    plot.caption = ggtext::element_markdown(
                         hjust = 0.5,
                         size = 10,
                         margin = ggplot2::margin(t = 2)

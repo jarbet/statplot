@@ -196,8 +196,8 @@ plot_effectsize_01_intervals <- function(
         ) +
         ggplot2::theme_bw() +
         ggplot2::theme(
-            plot.title = ggplot2::element_text(face = "bold"),
-            axis.title.x = ggplot2::element_text(face = "bold")
+            plot.title = ggtext::element_markdown(face = "bold"),
+            axis.title.x = ggtext::element_markdown(face = "bold")
         )
 
     return(p)

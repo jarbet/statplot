@@ -90,12 +90,12 @@ plot_data_avail_by_group <- function(
             ggplot2::labs(x = xlabel) +
             ggplot2::theme(
                 # when axis is placed at top, set axis.title.x.top and add bottom margin
-                axis.title.x.top = ggplot2::element_text(
+                axis.title.x.top = ggtext::element_markdown(
                     face = "bold",
                     margin = ggplot2::margin(b = xlabel_top_margin)
                 ),
                 # keep fallback for bottom-positioned x axis
-                axis.title.x = ggplot2::element_text(
+                axis.title.x = ggtext::element_markdown(
                     face = "bold",
                     margin = ggplot2::margin(t = 6)
                 )
@@ -107,7 +107,7 @@ plot_data_avail_by_group <- function(
     if (!is.null(ylabel)) {
         p <- p +
             ggplot2::labs(y = ylabel) +
-            ggplot2::theme(axis.title.y = ggplot2::element_text(face = "bold"))
+            ggplot2::theme(axis.title.y = ggtext::element_markdown(face = "bold"))
     } else {
         p <- p + ggplot2::labs(y = NULL)
     }

@@ -22,7 +22,7 @@ plot_pathways(
   gene_color = "grey30",
   gene_label_size = 2.5,
   title = "Effect sizes of genes in selected pathways",
-  legend_pathway_size_title = "Num. genes\\n in pathway",
+  legend_pathway_size_title = "Num. genes<br>in pathway",
   legend_fixed_dot_size = NULL,
   legend_color_title = "Gene effect size",
   colorkey_breaks = NULL,
@@ -111,7 +111,13 @@ Must be a single positive value.}
 \item{title}{character(1) Plot title (default \code{"Effect sizes of genes in selected pathways"}).}
 
 \item{legend_pathway_size_title}{character(1) Title for the node-size legend (default
-\code{"Num. genes\\n in pathway"}).  Set to \code{NULL} to show the legend without a title.}
+\code{"Num. genes<br>in pathway"}).  Set to \code{NULL} to show the legend without a title.
+This is rendered via \code{\link[ggtext:element_markdown]{ggtext::element_markdown()}} (legend titles support
+markdown/HTML), so use \code{"<br>"} rather than \code{"\\n"} for a line break;
+\code{"\\n"} is silently ignored by markdown rendering. If \code{legend_color_title}
+is a plotmath \code{expression()}, this plot's legend titles fall back to
+plain text instead (see \code{legend_color_title}), and any \code{"<br>"} here is
+automatically converted to \code{"\\n"} so the line break still renders.}
 
 \item{legend_fixed_dot_size}{numeric vector of gene-count values whose dot
 sizes should appear as keys in the size legend (default \code{NULL},
@@ -124,7 +130,12 @@ finite and positive.}
 
 \item{legend_color_title}{character(1) or expression() Title for the color scale legend
 (default \code{"Gene effect size"}).  Set to \code{NULL} to show the legend without a
-title. Use \code{expression()} to supply plotmath expressions.}
+title. Use \code{expression()} to supply plotmath expressions. Legend titles
+are normally rendered via \code{\link[ggtext:element_markdown]{ggtext::element_markdown()}} (so a character
+string can contain markdown/HTML), but \code{element_markdown()} cannot
+render an \code{expression()}; when \code{legend_color_title} is an \code{expression()},
+this plot's legend titles (including \code{legend_pathway_size_title}) fall
+back to plain text for the whole plot instead.}
 
 \item{colorkey_breaks}{numeric vector of values at which tick marks and
 labels are drawn on the color legend (default \code{NULL}, automatic).  For

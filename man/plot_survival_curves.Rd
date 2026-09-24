@@ -16,6 +16,7 @@ plot_survival_curves(
   x_breaks = NULL,
   annotate_y = 0.99,
   annotate_x = NULL,
+  annotate_hjust = 1,
   x_label = "Time (units??)",
   y_label = NULL,
   title = NULL,
@@ -97,6 +98,15 @@ breaks are selected automatically.}
 
 \item{annotate_x}{Numeric or \code{NULL}, x position for annotation; if
 \code{NULL} uses the rightmost value of \code{time_limits}.}
+
+\item{annotate_hjust}{Numeric, horizontal justification of the annotation
+text relative to \code{annotate_x} (default 1, i.e. \code{annotate_x} is
+the text's right edge, matching the \code{NULL}/rightmost default of
+\code{annotate_x}). Set to 0 to left-justify the text against
+\code{annotate_x} instead (its left edge), e.g. when placing the
+annotation at the left side of the plot -- with the default \code{1},
+text placed near the left edge of \code{time_limits} extends further
+left and is clipped out of the plot entirely.}
 
 \item{x_label}{Character, label for the x axis.}
 

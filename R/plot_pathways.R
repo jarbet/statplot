@@ -66,7 +66,13 @@
 #'   Must be a single positive value.
 #' @param title character(1) Plot title (default `"Effect sizes of genes in selected pathways"`).
 #' @param legend_pathway_size_title character(1) Title for the node-size legend (default
-#'   `"Num. genes\n in pathway"`).  Set to `NULL` to show the legend without a title.
+#'   `"Num. genes<br>in pathway"`).  Set to `NULL` to show the legend without a title.
+#'   This is rendered via [ggtext::element_markdown()] (legend titles support
+#'   markdown/HTML), so use `"<br>"` rather than `"\n"` for a line break;
+#'   `"\n"` is silently ignored by markdown rendering. If `legend_color_title`
+#'   is a plotmath `expression()`, this plot's legend titles fall back to
+#'   plain text instead (see `legend_color_title`), and any `"<br>"` here is
+#'   automatically converted to `"\n"` so the line break still renders.
 #' @param legend_fixed_dot_size numeric vector of gene-count values whose dot
 #'   sizes should appear as keys in the size legend (default `NULL`,
 #'   automatic).  For example, `c(50, 100, 200)` causes exactly those three
@@ -77,7 +83,12 @@
 #'   finite and positive.
 #' @param legend_color_title character(1) or expression() Title for the color scale legend
 #'   (default `"Gene effect size"`).  Set to `NULL` to show the legend without a
-#'   title. Use `expression()` to supply plotmath expressions.
+#'   title. Use `expression()` to supply plotmath expressions. Legend titles
+#'   are normally rendered via [ggtext::element_markdown()] (so a character
+#'   string can contain markdown/HTML), but `element_markdown()` cannot
+#'   render an `expression()`; when `legend_color_title` is an `expression()`,
+#'   this plot's legend titles (including `legend_pathway_size_title`) fall
+#'   back to plain text for the whole plot instead.
 #' @param colorkey_breaks numeric vector of values at which tick marks and
 #'   labels are drawn on the color legend (default `NULL`, automatic).  For
 #'   example, `c(-2, -1, 0, 1, 2)` to show five labeled ticks.  When
@@ -250,7 +261,7 @@ plot_pathways <- function(
     gene_color = "grey30",
     gene_label_size = 2.5,
     title = "Effect sizes of genes in selected pathways",
-    legend_pathway_size_title = "Num. genes\n in pathway",
+    legend_pathway_size_title = "Num. genes<br>in pathway",
     legend_fixed_dot_size = NULL,
     legend_color_title = "Gene effect size",
     colorkey_breaks = NULL,
@@ -512,8 +523,8 @@ plot_pathways <- function(
         ggplot2::ggtitle(title) +
         ggplot2::labs(subtitle = subtitle) +
         ggplot2::theme(
-            plot.title = ggplot2::element_text(face = "bold"),
-            legend.title = ggplot2::element_text(face = "bold"),
+            plot.title = ggtext::element_markdown(face = "bold"),
+            legend.title = ggtext::element_markdown(face = "bold"),
             plot.margin = ggplot2::margin(
                 t = plot_margin[1],
                 r = plot_margin[2],
@@ -678,6 +689,29 @@ plot_pathways <- function(
             color = pathway_color,
             size = pathway_label_size
         )
+
+    # legend.title is markdown by default (see theme_bw2()/theme_classic2()),
+    # which cannot render a plotmath expression() such as a user-supplied
+    # legend_color_title; fall back to a plain-text legend title in that case
+    if (is.expression(legend_color_title)) {
+        if (!is.null(legend_pathway_size_title)) {
+            # legend.title is about to become plain text for this plot, so
+            # "<br>" (the markdown line break used above) would otherwise show
+            # up literally; convert it to a plain-text line break instead
+            p <- p +
+                ggplot2::guides(
+                    size = ggplot2::guide_legend(
+                        title = gsub(
+                            "<br>",
+                            "\n",
+                            legend_pathway_size_title,
+                            fixed = TRUE
+                        )
+                    )
+                )
+        }
+        p <- plain_legend_title_theme(p)
+    }
 
     p
 }

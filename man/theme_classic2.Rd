@@ -4,13 +4,32 @@
 \alias{theme_classic2}
 \title{Bold-styled Classic Theme}
 \usage{
-theme_classic2()
+theme_classic2(markdown = TRUE)
+}
+\arguments{
+\item{markdown}{Logical; if \code{TRUE} (default), the plot title, subtitle,
+caption, axis titles, and legend title use \code{\link[ggtext:element_markdown]{ggtext::element_markdown()}},
+so labels can contain markdown/HTML such as \code{"*italic*"},
+\code{"**bold**"}, or \code{"log<sub>2</sub> FC"}. Use \code{"<br>"} for line breaks in
+these labels instead of \code{"\\n"}, which markdown/HTML rendering ignores.
+Axis tick labels and legend text are left as plain
+\code{\link[ggplot2:element_text]{ggplot2::element_text()}} (they can still be switched to
+\code{\link[ggtext:element_markdown]{ggtext::element_markdown()}} manually, e.g.
+\code{theme(axis.text.x = ggtext::element_markdown(angle = 45))}). Note that
+when \code{TRUE}, further overriding one of the markdown elements (plot
+title/subtitle/caption, axis titles, or legend title) with
+\code{\link[ggplot2:element_text]{ggplot2::element_text()}} errors in ggplot2 >= 4.0 ("Only elements of
+the same class can be merged"); use \code{\link[ggtext:element_markdown]{ggtext::element_markdown()}} for
+that override instead, or set \code{markdown = FALSE} for plain
+\code{\link[ggplot2:element_text]{ggplot2::element_text()}} elements throughout.}
 }
 \value{
 A ggplot2 theme object
 }
 \description{
-A modified ggplot2 classic theme with bold text elements.
+A modified ggplot2 classic theme with bold text elements. By default, the
+plot title, subtitle, caption, axis titles, and legend title support
+markdown/HTML via \code{\link[ggtext:element_markdown]{ggtext::element_markdown()}}.
 }
 \examples{
 library(ggplot2)

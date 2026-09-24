@@ -592,3 +592,56 @@ test_that("vline_legend = FALSE produces no colour scale in combined barplot", {
     barplot <- plt[[2]]
     expect_null(barplot$scales$get_scales("colour"))
 })
+
+# ---------------------------------------------------------------------------
+# Expression legend titles render under a markdown legend.title theme
+# ---------------------------------------------------------------------------
+
+test_that("default expression() legend titles build/render under theme_bw2()", {
+    old_theme <- ggplot2::theme_get()
+    on.exit(ggplot2::theme_set(old_theme), add = TRUE)
+    ggplot2::theme_set(theme_bw2())
+
+    df <- make_dotmap_df()
+    p <- plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p")
+    expect_false(inherits(p$theme$legend.title, "element_markdown"))
+    expect_no_error(ggplot2::ggplotGrob(p))
+})
+
+test_that("user-supplied expression() legend titles also fall back to plain text", {
+    old_theme <- ggplot2::theme_get()
+    on.exit(ggplot2::theme_set(old_theme), add = TRUE)
+    ggplot2::theme_set(theme_bw2())
+
+    df <- make_dotmap_df()
+    p <- plot_dotmap(
+        df,
+        x = "col",
+        y = "row",
+        effect = "effect",
+        p = "p",
+        legend_pvalue_title = "plain text pvalue title",
+        legend_dotsize_title = expression(bold("custom effect size"))
+    )
+    expect_false(inherits(p$theme$legend.title, "element_markdown"))
+    expect_no_error(ggplot2::ggplotGrob(p))
+})
+
+test_that("character legend titles keep markdown legend.title", {
+    old_theme <- ggplot2::theme_get()
+    on.exit(ggplot2::theme_set(old_theme), add = TRUE)
+    ggplot2::theme_set(theme_bw2())
+
+    df <- make_dotmap_df()
+    p <- plot_dotmap(
+        df,
+        x = "col",
+        y = "row",
+        effect = "effect",
+        p = "p",
+        legend_pvalue_title = "*-log<sub>10</sub> pvalue*",
+        legend_dotsize_title = "**Effect size**"
+    )
+    expect_null(p$theme$legend.title)
+    expect_no_error(ggplot2::ggplotGrob(p))
+})
