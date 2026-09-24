@@ -256,6 +256,72 @@ testthat::test_that("invalid time_limits throws error", {
     )
 })
 
+testthat::test_that("annotate_hjust propagates to the annotation layer", {
+    dat <- survival::lung
+
+    dat$sex <- factor(dat$sex)
+
+    surv_obj <- with(
+        dat,
+        survival::Surv(time, status == 2)
+    )
+
+    p <- plot_survival_curves(
+        surv_obj,
+        dat,
+        group_var = "sex",
+        annotate_hjust = 0
+    )
+
+    richtext_layer <- p$layers[[
+        which(vapply(
+            p$layers,
+            function(l) inherits(l$geom, "GeomRichText"),
+            logical(1)
+        ))
+    ]]
+
+    testthat::expect_equal(richtext_layer$aes_params$hjust, 0)
+})
+
+testthat::test_that("invalid annotate_hjust throws error", {
+    dat <- survival::lung
+
+    dat$sex <- factor(dat$sex)
+
+    surv_obj <- with(
+        dat,
+        survival::Surv(time, status == 2)
+    )
+
+    testthat::expect_error(
+        plot_survival_curves(
+            surv_obj,
+            dat,
+            group_var = "sex",
+            annotate_hjust = c(0, 1)
+        )
+    )
+
+    testthat::expect_error(
+        plot_survival_curves(
+            surv_obj,
+            dat,
+            group_var = "sex",
+            annotate_hjust = "left"
+        )
+    )
+
+    testthat::expect_error(
+        plot_survival_curves(
+            surv_obj,
+            dat,
+            group_var = "sex",
+            annotate_hjust = NA_real_
+        )
+    )
+})
+
 testthat::test_that("invalid group variable throws error", {
     dat <- survival::lung
 

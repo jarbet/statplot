@@ -16,7 +16,6 @@ plot_survival_curves(
   x_breaks = NULL,
   annotate_y = 0.99,
   annotate_x = NULL,
-  annotate_hjust = 1,
   x_label = "Time (units??)",
   y_label = NULL,
   title = NULL,
@@ -25,7 +24,8 @@ plot_survival_curves(
   show_risktable = TRUE,
   risktable_stats = c("n.risk", "cum.event"),
   risktable_counts = c("both", "weighted", "unweighted"),
-  ristable_text_size = 3.5
+  ristable_text_size = 3.5,
+  annotate_hjust = 1
 )
 }
 \arguments{
@@ -99,15 +99,6 @@ breaks are selected automatically.}
 \item{annotate_x}{Numeric or \code{NULL}, x position for annotation; if
 \code{NULL} uses the rightmost value of \code{time_limits}.}
 
-\item{annotate_hjust}{Numeric, horizontal justification of the annotation
-text relative to \code{annotate_x} (default 1, i.e. \code{annotate_x} is
-the text's right edge, matching the \code{NULL}/rightmost default of
-\code{annotate_x}). Set to 0 to left-justify the text against
-\code{annotate_x} instead (its left edge), e.g. when placing the
-annotation at the left side of the plot -- with the default \code{1},
-text placed near the left edge of \code{time_limits} extends further
-left and is clipped out of the plot entirely.}
-
 \item{x_label}{Character, label for the x axis.}
 
 \item{y_label}{Character, label for the y axis. If \code{NULL}, a default
@@ -153,7 +144,16 @@ with \code{risktable_stats} containing \code{"n.event"} or
 \code{"both"} mode), or set \code{risktable_counts} to
 \code{"weighted"} or \code{"unweighted"}.}
 
-\item{ristable_text_size}{Numeric, text size for the risk table (default 3.5).
+\item{ristable_text_size}{Numeric, text size for the risk table (default 3.5).}
+
+\item{annotate_hjust}{Numeric, horizontal justification of the annotation
+text relative to \code{annotate_x} (default 1, i.e. \code{annotate_x} is
+the text's right edge, matching the \code{NULL}/rightmost default of
+\code{annotate_x}). Set to 0 to left-justify the text against
+\code{annotate_x} instead (its left edge), e.g. when placing the
+annotation at the left side of the plot -- with the default \code{1},
+text placed near the left edge of \code{time_limits} extends further
+left and is clipped out of the plot entirely.
 
 Available statistics:
 \itemize{

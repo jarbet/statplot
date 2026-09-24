@@ -249,6 +249,35 @@ test_that("merged legend title uses a newline (not <br>) under a plain legend.ti
     expect_no_error(ggplot2::ggplotGrob(p[[1]]))
 })
 
+test_that("merged legend title separator is fixed at call time, not by a later retheme", {
+    # Documents a known limitation (see @param merge_legends): the line-break
+    # character is chosen from theme_get() when plot_covariate_heatmap() is
+    # called. Applying a different theme afterward (e.g. via patchwork's `&`)
+    # does not retroactively fix an already-baked-in separator.
+    old_theme <- ggplot2::theme_get()
+    on.exit(ggplot2::theme_set(old_theme), add = TRUE)
+    ggplot2::theme_set(ggplot2::theme_grey())
+
+    df <- make_cov_df()
+    shared_map <- c(G1 = "#1b9e77", G2 = "#d95f02")
+    df$group2 <- df$group
+    p <- plot_covariate_heatmap(
+        dataset = df,
+        color_map = list(group = shared_map, group2 = shared_map),
+        row_id_var = "sample",
+        merge_legends = TRUE
+    )
+
+    # Retheme afterward, as a normal patchwork user might.
+    p_retheme <- p & theme_bw2(markdown = TRUE)
+
+    fill_scale <- p_retheme[[1]]$scales$get_scales("fill")
+    # The separator baked in at call time is still "\n", even though the
+    # legend.title element is now element_markdown() (which ignores "\n").
+    expect_true(grepl("\n", fill_scale$name, fixed = TRUE))
+    expect_false(grepl("<br>", fill_scale$name, fixed = TRUE))
+})
+
 # ---------------------------------------------------------------------------
 # collect_guides
 # ---------------------------------------------------------------------------
