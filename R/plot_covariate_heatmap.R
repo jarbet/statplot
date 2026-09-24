@@ -279,10 +279,27 @@ plot_covariate_heatmap <- function(
                 group_rep[[v]] <- v
             }
         }
+        # This function never sets legend.title itself, so whether it ends up
+        # markdown (ggtext::element_markdown(), e.g. via
+        # ggplot2::theme_set(theme_bw2())) or plain (ggplot2::element_text(),
+        # e.g. no theme_set() at all, or theme_bw2(markdown = FALSE)) depends
+        # entirely on the currently active default theme. Markdown ignores
+        # "\n" (needs "<br>" for a line break) while plain text ignores
+        # "<br>" (needs "\n"), so pick the separator to match.
+        legend_title_line_break <- if (
+            inherits(ggplot2::theme_get()$legend.title, "element_markdown")
+        ) {
+            "<br>"
+        } else {
+            "\n"
+        }
         for (rep_v in unique(group_rep)) {
             members <- cov_names[group_rep == rep_v]
             if (length(members) > 1L) {
-                titles[[rep_v]] <- paste(members, collapse = "\n")
+                titles[[rep_v]] <- paste(
+                    members,
+                    collapse = legend_title_line_break
+                )
             }
         }
         list(show = show, titles = titles)

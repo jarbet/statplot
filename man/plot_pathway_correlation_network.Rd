@@ -86,7 +86,7 @@ size scale.  Defaults to the 2nd color of the \code{PiYG} palette.}
 size) legend (default \code{"Gene effect size"}).}
 
 \item{legend_correlation_title}{character(1) Title for the edge color
-(correlation) legend (default \code{"Correlation\\nbetween genes"}).}
+(correlation) legend (default \code{"Correlation<br>between genes"}).}
 
 \item{legend_gene_size_title}{character(1) Title for the node size (# connections)
 legend (default \code{"Num. connections"}).  Ignored when \code{show_size_legend = FALSE}. This is rendered via \code{\link[ggtext:element_markdown]{ggtext::element_markdown()}} (legend

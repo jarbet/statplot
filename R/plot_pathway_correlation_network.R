@@ -51,7 +51,7 @@
 #' @param legend_gene_color_title character(1) Title for the node color (effect
 #'   size) legend (default `"Gene effect size"`).
 #' @param legend_correlation_title character(1) Title for the edge color
-#'   (correlation) legend (default `"Correlation\nbetween genes"`).
+#'   (correlation) legend (default `"Correlation<br>between genes"`).
 #' @param legend_gene_size_title character(1) Title for the node size (# connections)
 #'   legend (default `"Num. connections"`).  Ignored when `show_size_legend =
 #'   FALSE`. This is rendered via [ggtext::element_markdown()] (legend
