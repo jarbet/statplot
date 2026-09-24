@@ -28,8 +28,8 @@ plot_pathway_correlation_network(
   label_bold = TRUE,
   show_size_legend = TRUE,
   legend_gene_color_title = "Gene effect size",
-  legend_correlation_title = "Correlation\nbetween genes",
-  legend_gene_size_title = "# connections",
+  legend_correlation_title = "Correlation<br>between genes",
+  legend_gene_size_title = "Num. connections",
   plot_margin = c(1, 1, 1, 1),
   seed = 42L
 )
@@ -131,12 +131,17 @@ plot_pathway_correlation_network(
 - legend_correlation_title:
 
   character(1) Title for the edge color (correlation) legend (default
-  `"Correlation\nbetween genes"`).
+  `"Correlation<br>between genes"`).
 
 - legend_gene_size_title:
 
   character(1) Title for the node size (# connections) legend (default
-  `"# connections"`). Ignored when `show_size_legend = FALSE`.
+  `"Num. connections"`). Ignored when `show_size_legend = FALSE`. This
+  is rendered via
+  [`ggtext::element_markdown()`](https://wilkelab.org/ggtext/reference/element_markdown.html)
+  (legend titles support markdown/HTML), so a leading `"#"` would
+  otherwise be interpreted as a markdown heading; escape it as `"\\#"`
+  if needed.
 
 - plot_margin:
 

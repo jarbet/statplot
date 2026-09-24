@@ -74,7 +74,8 @@ curves and a weighted Cox model annotation; see <code>weights</code> below.</p>
 <span>  show_risktable <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  risktable_stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"n.risk"</span>, <span class="st">"cum.event"</span><span class="op">)</span>,</span>
 <span>  risktable_counts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"both"</span>, <span class="st">"weighted"</span>, <span class="st">"unweighted"</span><span class="op">)</span>,</span>
-<span>  ristable_text_size <span class="op">=</span> <span class="fl">3.5</span></span>
+<span>  ristable_text_size <span class="op">=</span> <span class="fl">3.5</span>,</span>
+<span>  annotate_hjust <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -236,7 +237,18 @@ with <code>risktable_stats</code> containing <code>"n.event"</code> or
 
 
 <dt id="arg-ristable-text-size">ristable_text_size<a class="anchor" aria-label="anchor" href="#arg-ristable-text-size"></a></dt>
-<dd><p>Numeric, text size for the risk table (default 3.5).</p>
+<dd><p>Numeric, text size for the risk table (default 3.5).</p></dd>
+
+
+<dt id="arg-annotate-hjust">annotate_hjust<a class="anchor" aria-label="anchor" href="#arg-annotate-hjust"></a></dt>
+<dd><p>Numeric, horizontal justification of the annotation
+text relative to <code>annotate_x</code> (default 1, i.e. <code>annotate_x</code> is
+the text's right edge, matching the <code>NULL</code>/rightmost default of
+<code>annotate_x</code>). Set to 0 to left-justify the text against
+<code>annotate_x</code> instead (its left edge), e.g. when placing the
+annotation at the left side of the plot – with the default <code>1</code>,
+text placed near the left edge of <code>time_limits</code> extends further
+left and is clipped out of the plot entirely.</p>
 <p>Available statistics:</p><ul><li><p><code>"n.risk"</code> Number of patients at risk</p></li>
 <li><p><code>"cum.event"</code> Cumulative number of observed events</p></li>
 <li><p><code>"cum.censor"</code> Cumulative number of censored observations</p></li>

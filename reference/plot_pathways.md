@@ -29,7 +29,7 @@ plot_pathways(
   gene_color = "grey30",
   gene_label_size = 2.5,
   title = "Effect sizes of genes in selected pathways",
-  legend_pathway_size_title = "Num. genes\n in pathway",
+  legend_pathway_size_title = "Num. genes<br>in pathway",
   legend_fixed_dot_size = NULL,
   legend_color_title = "Gene effect size",
   colorkey_breaks = NULL,
@@ -159,8 +159,16 @@ plot_pathways(
 - legend_pathway_size_title:
 
   character(1) Title for the node-size legend (default
-  `"Num. genes\n in pathway"`). Set to `NULL` to show the legend without
-  a title.
+  `"Num. genes<br>in pathway"`). Set to `NULL` to show the legend
+  without a title. This is rendered via
+  [`ggtext::element_markdown()`](https://wilkelab.org/ggtext/reference/element_markdown.html)
+  (legend titles support markdown/HTML), so use `"<br>"` rather than
+  `"\n"` for a line break; `"\n"` is silently ignored by markdown
+  rendering. If `legend_color_title` is a plotmath
+  [`expression()`](https://rdrr.io/r/base/expression.html), this plot's
+  legend titles fall back to plain text instead (see
+  `legend_color_title`), and any `"<br>"` here is automatically
+  converted to `"\n"` so the line break still renders.
 
 - legend_fixed_dot_size:
 
@@ -177,7 +185,15 @@ plot_pathways(
   character(1) or expression() Title for the color scale legend (default
   `"Gene effect size"`). Set to `NULL` to show the legend without a
   title. Use [`expression()`](https://rdrr.io/r/base/expression.html) to
-  supply plotmath expressions.
+  supply plotmath expressions. Legend titles are normally rendered via
+  [`ggtext::element_markdown()`](https://wilkelab.org/ggtext/reference/element_markdown.html)
+  (so a character string can contain markdown/HTML), but
+  `element_markdown()` cannot render an
+  [`expression()`](https://rdrr.io/r/base/expression.html); when
+  `legend_color_title` is an
+  [`expression()`](https://rdrr.io/r/base/expression.html), this plot's
+  legend titles (including `legend_pathway_size_title`) fall back to
+  plain text for the whole plot instead.
 
 - colorkey_breaks:
 

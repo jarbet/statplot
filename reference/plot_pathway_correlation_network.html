@@ -72,8 +72,8 @@ change).</p>
 <span>  label_bold <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_size_legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  legend_gene_color_title <span class="op">=</span> <span class="st">"Gene effect size"</span>,</span>
-<span>  legend_correlation_title <span class="op">=</span> <span class="st">"Correlation\nbetween genes"</span>,</span>
-<span>  legend_gene_size_title <span class="op">=</span> <span class="st">"# connections"</span>,</span>
+<span>  legend_correlation_title <span class="op">=</span> <span class="st">"Correlation&lt;br&gt;between genes"</span>,</span>
+<span>  legend_gene_size_title <span class="op">=</span> <span class="st">"Num. connections"</span>,</span>
 <span>  plot_margin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">42L</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -175,12 +175,14 @@ size) legend (default <code>"Gene effect size"</code>).</p></dd>
 
 <dt id="arg-legend-correlation-title">legend_correlation_title<a class="anchor" aria-label="anchor" href="#arg-legend-correlation-title"></a></dt>
 <dd><p>character(1) Title for the edge color
-(correlation) legend (default <code>"Correlation\nbetween genes"</code>).</p></dd>
+(correlation) legend (default <code>"Correlation&lt;br&gt;between genes"</code>).</p></dd>
 
 
 <dt id="arg-legend-gene-size-title">legend_gene_size_title<a class="anchor" aria-label="anchor" href="#arg-legend-gene-size-title"></a></dt>
 <dd><p>character(1) Title for the node size (# connections)
-legend (default <code>"# connections"</code>).  Ignored when <code>show_size_legend = FALSE</code>.</p></dd>
+legend (default <code>"Num. connections"</code>).  Ignored when <code>show_size_legend = FALSE</code>. This is rendered via <code><a href="https://wilkelab.org/ggtext/reference/element_markdown.html" class="external-link">ggtext::element_markdown()</a></code> (legend
+titles support markdown/HTML), so a leading <code>"#"</code> would otherwise be
+interpreted as a markdown heading; escape it as <code>"\\#"</code> if needed.</p></dd>
 
 
 <dt id="arg-plot-margin">plot_margin<a class="anchor" aria-label="anchor" href="#arg-plot-margin"></a></dt>

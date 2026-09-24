@@ -43,6 +43,71 @@
 - `plot_1_categorical_var`: add option to include category labels as
   text inside bar segments (TRUE by default)
 
+- `theme_bw2`/`theme_classic2`: new `markdown` argument (default
+  `TRUE`). By default, the plot title, subtitle, caption, axis titles,
+  and legend title are now rendered with
+  [`ggtext::element_markdown()`](https://wilkelab.org/ggtext/reference/element_markdown.html)
+  instead of
+  [`ggplot2::element_text()`](https://ggplot2.tidyverse.org/reference/element.html),
+  so these labels can contain markdown/HTML,
+  e.g. `labs(x = "log<sub>2</sub> FC", title = "*Volcano plot*")`. Axis
+  tick labels and legend text are left as plain text (they are often
+  populated from data values), but can still be switched to markdown
+  manually via `theme(axis.text.x = ggtext::element_markdown())`. Use
+  `"<br>"` instead of `"\n"` for line breaks in labels that go through
+  these markdown elements. Set `markdown = FALSE` to restore the
+  previous plain-text behavior. All of `statplot`’s own plotting
+  functions that bold these elements internally were updated to use
+  [`ggtext::element_markdown()`](https://wilkelab.org/ggtext/reference/element_markdown.html)
+  to remain compatible with the new default;
+  [`plot_upset()`](https://github.com/jarbet/statplot/reference/plot_upset.md)
+  (with `backend = "UpSetR"`, the default) additionally isolates its
+  call to [`UpSetR::upset()`](https://rdrr.io/pkg/UpSetR/man/upset.html)
+  from the global theme, since UpSetR’s own internal theme overrides are
+  incompatible with a globally set `element_markdown()` theme (e.g. via
+  `ggplot2::theme_set(theme_bw2())`).
+
+- `plot_dotmap`/`plot_pathways`: since
+  [`ggtext::element_markdown()`](https://wilkelab.org/ggtext/reference/element_markdown.html)
+  cannot render a plotmath
+  [`expression()`](https://rdrr.io/r/base/expression.html) (it would
+  print literally instead of being parsed as plotmath), these functions
+  now fall back to a plain-text `legend.title` for the whole plot
+  whenever a plotmath
+  [`expression()`](https://rdrr.io/r/base/expression.html) is used for a
+  legend title (`legend_pvalue_title`/`legend_dotsize_title` in
+  `plot_dotmap`; `legend_color_title` in `plot_pathways`), including
+  their own
+  [`expression()`](https://rdrr.io/r/base/expression.html)-based
+  defaults. This is handled by a new internal helper,
+  [`plain_legend_title_theme()`](https://github.com/jarbet/statplot/reference/plain_legend_title_theme.md).
+  In `plot_pathways`, this also converts any `"<br>"` in
+  `legend_pathway_size_title` to `"\n"` so its line break still renders
+  as plain text in that case.
+
+- `plot_covariate_heatmap`: fixed the merged legend title
+  (`merge_legends = TRUE`, when two or more covariates share an
+  identical color mapping) so the combined covariate names still appear
+  on separate lines. Unlike `plot_dotmap`/`plot_pathways`, this function
+  never sets `legend.title` itself, so whether it is markdown (e.g. via
+  `ggplot2::theme_set(theme_bw2())`) or plain text (no
+  [`theme_set()`](https://ggplot2.tidyverse.org/reference/get_theme.html),
+  or `theme_bw2(markdown = FALSE)`) depends entirely on whichever
+  default theme is active when the plot is drawn; the line-break
+  character used to join the covariate names (`"<br>"` for markdown,
+  `"\n"` for plain text) is now chosen to match.
+
+  **Potentially breaking:** in ggplot2 \>= 4.0, further overriding one
+  of these markdown elements with
+  [`ggplot2::element_text()`](https://ggplot2.tidyverse.org/reference/element.html)
+  (e.g. `theme_bw2() + theme(axis.text.x = element_text(angle = 45))` —
+  note `axis.text.x` is not one of the markdown elements, so this
+  example is unaffected; but
+  `theme(plot.title = element_text(size = 14))` is) now errors (“Only
+  elements of the same class can be merged”). Use
+  [`ggtext::element_markdown()`](https://wilkelab.org/ggtext/reference/element_markdown.html)
+  for such overrides instead, or set `markdown = FALSE`.
+
 ### Fixed
 
 - `plot_survival_curves`: fixed the log-rank p-value degrees of freedom

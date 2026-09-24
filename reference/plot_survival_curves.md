@@ -31,7 +31,8 @@ plot_survival_curves(
   show_risktable = TRUE,
   risktable_stats = c("n.risk", "cum.event"),
   risktable_counts = c("both", "weighted", "unweighted"),
-  ristable_text_size = 3.5
+  ristable_text_size = 3.5,
+  annotate_hjust = 1
 )
 ```
 
@@ -190,6 +191,16 @@ plot_survival_curves(
 - ristable_text_size:
 
   Numeric, text size for the risk table (default 3.5).
+
+- annotate_hjust:
+
+  Numeric, horizontal justification of the annotation text relative to
+  `annotate_x` (default 1, i.e. `annotate_x` is the text's right edge,
+  matching the `NULL`/rightmost default of `annotate_x`). Set to 0 to
+  left-justify the text against `annotate_x` instead (its left edge),
+  e.g. when placing the annotation at the left side of the plot – with
+  the default `1`, text placed near the left edge of `time_limits`
+  extends further left and is clipped out of the plot entirely.
 
   Available statistics:
 

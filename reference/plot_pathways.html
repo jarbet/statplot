@@ -72,7 +72,7 @@ co-expression structure.</p>
 <span>  gene_color <span class="op">=</span> <span class="st">"grey30"</span>,</span>
 <span>  gene_label_size <span class="op">=</span> <span class="fl">2.5</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"Effect sizes of genes in selected pathways"</span>,</span>
-<span>  legend_pathway_size_title <span class="op">=</span> <span class="st">"Num. genes\n in pathway"</span>,</span>
+<span>  legend_pathway_size_title <span class="op">=</span> <span class="st">"Num. genes&lt;br&gt;in pathway"</span>,</span>
 <span>  legend_fixed_dot_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  legend_color_title <span class="op">=</span> <span class="st">"Gene effect size"</span>,</span>
 <span>  colorkey_breaks <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -200,7 +200,13 @@ Must be a single positive value.</p></dd>
 
 <dt id="arg-legend-pathway-size-title">legend_pathway_size_title<a class="anchor" aria-label="anchor" href="#arg-legend-pathway-size-title"></a></dt>
 <dd><p>character(1) Title for the node-size legend (default
-<code>"Num. genes\n in pathway"</code>).  Set to <code>NULL</code> to show the legend without a title.</p></dd>
+<code>"Num. genes&lt;br&gt;in pathway"</code>).  Set to <code>NULL</code> to show the legend without a title.
+This is rendered via <code><a href="https://wilkelab.org/ggtext/reference/element_markdown.html" class="external-link">ggtext::element_markdown()</a></code> (legend titles support
+markdown/HTML), so use <code>"&lt;br&gt;"</code> rather than <code>"\n"</code> for a line break;
+<code>"\n"</code> is silently ignored by markdown rendering. If <code>legend_color_title</code>
+is a plotmath <code><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression()</a></code>, this plot's legend titles fall back to
+plain text instead (see <code>legend_color_title</code>), and any <code>"&lt;br&gt;"</code> here is
+automatically converted to <code>"\n"</code> so the line break still renders.</p></dd>
 
 
 <dt id="arg-legend-fixed-dot-size">legend_fixed_dot_size<a class="anchor" aria-label="anchor" href="#arg-legend-fixed-dot-size"></a></dt>
@@ -217,7 +223,12 @@ finite and positive.</p></dd>
 <dt id="arg-legend-color-title">legend_color_title<a class="anchor" aria-label="anchor" href="#arg-legend-color-title"></a></dt>
 <dd><p>character(1) or expression() Title for the color scale legend
 (default <code>"Gene effect size"</code>).  Set to <code>NULL</code> to show the legend without a
-title. Use <code><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression()</a></code> to supply plotmath expressions.</p></dd>
+title. Use <code><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression()</a></code> to supply plotmath expressions. Legend titles
+are normally rendered via <code><a href="https://wilkelab.org/ggtext/reference/element_markdown.html" class="external-link">ggtext::element_markdown()</a></code> (so a character
+string can contain markdown/HTML), but <code>element_markdown()</code> cannot
+render an <code><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression()</a></code>; when <code>legend_color_title</code> is an <code><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression()</a></code>,
+this plot's legend titles (including <code>legend_pathway_size_title</code>) fall
+back to plain text for the whole plot instead.</p></dd>
 
 
 <dt id="arg-colorkey-breaks">colorkey_breaks<a class="anchor" aria-label="anchor" href="#arg-colorkey-breaks"></a></dt>

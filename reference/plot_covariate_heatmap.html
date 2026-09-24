@@ -154,8 +154,18 @@ plot can be combined below a main ggplot. Default <code>FALSE</code>.</p></dd>
 <dt id="arg-merge-legends">merge_legends<a class="anchor" aria-label="anchor" href="#arg-merge-legends"></a></dt>
 <dd><p>Logical. When <code>TRUE</code>, strips sharing the exact
 same color mapping show a legend only on the first occurrence; that
-legend's title joins the covariate names with <code>"\n"</code>. Default
-<code>FALSE</code>.</p></dd>
+legend's title joins the covariate names with a line break. Whether the
+line break is written as <code>"\n"</code> or <code>"&lt;br&gt;"</code> is decided once,
+at call time, from whichever theme is active via
+<code><a href="https://ggplot2.tidyverse.org/reference/get_theme.html" class="external-link">theme_get</a></code> (i.e. whether its <code>legend.title</code> is
+<code><a href="https://wilkelab.org/ggtext/reference/element_markdown.html" class="external-link">element_markdown</a></code> or plain
+<code><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></code>). This title text is fixed into the
+plot at that point, so if you want a markdown-rendered (or plain) merged
+title, call <code><a href="https://ggplot2.tidyverse.org/reference/get_theme.html" class="external-link">theme_set</a></code> with your intended theme
+<strong>before</strong> calling this function – applying a different theme
+afterward (e.g. via patchwork's <code>&amp;</code>) changes how the title is
+rendered but not the line-break character already baked into it, so the
+names can end up joined without a visible break. Default <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-collect-guides">collect_guides<a class="anchor" aria-label="anchor" href="#arg-collect-guides"></a></dt>

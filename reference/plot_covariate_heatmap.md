@@ -107,7 +107,22 @@ plot_covariate_heatmap(
 
   Logical. When `TRUE`, strips sharing the exact same color mapping show
   a legend only on the first occurrence; that legend's title joins the
-  covariate names with `"\n"`. Default `FALSE`.
+  covariate names with a line break. Whether the line break is written
+  as `"\n"` or `"<br>"` is decided once, at call time, from whichever
+  theme is active via
+  [`theme_get`](https://ggplot2.tidyverse.org/reference/get_theme.html)
+  (i.e. whether its `legend.title` is
+  [`element_markdown`](https://wilkelab.org/ggtext/reference/element_markdown.html)
+  or plain
+  [`element_text`](https://ggplot2.tidyverse.org/reference/element.html)).
+  This title text is fixed into the plot at that point, so if you want a
+  markdown-rendered (or plain) merged title, call
+  [`theme_set`](https://ggplot2.tidyverse.org/reference/get_theme.html)
+  with your intended theme **before** calling this function – applying a
+  different theme afterward (e.g. via patchwork's `&`) changes how the
+  title is rendered but not the line-break character already baked into
+  it, so the names can end up joined without a visible break. Default
+  `FALSE`.
 
 - collect_guides:
 
