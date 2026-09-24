@@ -609,4 +609,62 @@ local({
         expect_length(get_colour_scales(p_plain), 1L)
         expect_length(get_colour_scales(p_fill), 1L)
     })
+
+    # ------------------------------------------------------------------
+    # legend_color_title as a plotmath expression()
+    #
+    # legend.title is markdown by default (theme_bw2()/theme_classic2()),
+    # and ggtext::element_markdown() cannot render an expression() (it would
+    # print literally, e.g. "bold(log[2] ~ FC)", instead of being parsed as
+    # plotmath). plot_pathways() falls back to a plain-text legend.title for
+    # the whole plot when legend_color_title is an expression().
+    # ------------------------------------------------------------------
+    test_that("expression() legend_color_title falls back to plain-text legend.title", {
+        old_theme <- ggplot2::theme_get()
+        on.exit(ggplot2::theme_set(old_theme), add = TRUE)
+        ggplot2::theme_set(theme_bw2())
+
+        p <- plot_pathways(
+            gsea_result = res$gsea_result,
+            effect_size = res$gene_vec,
+            show_pathways = 2,
+            max_genes_shown = 8,
+            legend_color_title = expression(bold(log[2] ~ FC))
+        )
+        expect_false(inherits(p$theme$legend.title, "element_markdown"))
+        expect_no_error(ggplot2::ggplotGrob(p))
+    })
+
+    test_that("<br> in legend_pathway_size_title converts to a newline when legend_color_title is an expression()", {
+        old_theme <- ggplot2::theme_get()
+        on.exit(ggplot2::theme_set(old_theme), add = TRUE)
+        ggplot2::theme_set(theme_bw2())
+
+        p <- plot_pathways(
+            gsea_result = res$gsea_result,
+            effect_size = res$gene_vec,
+            show_pathways = 2,
+            max_genes_shown = 8,
+            legend_color_title = expression(bold(log[2] ~ FC)),
+            legend_pathway_size_title = "Num. genes<br>in pathway"
+        )
+        size_guide_title <- p$guides$guides$size$params$title
+        expect_false(grepl("<br>", size_guide_title, fixed = TRUE))
+        expect_true(grepl("\n", size_guide_title, fixed = TRUE))
+    })
+
+    test_that("character legend_color_title keeps markdown legend.title", {
+        old_theme <- ggplot2::theme_get()
+        on.exit(ggplot2::theme_set(old_theme), add = TRUE)
+        ggplot2::theme_set(theme_bw2())
+
+        p <- plot_pathways(
+            gsea_result = res$gsea_result,
+            effect_size = res$gene_vec,
+            show_pathways = 2,
+            max_genes_shown = 8,
+            legend_color_title = "Gene effect size"
+        )
+        expect_s3_class(p$theme$legend.title, "element_markdown")
+    })
 })

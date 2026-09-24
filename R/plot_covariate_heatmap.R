@@ -51,8 +51,18 @@
 #'   plot can be combined below a main ggplot. Default \code{FALSE}.
 #' @param merge_legends Logical. When \code{TRUE}, strips sharing the exact
 #'   same color mapping show a legend only on the first occurrence; that
-#'   legend's title joins the covariate names with \code{"\\n"}. Default
-#'   \code{FALSE}.
+#'   legend's title joins the covariate names with a line break. Whether the
+#'   line break is written as \code{"\\n"} or \code{"<br>"} is decided once,
+#'   at call time, from whichever theme is active via
+#'   \code{\link[ggplot2]{theme_get}} (i.e. whether its \code{legend.title} is
+#'   \code{\link[ggtext]{element_markdown}} or plain
+#'   \code{\link[ggplot2]{element_text}}). This title text is fixed into the
+#'   plot at that point, so if you want a markdown-rendered (or plain) merged
+#'   title, call \code{\link[ggplot2]{theme_set}} with your intended theme
+#'   \strong{before} calling this function -- applying a different theme
+#'   afterward (e.g. via patchwork's \code{&}) changes how the title is
+#'   rendered but not the line-break character already baked into it, so the
+#'   names can end up joined without a visible break. Default \code{FALSE}.
 #' @param x_title Character scalar or NULL. When \code{horizontal = TRUE},
 #'   sets the x-axis title on the bottom-most strip only. Use this instead of
 #'   \code{\& ggplot2::labs(x = ...)} which would apply the title to every
@@ -279,10 +289,30 @@ plot_covariate_heatmap <- function(
                 group_rep[[v]] <- v
             }
         }
+        # This function never sets legend.title itself, so whether it ends up
+        # markdown (ggtext::element_markdown(), e.g. via
+        # ggplot2::theme_set(theme_bw2())) or plain (ggplot2::element_text(),
+        # e.g. no theme_set() at all, or theme_bw2(markdown = FALSE)) depends
+        # entirely on the currently active default theme. Markdown ignores
+        # "\n" (needs "<br>" for a line break) while plain text ignores
+        # "<br>" (needs "\n"), so pick the separator to match theme_get() now.
+        # This is necessarily a call-time decision (the title string is baked
+        # into the scale immediately below); it does NOT track a theme
+        # applied to the returned plot afterward -- see @param merge_legends.
+        legend_title_line_break <- if (
+            inherits(ggplot2::theme_get()$legend.title, "element_markdown")
+        ) {
+            "<br>"
+        } else {
+            "\n"
+        }
         for (rep_v in unique(group_rep)) {
             members <- cov_names[group_rep == rep_v]
             if (length(members) > 1L) {
-                titles[[rep_v]] <- paste(members, collapse = "\n")
+                titles[[rep_v]] <- paste(
+                    members,
+                    collapse = legend_title_line_break
+                )
             }
         }
         list(show = show, titles = titles)
@@ -360,7 +390,7 @@ plot_covariate_heatmap <- function(
                     y = if (isTRUE(show_column_names)) nm else NULL
                 ) +
                 ggplot2::theme(
-                    axis.title.y = ggplot2::element_text(
+                    axis.title.y = ggtext::element_markdown(
                         angle = 0,
                         vjust = 0.5,
                         hjust = if (column_labels_side == "right") 0 else 1,
@@ -434,12 +464,12 @@ plot_covariate_heatmap <- function(
                     }
                 ) +
                 ggplot2::theme(
-                    plot.title = ggplot2::element_text(
+                    plot.title = ggtext::element_markdown(
                         hjust = 0.5,
                         size = 10,
                         margin = ggplot2::margin(b = 2)
                     ),
-                    plot.caption = ggplot2::element_text(
+                    plot.caption = ggtext::element_markdown(
                         hjust = 0.5,
                         size = 10,
                         margin = ggplot2::margin(t = 2)

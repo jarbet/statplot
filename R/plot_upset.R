@@ -83,12 +83,24 @@ plot_upset <- function(
             ggplot2::scale_y_continuous(limits = c(0, ymax)) +
             ggplot2::labs(title = title, x = xlab, y = ylab) +
             ggplot2::theme(
-                axis.title.x = ggplot2::element_text(face = "bold"),
-                axis.title.y = ggplot2::element_text(face = "bold"),
-                plot.title = ggplot2::element_text(face = "bold")
+                axis.title.x = ggtext::element_markdown(face = "bold"),
+                axis.title.y = ggtext::element_markdown(face = "bold"),
+                plot.title = ggtext::element_markdown(face = "bold")
             )
     } else if (backend == 'UpSetR') {
         input_list2 <- UpSetR::fromList(list_input)
+
+        # UpSetR::upset() builds its plots against the current global
+        # ggplot2 theme (via ggplot2::theme_get()) and overrides some theme
+        # elements (e.g. axis.title.y) with plain ggplot2::element_text().
+        # If the user has set a global theme via
+        # ggplot2::theme_set(theme_bw2()) (the default markdown = TRUE),
+        # that override conflicts with the element_markdown() used for
+        # those elements and errors. Temporarily reset to a plain theme for
+        # this call so UpSetR is unaffected by the global theme.
+        old_theme <- ggplot2::theme_get()
+        ggplot2::theme_set(ggplot2::theme_grey())
+        on.exit(ggplot2::theme_set(old_theme), add = TRUE)
 
         p <- UpSetR::upset(
             input_list2,

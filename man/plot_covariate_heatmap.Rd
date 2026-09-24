@@ -77,8 +77,18 @@ plot can be combined below a main ggplot. Default \code{FALSE}.}
 
 \item{merge_legends}{Logical. When \code{TRUE}, strips sharing the exact
 same color mapping show a legend only on the first occurrence; that
-legend's title joins the covariate names with \code{"\\n"}. Default
-\code{FALSE}.}
+legend's title joins the covariate names with a line break. Whether the
+line break is written as \code{"\\n"} or \code{"<br>"} is decided once,
+at call time, from whichever theme is active via
+\code{\link[ggplot2]{theme_get}} (i.e. whether its \code{legend.title} is
+\code{\link[ggtext]{element_markdown}} or plain
+\code{\link[ggplot2]{element_text}}). This title text is fixed into the
+plot at that point, so if you want a markdown-rendered (or plain) merged
+title, call \code{\link[ggplot2]{theme_set}} with your intended theme
+\strong{before} calling this function -- applying a different theme
+afterward (e.g. via patchwork's \code{&}) changes how the title is
+rendered but not the line-break character already baked into it, so the
+names can end up joined without a visible break. Default \code{FALSE}.}
 
 \item{collect_guides}{Logical. When \code{TRUE} (default), legends from all
 strips are collected inside the returned patchwork using

@@ -158,10 +158,10 @@ plot_bars <- function(
         ) +
         ggplot2::theme_minimal() +
         ggplot2::theme(
-            plot.title = ggplot2::element_text(face = "bold"),
-            axis.title.x = ggplot2::element_text(face = "bold"),
-            axis.title.y = ggplot2::element_text(face = "bold"),
-            legend.title = ggplot2::element_text(face = "bold")
+            plot.title = ggtext::element_markdown(face = "bold"),
+            axis.title.x = ggtext::element_markdown(face = "bold"),
+            axis.title.y = ggtext::element_markdown(face = "bold"),
+            legend.title = ggtext::element_markdown(face = "bold")
         )
 
     if (!show_legend) {

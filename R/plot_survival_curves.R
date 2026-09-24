@@ -104,6 +104,14 @@
 #'   \code{c("n.risk", "cum.event", "cum.censor", "n.event", "n.censor")}.
 #'   The default is \code{c("n.risk", "cum.event")}.
 #' @param ristable_text_size Numeric, text size for the risk table (default 3.5).
+#' @param annotate_hjust Numeric, horizontal justification of the annotation
+#'   text relative to \code{annotate_x} (default 1, i.e. \code{annotate_x} is
+#'   the text's right edge, matching the \code{NULL}/rightmost default of
+#'   \code{annotate_x}). Set to 0 to left-justify the text against
+#'   \code{annotate_x} instead (its left edge), e.g. when placing the
+#'   annotation at the left side of the plot -- with the default \code{1},
+#'   text placed near the left edge of \code{time_limits} extends further
+#'   left and is clipped out of the plot entirely.
 #'
 #'   Available statistics:
 #'   \itemize{
@@ -222,7 +230,8 @@ plot_survival_curves <- function(
     show_risktable = TRUE,
     risktable_stats = c("n.risk", "cum.event"),
     risktable_counts = c("both", "weighted", "unweighted"),
-    ristable_text_size = 3.5
+    ristable_text_size = 3.5,
+    annotate_hjust = 1
 ) {
     stopifnot(
         inherits(surv_obj, "Surv"),
@@ -264,6 +273,10 @@ plot_survival_curves <- function(
             (is.numeric(annotate_x) &&
                 length(annotate_x) == 1 &&
                 is.finite(annotate_x))),
+
+        is.numeric(annotate_hjust),
+        length(annotate_hjust) == 1,
+        is.finite(annotate_hjust),
 
         is.character(x_label),
         length(x_label) == 1,
@@ -720,7 +733,7 @@ plot_survival_curves <- function(
                 y = y,
                 label = label
             ),
-            hjust = 1,
+            hjust = annotate_hjust,
             vjust = 1,
             size = 3.5,
             fill = NA,

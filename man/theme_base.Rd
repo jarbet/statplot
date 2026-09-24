@@ -4,7 +4,14 @@
 \alias{theme_base}
 \title{Base theme with common bold styling elements}
 \usage{
-theme_base()
+theme_base(markdown = TRUE)
+}
+\arguments{
+\item{markdown}{Logical; if \code{TRUE} (default), the plot title, subtitle,
+caption, axis titles, and legend title use \code{\link[ggtext:element_markdown]{ggtext::element_markdown()}}
+so they can contain markdown/HTML. Axis tick labels and legend text are
+left as plain \code{\link[ggplot2:element_text]{ggplot2::element_text()}}, since those are often
+populated from data values rather than authored by the user.}
 }
 \value{
 A ggplot2 theme object with bold text elements

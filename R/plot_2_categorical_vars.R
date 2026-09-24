@@ -524,7 +524,14 @@ plot_2_categorical_vars <- function(
     title_label <- if (is.null(title_nchar_wrap)) {
         title
     } else {
-        stringr::str_wrap(title, width = title_nchar_wrap)
+        # plot.title is rendered via ggtext::element_markdown(), which
+        # ignores "\n"; use "<br>" for line breaks instead
+        gsub(
+            "\n",
+            "<br>",
+            stringr::str_wrap(title, width = title_nchar_wrap),
+            fixed = TRUE
+        )
     }
     p <- p +
         ggplot2::ggtitle(
@@ -532,10 +539,10 @@ plot_2_categorical_vars <- function(
             subtitle = pval_text
         ) +
         ggplot2::theme(
-            plot.title = ggplot2::element_text(face = "bold"),
+            plot.title = ggtext::element_markdown(face = "bold"),
             plot.subtitle = ggtext::element_markdown(),
-            axis.title.x = ggplot2::element_text(face = "bold"),
-            axis.title.y = ggplot2::element_text(face = "bold")
+            axis.title.x = ggtext::element_markdown(face = "bold"),
+            axis.title.y = ggtext::element_markdown(face = "bold")
         )
 
     # prevent x-axis group labels from overlapping
