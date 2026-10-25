@@ -11,6 +11,7 @@ R package template. Source in `R/`, tests in `tests/testthat/`.
 ## Testing
 
 - Every exported function needs testthat tests in `tests/testthat/test-<name>.R` to test whether the code works as expected.
+- Tests run in parallel (one R process per test file, `Config/testthat/parallel: true`), so each test file must be self-contained: never rely on objects, options, or files created by another test file, and write any output files to `tempfile()`.
 
 ## Workflow
 
