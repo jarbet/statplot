@@ -10,3 +10,4 @@
 ^pkgdown$
 ^\.agents$
 ^\.Rprofile$
+^inst/quarto$
