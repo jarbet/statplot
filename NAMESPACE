@@ -34,62 +34,82 @@ export(theme_classic2)
 importFrom(RColorBrewer,brewer.pal)
 importFrom(broom,tidy)
 importFrom(ggnewscale,new_scale_fill)
-importFrom(ggplot2,"%+replace%")
-importFrom(ggplot2,aes)
-importFrom(ggplot2,coord_cartesian)
-importFrom(ggplot2,element_blank)
-importFrom(ggplot2,element_rect)
-importFrom(ggplot2,element_text)
-importFrom(ggplot2,expansion)
-importFrom(ggplot2,geom_col)
-importFrom(ggplot2,geom_point)
-importFrom(ggplot2,geom_tile)
-importFrom(ggplot2,geom_vline)
-importFrom(ggplot2,ggplot)
-importFrom(ggplot2,ggtitle)
-importFrom(ggplot2,guide_legend)
-importFrom(ggplot2,labs)
-importFrom(ggplot2,margin)
-importFrom(ggplot2,scale_color_gradient)
-importFrom(ggplot2,scale_color_gradient2)
-importFrom(ggplot2,scale_fill_gradient)
-importFrom(ggplot2,scale_fill_identity)
-importFrom(ggplot2,scale_fill_manual)
-importFrom(ggplot2,scale_shape_manual)
-importFrom(ggplot2,scale_size_continuous)
-importFrom(ggplot2,scale_x_continuous)
-importFrom(ggplot2,scale_x_discrete)
-importFrom(ggplot2,scale_y_discrete)
-importFrom(ggplot2,theme)
-importFrom(ggplot2,theme_bw)
-importFrom(ggplot2,theme_minimal)
-importFrom(ggplot2,theme_void)
-importFrom(ggraph,geom_edge_link)
-importFrom(ggraph,geom_node_point)
-importFrom(ggraph,geom_node_text)
-importFrom(ggraph,ggraph)
-importFrom(ggsurvfit,add_confidence_interval)
-importFrom(ggsurvfit,add_risktable)
-importFrom(ggsurvfit,ggsurvfit)
-importFrom(ggsurvfit,survfit2)
-importFrom(ggtext,element_markdown)
-importFrom(ggtext,geom_richtext)
-importFrom(htmltools,HTML)
-importFrom(htmltools,htmlEscape)
-importFrom(igraph,degree)
-importFrom(igraph,graph_from_data_frame)
-importFrom(knitr,asis_output)
-importFrom(knitr,is_html_output)
-importFrom(knitr,is_latex_output)
-importFrom(rlang,"%||%")
-importFrom(rlang,sym)
+importFrom(ggplot2,
+  "%+replace%",
+  aes,
+  coord_cartesian,
+  element_blank,
+  element_rect,
+  element_text,
+  expansion,
+  geom_col,
+  geom_point,
+  geom_tile,
+  geom_vline,
+  ggplot,
+  ggtitle,
+  guide_legend,
+  labs,
+  margin,
+  scale_color_gradient,
+  scale_color_gradient2,
+  scale_fill_gradient,
+  scale_fill_identity,
+  scale_fill_manual,
+  scale_shape_manual,
+  scale_size_continuous,
+  scale_x_continuous,
+  scale_x_discrete,
+  scale_y_discrete,
+  theme,
+  theme_bw,
+  theme_minimal,
+  theme_void
+)
+importFrom(ggraph,
+  geom_edge_link,
+  geom_node_point,
+  geom_node_text,
+  ggraph
+)
+importFrom(ggsurvfit,
+  add_confidence_interval,
+  add_risktable,
+  ggsurvfit,
+  survfit2
+)
+importFrom(ggtext,
+  element_markdown,
+  geom_richtext
+)
+importFrom(htmltools,
+  HTML,
+  htmlEscape
+)
+importFrom(igraph,
+  degree,
+  graph_from_data_frame
+)
+importFrom(knitr,
+  asis_output,
+  is_html_output,
+  is_latex_output
+)
+importFrom(rlang,
+  "%||%",
+  sym
+)
 importFrom(scales,squish)
-importFrom(stats,cor)
-importFrom(stats,p.adjust)
-importFrom(stats,pchisq)
-importFrom(stats,reformulate)
-importFrom(stats,setNames)
-importFrom(stats,wilcox.test)
-importFrom(survival,Surv)
-importFrom(survival,coxph)
-importFrom(survival,survdiff)
+importFrom(stats,
+  cor,
+  p.adjust,
+  pchisq,
+  reformulate,
+  setNames,
+  wilcox.test
+)
+importFrom(survival,
+  Surv,
+  coxph,
+  survdiff
+)
