@@ -100,6 +100,7 @@ importFrom(knitr,
 )
 importFrom(rlang,
   "%||%",
+  .data,
   sym
 )
 importFrom(scales,squish)

@@ -95,7 +95,7 @@ table1viz_flextable <- function(
     for (cc in stat_cols) {
         swatch <- if (grouped) {
             flextable::as_chunk(
-                '■ ',
+                '\u25A0 ',
                 props = flextable::fp_text_default(color = col_colors[[cc]])
             )
         } else {

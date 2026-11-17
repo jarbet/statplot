@@ -90,41 +90,41 @@ plot_1_categorical_var <- function(
     d_plot <- data |>
         dplyr::count({{ var }}, name = "n") |>
         dplyr::mutate(
-            pct = n / sum(n),
+            pct = .data$n / sum(.data$n),
             value_label = switch(
                 text_inside_bars,
-                count = scales::comma(n),
-                percent = scales::percent(pct, accuracy = 0.1),
+                count = scales::comma(.data$n),
+                percent = scales::percent(.data$pct, accuracy = 0.1),
                 count_and_percent = sprintf(
                     "%s (%.1f%%)",
-                    scales::comma(n),
-                    pct * 100
+                    scales::comma(.data$n),
+                    .data$pct * 100
                 ),
                 none = ""
             ),
             cat_label = escape_richtext(as.character({{ var }})),
             label = if (!include_cat_labels) {
-                value_label
+                .data$value_label
             } else if (text_inside_bars == "none") {
-                sprintf("<b>%s</b>", cat_label)
+                sprintf("<b>%s</b>", .data$cat_label)
             } else {
                 ifelse(
-                    pct < small_pct_threshold,
-                    sprintf("<b>%s</b>: %s", cat_label, value_label),
-                    sprintf("<b>%s</b><br>%s", cat_label, value_label)
+                    .data$pct < small_pct_threshold,
+                    sprintf("<b>%s</b>: %s", .data$cat_label, .data$value_label),
+                    sprintf("<b>%s</b><br>%s", .data$cat_label, .data$value_label)
                 )
             }
         ) |>
         dplyr::arrange(dplyr::desc({{ var }})) |>
         dplyr::mutate(
-            y_pos = cumsum(pct) - pct / 2
+            y_pos = cumsum(.data$pct) - .data$pct / 2
         )
 
     p <- ggplot2::ggplot(
         d_plot,
         ggplot2::aes(
             x = "",
-            y = pct,
+            y = .data$pct,
             fill = {{ var }}
         )
     ) +

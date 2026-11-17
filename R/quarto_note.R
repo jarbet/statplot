@@ -60,7 +60,7 @@ quarto_note <- function(text, color = "Green", style = "Comment") {
         knitr::asis_output(sprintf(
             "\\textbf{\\textcolor{%s}{%s}}",
             color,
-            knitr:::escape_latex(text)
+            escape_latex(text)
         ))
     } else {
         # Use inline bracketed span syntax for Word output
@@ -71,4 +71,15 @@ quarto_note <- function(text, color = "Green", style = "Comment") {
             style
         ))
     }
+}
+
+# Escape LaTeX special characters (same rules as knitr's internal
+# escape_latex(), which can't be called from a package).
+escape_latex <- function(x) {
+    x <- gsub('\\\\', '\\\\textbackslash', x)
+    x <- gsub('([#$%&_{}])', '\\\\\\1', x)
+    x <- gsub('\\\\textbackslash', '\\\\textbackslash{}', x)
+    x <- gsub('^', '\\textasciicircum{}', x, fixed = TRUE)
+    x <- gsub('~', '\\textasciitilde{}', x, fixed = TRUE)
+    x
 }

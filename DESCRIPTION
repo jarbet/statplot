@@ -16,6 +16,7 @@ Suggests:
     flextable,
     systemfonts (>= 1.2.4),
     testthat (>= 3.0.0),
+    withr,
     xml2
 Config/testthat/edition: 3
 Config/testthat/parallel: true
@@ -55,7 +56,9 @@ Imports:
     tidyr,
     tinytable,
     UpSetR,
-    grDevices
+    grDevices,
+    stats,
+    utils
 URL: https://github.com/jarbet/statplot
 BugReports: https://github.com/jarbet/statplot/issues
 Depends: 

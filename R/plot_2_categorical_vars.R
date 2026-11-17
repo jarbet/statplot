@@ -302,10 +302,10 @@ plot_2_categorical_vars <- function(
         alternative = 'two.sided'
     )
     ### test pvalue
-    ch <- suppressWarnings(chisq.test(tab))
+    ch <- suppressWarnings(stats::chisq.test(tab))
     pval <- ch$p.value
     if (any(ch$expected < 5)) {
-        ft <- fisher.test(tab, simulate.p.value = TRUE, B = 100000)
+        ft <- stats::fisher.test(tab, simulate.p.value = TRUE, B = 100000)
         pval <- ft$p.value
     }
 

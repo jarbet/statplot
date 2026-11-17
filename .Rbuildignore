@@ -11,3 +11,5 @@
 ^\.agents$
 ^\.Rprofile$
 ^inst/quarto$
+^\.claude$
+^CLAUDE\.md$
