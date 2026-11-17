@@ -10,8 +10,9 @@ subgroup_forest_size(
   ci_low,
   ci_high,
   ...,
-  row_height = 0.115,
-  axis_height = 0.45
+  text_size = 8,
+  row_height = 0.115 * text_size/7,
+  axis_height = 0.45 * text_size/7
 )
 }
 \arguments{
@@ -20,13 +21,17 @@ subgroup_forest_size(
 \item{...}{Other arguments passed to \code{\link[=plot_subgroup_forest]{plot_subgroup_forest()}}. Those that
 change the layout (\code{subgroup}, \code{level}, \code{group_col}, \code{n_col}, \code{events_col},
 \code{pvalue_col}, \code{ref_col}, \code{estimate_digits}, \code{ref_label}, \code{labels},
-\code{text_size}, \code{forest_width}, \code{gap_level}, \code{gap_subgroup}) must match; the
+\code{font_family}, \code{forest_width}, \code{gap_level}, \code{gap_subgroup}) must match; the
 others are ignored, so the same arguments can be passed to both functions.}
 
-\item{row_height}{Numeric. Height of one row, in inches. Default \code{0.115}.}
+\item{text_size}{Numeric. Text size, in points, as for
+\code{\link[=plot_subgroup_forest]{plot_subgroup_forest()}}. Default \code{8}.}
+
+\item{row_height}{Numeric. Height of one row, in inches. Default
+\code{0.115 * text_size / 7}, scaling with the text.}
 
 \item{axis_height}{Numeric. Height of the estimate axis and the plot margins,
-in inches. Default \code{0.45}.}
+in inches. Default \code{0.45 * text_size / 7}, scaling with the text.}
 }
 \value{
 Named numeric vector: \code{width} and \code{height}, in inches.

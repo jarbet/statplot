@@ -27,7 +27,8 @@ plot_subgroup_forest(
   pvalue_threshold = 0.05,
   ref_label = "Ref.",
   labels = NULL,
-  text_size = 7,
+  text_size = 8,
+  font_family = "",
   forest_width = 1.8,
   gap_level = 0.2,
   gap_subgroup = 0.4,
@@ -77,14 +78,18 @@ order; black circles for a single group.}
 \item{null_value}{Numeric. Position of the vertical "no effect" line. Default
 \code{1} (ratios); use \code{0} for differences.}
 
-\item{log_scale}{Logical. Whether to draw the estimate axis on a log scale
-(common for ratios). Default \code{FALSE}.}
+\item{log_scale}{Logical. Whether to draw the estimate axis on a log scale.
+Recommended for ratios (hazard, odds, risk ratios): on a linear axis their
+CIs look lopsided, and a ratio of 0.5 looks like a smaller effect than one
+of 2. Default \code{FALSE}.}
 
 \item{x_limits, x_breaks, x_labels}{Estimate axis limits, breaks and break
 labels. Default: limits spanning every CI and \code{null_value} plus 5\% on each
 side, breaks from \code{\link[=pretty]{pretty()}} (or, with \code{log_scale} across at least a
-tenfold range, \code{\link[scales:breaks_log]{scales::breaks_log()}}), labels from the breaks. A CI beyond the limits is cut at the limit, with a
-warning.}
+tenfold range, \code{\link[scales:breaks_log]{scales::breaks_log()}}), labels from the breaks. A CI
+running past a limit is cut there and drawn with an arrow (not a cap) at
+the cut end, and an estimate beyond the limits is not drawn, with a
+warning; the text column still shows the full values.}
 
 \item{estimate_digits}{Integer. Decimal places of the estimate and its CI in
 the text column. Default \code{2}.}
@@ -98,10 +103,19 @@ interaction column. Default \code{"Ref."}.}
 \item{labels}{Named character vector replacing any of the default column
 headers and axis title: \code{subgroup} (\code{"Subgroup"}), \code{group} (\code{"Group"}),
 \code{counts} (\code{"Events / N"}, or \code{"N"} without \code{events_col}), \code{forest}
-(\code{"Hazard Ratio"}), \code{estimate} (\code{"HR (95\% CI)"}), \code{pvalue}
-(\code{"P for\\nInteraction"}), \code{x_axis} (\code{"Hazard Ratio (95\% CI)"}).}
+(\code{"Estimate"}), \code{estimate} (\code{"Estimate (95\% CI)"}), \code{pvalue}
+(\code{"P for\\nInteraction"}), \code{x_axis} (\code{"Estimate (95\% CI)"}). Name the
+estimate here, e.g. \code{c(forest = "Hazard Ratio", estimate = "HR (95\% CI)", x_axis = "Hazard Ratio (95\% CI)")}.}
 
-\item{text_size}{Numeric. Text size, in points. Default \code{7}.}
+\item{text_size}{Numeric. Text size, in points. Default \code{8}.}
+
+\item{font_family}{Character. Font family of all text. Default \code{""}, the
+device's default sans font. One of the PDF families (\code{"sans"}, \code{"serif"},
+\code{"mono"}, \code{"Helvetica"}, ...) works on any device. Any other installed font
+(e.g. \code{"Arial"}, \code{"Roboto"}) needs the systemfonts package, which measures
+it for the column widths, and a device that can draw it, such as
+\code{ragg::agg_png()} (e.g. \code{ggplot2::ggsave(..., device = ragg::agg_png)});
+the base \code{\link[grDevices:pdf]{grDevices::pdf()}} device cannot.}
 
 \item{forest_width}{Numeric. Width of the forest panel, in inches. Default
 \code{1.8}.}
@@ -138,9 +152,13 @@ The plot is built as three ggplots (left text, forest, right text) on the same
 y scale, joined with patchwork. Column widths are measured from the text, in
 inches, so draw the plot at the size \code{\link[=subgroup_forest_size]{subgroup_forest_size()}} returns: at a
 narrower width the text columns overlap, at a wider one they spread apart.
+For sharp text in a saved file, use \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}} at that size with
+\code{dpi = 300}; a plot pane stretched beyond that size makes the text look small.
 }
 \examples{
-df <- data.frame(
+# 1. Hazard ratios (time-to-event outcome), several cohorts, with
+#    Events / N and the P for interaction column
+df_hr <- data.frame(
     study = rep(c("Study A", "Study B"), each = 5),
     subgroup = rep(c("Overall", "Age", "Age", "Sex", "Sex"), 2),
     level = rep(c("", "<65", "65+", "Male", "Female"), 2),
@@ -152,10 +170,14 @@ df <- data.frame(
     p_int = c(NA, NA, 0.30, NA, 0.70, NA, NA, 0.40, NA, 0.80),
     is_ref = rep(c(FALSE, TRUE, FALSE, TRUE, FALSE), 2)
 )
-
-# several cohorts, with the P for interaction column
+hr_labels <- c(
+    group = "Study",
+    forest = "Hazard Ratio",
+    estimate = "HR (95\% CI)",
+    x_axis = "Hazard Ratio (95\% CI)"
+)
 p <- plot_subgroup_forest(
-    df,
+    df_hr,
     effect_size = "hr",
     ci_low = "lcl",
     ci_high = "ucl",
@@ -164,11 +186,13 @@ p <- plot_subgroup_forest(
     events_col = "events",
     pvalue_col = "p_int",
     ref_col = "is_ref",
-    labels = c(group = "Study")
+    log_scale = TRUE,
+    labels = hr_labels
 )
 p
+# the size to draw it at: same arguments
 size <- subgroup_forest_size(
-    df,
+    df_hr,
     effect_size = "hr",
     ci_low = "lcl",
     ci_high = "ucl",
@@ -177,38 +201,74 @@ size <- subgroup_forest_size(
     events_col = "events",
     pvalue_col = "p_int",
     ref_col = "is_ref",
-    labels = c(group = "Study")
+    labels = hr_labels
 )
-# draw it at that size, e.g.
 # ggplot2::ggsave("forest.png", p, width = size[["width"]],
 #     height = size[["height"]])
 
-# a single cohort, with the P for interaction column
-study_a <- df[df$study == "Study A", ]
+# 2. Odds ratios for a binary outcome, on a log scale, with Events / N
+#    (patients with the outcome / patients in the subgroup)
+df_or <- data.frame(
+    subgroup = c("Overall", "Age", "Age", "Diabetes", "Diabetes"),
+    level = c("", "<65", "65+", "No", "Yes"),
+    n = c(1200, 700, 500, 900, 300),
+    events = c(240, 112, 128, 162, 78),
+    or = c(1.45, 1.30, 1.65, 1.35, 1.80),
+    or_low = c(1.15, 0.95, 1.18, 1.02, 1.12),
+    or_high = c(1.83, 1.78, 2.31, 1.79, 2.89),
+    p_int = c(NA, NA, 0.35, NA, 0.28)
+)
 plot_subgroup_forest(
-    study_a,
-    effect_size = "hr",
-    ci_low = "lcl",
-    ci_high = "ucl",
+    df_or,
+    effect_size = "or",
+    ci_low = "or_low",
+    ci_high = "or_high",
     n_col = "n",
     events_col = "events",
     pvalue_col = "p_int",
-    ref_col = "is_ref"
-)
-
-# a single cohort without the P for interaction column: odds ratios on a
-# log scale, no optional columns
-plot_subgroup_forest(
-    study_a,
-    effect_size = "hr",
-    ci_low = "lcl",
-    ci_high = "ucl",
     log_scale = TRUE,
     labels = c(
         forest = "Odds Ratio",
         estimate = "OR (95\% CI)",
         x_axis = "Odds Ratio (95\% CI)"
     )
+)
+
+# 3. A generic effect size (here a mean difference, null at 0) with N per
+#    subgroup level but no events: omit events_col
+df_diff <- data.frame(
+    subgroup = c("Overall", "Age", "Age", "Sex", "Sex"),
+    level = c("", "<65", "65+", "Male", "Female"),
+    n = c(500, 280, 220, 240, 260),
+    diff = c(-2.1, -1.5, -2.8, -2.4, -1.8),
+    diff_low = c(-3.4, -3.2, -4.7, -4.2, -3.5),
+    diff_high = c(-0.8, 0.2, -0.9, -0.6, -0.1)
+)
+plot_subgroup_forest(
+    df_diff,
+    effect_size = "diff",
+    ci_low = "diff_low",
+    ci_high = "diff_high",
+    n_col = "n",
+    null_value = 0,
+    estimate_digits = 1,
+    labels = c(
+        forest = "Mean Difference",
+        estimate = "Difference (95\% CI)",
+        x_axis = "Mean Difference (95\% CI)"
+    )
+)
+
+# 4. No Events / N column at all: omit n_col and events_col
+plot_subgroup_forest(
+    df_hr[df_hr$study == "Study A", ],
+    effect_size = "hr",
+    ci_low = "lcl",
+    ci_high = "ucl",
+    pvalue_col = "p_int",
+    ref_col = "is_ref",
+    log_scale = TRUE,
+    labels = hr_labels[-1]
 )
 }
 \seealso{

@@ -223,6 +223,23 @@ test_that("subgroup_forest_layout validates its input", {
         ),
         "events_col needs n_col"
     )
+
+    na_subgroup <- data
+    na_subgroup$subgroup[2] <- NA
+    expect_error(
+        full_layout(na_subgroup),
+        "subgroup column must not contain NA"
+    )
+    na_group <- data
+    na_group$group[2] <- NA
+    expect_error(full_layout(na_group), "group_col column must not contain NA")
+    na_ci <- data
+    na_ci$low[2] <- NA
+    expect_error(full_layout(na_ci), "need non-NA ci_low and ci_high")
+    # a missing estimate may have missing CIs
+    no_est <- data
+    no_est[2, c("est", "low", "high")] <- NA
+    expect_no_error(full_layout(no_est))
 })
 
 test_that("subgroup_forest_size fits the columns that are drawn", {
@@ -282,6 +299,11 @@ test_that("text_width_in measures text and leaves the graphics device alone", {
     expect_equal(text_width_in(c(NA, ""), 7), 0)
     expect_gt(text_width_in("abcdef", 7), text_width_in("abc", 7))
     expect_gt(text_width_in("abc", 7, bold = TRUE), text_width_in("abc", 7))
+    # PDF families are measured on the PDF device too
+    expect_gt(
+        text_width_in("abcdef", 7, family = "mono"),
+        text_width_in("iiiiii", 7, family = "mono") - 1e-9
+    )
     expect_equal(grDevices::dev.cur(), dev)
 })
 
@@ -362,6 +384,12 @@ test_that("plot_subgroup_forest supports a log scale and other null values", {
         ),
         "positive null_value"
     )
+    zero_ci <- single
+    zero_ci$low[1] <- 0
+    expect_error(
+        plot_subgroup_forest(zero_ci, "est", "low", "high", log_scale = TRUE),
+        "positive effect_size, ci_low and ci_high"
+    )
 
     # differences: null at 0, default axis spans it
     diffs <- transform(single, est = est - 1, low = low - 1, high = high - 1)
@@ -383,5 +411,145 @@ test_that("plot_subgroup_forest warns about and cuts CIs beyond the axis", {
         ),
         "beyond the x-axis limits"
     )
-    expect_gte(min(p$patches$plots[[2]]$data$.low), 0.75)
+    # nothing in the forest panel is drawn beyond the limits
+    built <- ggplot2::ggplot_build(p$patches$plots[[2]])
+    xs <- unlist(lapply(built$data, function(l) c(l$x, l$xend)))
+    xs <- xs[is.finite(xs)]
+    expect_true(all(xs >= 0.75 - 1e-8 & xs <= 1.25 + 1e-8))
+})
+
+test_that("subgroup_forest_ci_parts draws cut CI ends as arrows, not caps", {
+    d <- data.frame(
+        y = 1:5,
+        .group = factor(rep("A", 5)),
+        .est = c(1, 2, 0.4, 5, 0.1),
+        .low = c(0.8, 1.5, 0.2, 4.5, 0.05),
+        .high = c(1.2, 6, 0.9, 6, 0.2)
+    )
+    # 1: inside; 2: past the upper limit; 3: past the lower limit;
+    # 4, 5: wholly above / below the limits
+    parts <- subgroup_forest_ci_parts(d, c(0.3, 4), identity, identity)
+    expect_equal(parts$lines$y, 1)
+    # caps only on the ends within the limits
+    expect_equal(sort(parts$caps$x), sort(c(0.8, 1.2, 1.5, 0.9)))
+    arrows <- parts$arrows[order(parts$arrows$y), ]
+    expect_equal(arrows$y, 2:5)
+    # each arrow ends at the limit it runs past
+    expect_equal(arrows$xend, c(4, 0.3, 4, 0.3))
+    expect_equal(arrows$x[1:2], c(1.5, 0.9))
+    # estimates beyond the limits are dropped, not moved onto the edge
+    expect_equal(parts$points$y, 1:3)
+})
+
+test_that("subgroup_forest_ci_parts arrows both ends of a CI past both limits", {
+    d <- data.frame(
+        y = 1,
+        .group = factor("A"),
+        .est = 1,
+        .low = 0.1,
+        .high = 10
+    )
+    parts <- subgroup_forest_ci_parts(d, c(0.5, 2), log, exp)
+    expect_equal(nrow(parts$lines), 0)
+    expect_equal(nrow(parts$caps), 0)
+    expect_equal(sort(parts$arrows$xend), c(0.5, 2))
+    # arrows start at the middle of the (log) axis
+    expect_equal(parts$arrows$x, rep(1, 2))
+    expect_equal(parts$points$y, 1)
+})
+
+test_that("subgroup_forest_layout keeps counts when the estimate is missing", {
+    data <- fake_forest_data()
+    # e.g. no events in a level, so no hazard ratio
+    data[data$group == "A" & data$level == "Male", c("est", "low", "high")] <- NA
+    data$events[data$group == "A" & data$level == "Male"] <- 0
+    d <- full_layout(data)$rows
+    a_male <- d[d$.group == "A" & d$level == "Male", ]
+    expect_equal(a_male$events_label, "0")
+    expect_equal(a_male$n_label, "/ 600")
+    expect_equal(a_male$est_label, "—")
+})
+
+test_that("plot_subgroup_forest has neutral default labels", {
+    single <- fake_forest_data()
+    single <- single[single$group == "A", ]
+    p <- plot_subgroup_forest(single, "est", "low", "high")
+    forest <- p$patches$plots[[2]]
+    expect_equal(forest$labels$x, "Estimate (95% CI)")
+})
+
+test_that("plot_subgroup_forest omits the null line outside x_limits", {
+    single <- fake_forest_data()
+    single <- single[single$group == "A", ]
+    has_segment <- function(p) {
+        any(vapply(
+            p$patches$plots[[2]]$layers,
+            # the null line (CIs are segments too, but colored by group)
+            function(l) {
+                inherits(l$geom, "GeomSegment") &&
+                    identical(l$aes_params$colour, "gray30")
+            },
+            TRUE
+        ))
+    }
+    expect_true(has_segment(plot_subgroup_forest(single, "est", "low", "high")))
+    p <- suppressWarnings(
+        plot_subgroup_forest(single, "est", "low", "high", x_limits = c(0.5, 0.95))
+    )
+    expect_false(has_segment(p))
+})
+
+test_that("plot_subgroup_forest recycles the default colors past 8 groups", {
+    data <- fake_forest_data()
+    data <- data[data$group == "A", ]
+    many <- do.call(
+        rbind,
+        lapply(letters[1:9], function(g) transform(data, group = g))
+    )
+    expect_no_error(
+        p <- plot_subgroup_forest(many, "est", "low", "high", group_col = "group")
+    )
+    expect_s3_class(p, "patchwork")
+})
+
+test_that("subgroup_forest_layout writes negative CIs with 'to'", {
+    data <- fake_forest_data()
+    data[c("est", "low", "high")] <- data[c("est", "low", "high")] - 1
+    d <- full_layout(data)$rows
+    expect_equal(d$est_label[1], "-0.20 (-0.30 to -0.10)")
+})
+
+test_that("subgroup_forest_size scales row and axis heights with text_size", {
+    data <- fake_forest_data()
+    data <- data[data$group == "A", ]
+    size_at <- function(ts) {
+        subgroup_forest_size(data, "est", "low", "high", text_size = ts)
+    }
+    expect_equal(size_at(14)[["height"]], 2 * size_at(7)[["height"]])
+})
+
+test_that("plot_subgroup_forest validates and uses font_family", {
+    data <- fake_forest_data()
+    data <- data[data$group == "A", ]
+    expect_error(
+        plot_subgroup_forest(data, "est", "low", "high", font_family = NA),
+        "font_family must be a single string"
+    )
+    p <- plot_subgroup_forest(data, "est", "low", "high", font_family = "serif")
+    text_layer <- p$patches$plots[[1]]$layers[[4]]
+    expect_equal(text_layer$aes_params$family, "serif")
+})
+
+test_that("text_width_in measures non-PDF families with systemfonts", {
+    skip_if_not_installed("systemfonts", "1.2.4")
+    family <- systemfonts::system_fonts()$family[1]
+    skip_if(family %in% names(grDevices::pdfFonts()))
+    one_line <- text_width_in("abcdef", 8, family = family)
+    expect_gt(one_line, 0)
+    # widest line of a multi-line string, not the sum of its lines
+    expect_equal(text_width_in("abc\nabcdef", 8, family = family), one_line)
+    expect_warning(
+        text_width_in("abc", 8, family = "No Such Font Family xyz"),
+        "not found"
+    )
 })

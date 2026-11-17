@@ -18,6 +18,8 @@
 #' y scale, joined with patchwork. Column widths are measured from the text, in
 #' inches, so draw the plot at the size [subgroup_forest_size()] returns: at a
 #' narrower width the text columns overlap, at a wider one they spread apart.
+#' For sharp text in a saved file, use [ggplot2::ggsave()] at that size with
+#' `dpi = 300`; a plot pane stretched beyond that size makes the text look small.
 #'
 #' @param data A data.frame or tibble with one row per subgroup level (per group).
 #' @param effect_size String name of the estimate column (e.g. a hazard ratio).
@@ -48,13 +50,17 @@
 #'   order; black circles for a single group.
 #' @param null_value Numeric. Position of the vertical "no effect" line. Default
 #'   `1` (ratios); use `0` for differences.
-#' @param log_scale Logical. Whether to draw the estimate axis on a log scale
-#'   (common for ratios). Default `FALSE`.
+#' @param log_scale Logical. Whether to draw the estimate axis on a log scale.
+#'   Recommended for ratios (hazard, odds, risk ratios): on a linear axis their
+#'   CIs look lopsided, and a ratio of 0.5 looks like a smaller effect than one
+#'   of 2. Default `FALSE`.
 #' @param x_limits,x_breaks,x_labels Estimate axis limits, breaks and break
 #'   labels. Default: limits spanning every CI and `null_value` plus 5% on each
 #'   side, breaks from [pretty()] (or, with `log_scale` across at least a
-#'   tenfold range, [scales::breaks_log()]), labels from the breaks. A CI beyond the limits is cut at the limit, with a
-#'   warning.
+#'   tenfold range, [scales::breaks_log()]), labels from the breaks. A CI
+#'   running past a limit is cut there and drawn with an arrow (not a cap) at
+#'   the cut end, and an estimate beyond the limits is not drawn, with a
+#'   warning; the text column still shows the full values.
 #' @param estimate_digits Integer. Decimal places of the estimate and its CI in
 #'   the text column. Default `2`.
 #' @param pvalue_threshold Numeric. Interaction p-values below this are bold.
@@ -64,9 +70,18 @@
 #' @param labels Named character vector replacing any of the default column
 #'   headers and axis title: `subgroup` (`"Subgroup"`), `group` (`"Group"`),
 #'   `counts` (`"Events / N"`, or `"N"` without `events_col`), `forest`
-#'   (`"Hazard Ratio"`), `estimate` (`"HR (95% CI)"`), `pvalue`
-#'   (`"P for\nInteraction"`), `x_axis` (`"Hazard Ratio (95% CI)"`).
-#' @param text_size Numeric. Text size, in points. Default `7`.
+#'   (`"Estimate"`), `estimate` (`"Estimate (95% CI)"`), `pvalue`
+#'   (`"P for\nInteraction"`), `x_axis` (`"Estimate (95% CI)"`). Name the
+#'   estimate here, e.g. `c(forest = "Hazard Ratio", estimate = "HR (95% CI)",
+#'   x_axis = "Hazard Ratio (95% CI)")`.
+#' @param text_size Numeric. Text size, in points. Default `8`.
+#' @param font_family Character. Font family of all text. Default `""`, the
+#'   device's default sans font. One of the PDF families (`"sans"`, `"serif"`,
+#'   `"mono"`, `"Helvetica"`, ...) works on any device. Any other installed font
+#'   (e.g. `"Arial"`, `"Roboto"`) needs the systemfonts package, which measures
+#'   it for the column widths, and a device that can draw it, such as
+#'   `ragg::agg_png()` (e.g. `ggplot2::ggsave(..., device = ragg::agg_png)`);
+#'   the base [grDevices::pdf()] device cannot.
 #' @param forest_width Numeric. Width of the forest panel, in inches. Default
 #'   `1.8`.
 #' @param gap_level Numeric. Vertical space between the levels of a subgroup, in
@@ -82,7 +97,9 @@
 #' @export
 #'
 #' @examples
-#' df <- data.frame(
+#' # 1. Hazard ratios (time-to-event outcome), several cohorts, with
+#' #    Events / N and the P for interaction column
+#' df_hr <- data.frame(
 #'     study = rep(c("Study A", "Study B"), each = 5),
 #'     subgroup = rep(c("Overall", "Age", "Age", "Sex", "Sex"), 2),
 #'     level = rep(c("", "<65", "65+", "Male", "Female"), 2),
@@ -94,10 +111,14 @@
 #'     p_int = c(NA, NA, 0.30, NA, 0.70, NA, NA, 0.40, NA, 0.80),
 #'     is_ref = rep(c(FALSE, TRUE, FALSE, TRUE, FALSE), 2)
 #' )
-#'
-#' # several cohorts, with the P for interaction column
+#' hr_labels <- c(
+#'     group = "Study",
+#'     forest = "Hazard Ratio",
+#'     estimate = "HR (95% CI)",
+#'     x_axis = "Hazard Ratio (95% CI)"
+#' )
 #' p <- plot_subgroup_forest(
-#'     df,
+#'     df_hr,
 #'     effect_size = "hr",
 #'     ci_low = "lcl",
 #'     ci_high = "ucl",
@@ -106,11 +127,13 @@
 #'     events_col = "events",
 #'     pvalue_col = "p_int",
 #'     ref_col = "is_ref",
-#'     labels = c(group = "Study")
+#'     log_scale = TRUE,
+#'     labels = hr_labels
 #' )
 #' p
+#' # the size to draw it at: same arguments
 #' size <- subgroup_forest_size(
-#'     df,
+#'     df_hr,
 #'     effect_size = "hr",
 #'     ci_low = "lcl",
 #'     ci_high = "ucl",
@@ -119,38 +142,74 @@
 #'     events_col = "events",
 #'     pvalue_col = "p_int",
 #'     ref_col = "is_ref",
-#'     labels = c(group = "Study")
+#'     labels = hr_labels
 #' )
-#' # draw it at that size, e.g.
 #' # ggplot2::ggsave("forest.png", p, width = size[["width"]],
 #' #     height = size[["height"]])
 #'
-#' # a single cohort, with the P for interaction column
-#' study_a <- df[df$study == "Study A", ]
+#' # 2. Odds ratios for a binary outcome, on a log scale, with Events / N
+#' #    (patients with the outcome / patients in the subgroup)
+#' df_or <- data.frame(
+#'     subgroup = c("Overall", "Age", "Age", "Diabetes", "Diabetes"),
+#'     level = c("", "<65", "65+", "No", "Yes"),
+#'     n = c(1200, 700, 500, 900, 300),
+#'     events = c(240, 112, 128, 162, 78),
+#'     or = c(1.45, 1.30, 1.65, 1.35, 1.80),
+#'     or_low = c(1.15, 0.95, 1.18, 1.02, 1.12),
+#'     or_high = c(1.83, 1.78, 2.31, 1.79, 2.89),
+#'     p_int = c(NA, NA, 0.35, NA, 0.28)
+#' )
 #' plot_subgroup_forest(
-#'     study_a,
-#'     effect_size = "hr",
-#'     ci_low = "lcl",
-#'     ci_high = "ucl",
+#'     df_or,
+#'     effect_size = "or",
+#'     ci_low = "or_low",
+#'     ci_high = "or_high",
 #'     n_col = "n",
 #'     events_col = "events",
 #'     pvalue_col = "p_int",
-#'     ref_col = "is_ref"
-#' )
-#'
-#' # a single cohort without the P for interaction column: odds ratios on a
-#' # log scale, no optional columns
-#' plot_subgroup_forest(
-#'     study_a,
-#'     effect_size = "hr",
-#'     ci_low = "lcl",
-#'     ci_high = "ucl",
 #'     log_scale = TRUE,
 #'     labels = c(
 #'         forest = "Odds Ratio",
 #'         estimate = "OR (95% CI)",
 #'         x_axis = "Odds Ratio (95% CI)"
 #'     )
+#' )
+#'
+#' # 3. A generic effect size (here a mean difference, null at 0) with N per
+#' #    subgroup level but no events: omit events_col
+#' df_diff <- data.frame(
+#'     subgroup = c("Overall", "Age", "Age", "Sex", "Sex"),
+#'     level = c("", "<65", "65+", "Male", "Female"),
+#'     n = c(500, 280, 220, 240, 260),
+#'     diff = c(-2.1, -1.5, -2.8, -2.4, -1.8),
+#'     diff_low = c(-3.4, -3.2, -4.7, -4.2, -3.5),
+#'     diff_high = c(-0.8, 0.2, -0.9, -0.6, -0.1)
+#' )
+#' plot_subgroup_forest(
+#'     df_diff,
+#'     effect_size = "diff",
+#'     ci_low = "diff_low",
+#'     ci_high = "diff_high",
+#'     n_col = "n",
+#'     null_value = 0,
+#'     estimate_digits = 1,
+#'     labels = c(
+#'         forest = "Mean Difference",
+#'         estimate = "Difference (95% CI)",
+#'         x_axis = "Mean Difference (95% CI)"
+#'     )
+#' )
+#'
+#' # 4. No Events / N column at all: omit n_col and events_col
+#' plot_subgroup_forest(
+#'     df_hr[df_hr$study == "Study A", ],
+#'     effect_size = "hr",
+#'     ci_low = "lcl",
+#'     ci_high = "ucl",
+#'     pvalue_col = "p_int",
+#'     ref_col = "is_ref",
+#'     log_scale = TRUE,
+#'     labels = hr_labels[-1]
 #' )
 plot_subgroup_forest <- function(
     data,
@@ -175,7 +234,8 @@ plot_subgroup_forest <- function(
     pvalue_threshold = 0.05,
     ref_label = "Ref.",
     labels = NULL,
-    text_size = 7,
+    text_size = 8,
+    font_family = "",
     forest_width = 1.8,
     gap_level = 0.2,
     gap_subgroup = 0.4,
@@ -229,6 +289,7 @@ plot_subgroup_forest <- function(
         ref_label = ref_label,
         labels = labels,
         text_size = text_size,
+        font_family = font_family,
         forest_width = forest_width,
         gap_level = gap_level,
         gap_subgroup = gap_subgroup
@@ -241,6 +302,14 @@ plot_subgroup_forest <- function(
     x_col <- spec$x
     widths <- spec$widths
     y <- spec$y
+    if (log_scale) {
+        stopifnot(
+            "log_scale needs positive effect_size, ci_low and ci_high" = all(
+                c(d$.est, d$.low, d$.high) > 0,
+                na.rm = TRUE
+            )
+        )
+    }
 
     groups <- levels(d$.group)
     group_colors <- subgroup_forest_scale(
@@ -256,7 +325,8 @@ plot_subgroup_forest <- function(
                 "#56B4E9",
                 "#F0E442",
                 "#000000"
-            )
+            ) |>
+                rep_len(length(groups))
         } else {
             "black"
         },
@@ -303,18 +373,17 @@ plot_subgroup_forest <- function(
     x_labels <- x_labels[keep]
 
     d_est <- d[!is.na(d$.est), ]
-    if (any(d_est$.low < x_limits[1] | d_est$.high > x_limits[2])) {
+    ci_parts <- subgroup_forest_ci_parts(d_est, x_limits, to_axis, from_axis)
+    if (nrow(ci_parts$arrows) > 0) {
         warning(
             "Some CIs extend beyond the x-axis limits ",
             x_limits[1],
             "-",
             x_limits[2],
-            "; they are cut at the limits."
+            "; they are drawn with an arrow at the limit, and estimates ",
+            "beyond the limits are not drawn."
         )
     }
-    d_est$.low <- pmax(d_est$.low, x_limits[1])
-    d_est$.high <- pmin(d_est$.high, x_limits[2])
-    d_est$.est <- pmin(pmax(d_est$.est, x_limits[1]), x_limits[2])
 
     # shared y scale, background bands, heading rows and rules: identical in all
     # three panels, so the rows and bands continue across the column gaps
@@ -346,7 +415,12 @@ plot_subgroup_forest <- function(
         )
     }
     text <- function(...) {
-        ggplot2::geom_text(..., size = text_size, size.unit = "pt")
+        ggplot2::geom_text(
+            ...,
+            size = text_size,
+            size.unit = "pt",
+            family = font_family
+        )
     }
     header <- function(x, label, hjust = 0) {
         ggplot2::annotate(
@@ -358,13 +432,14 @@ plot_subgroup_forest <- function(
             fontface = "bold",
             size = text_size,
             size.unit = "pt",
+            family = font_family,
             lineheight = 0.9
         )
     }
     # explicit white backgrounds, so the unshaded levels are white whatever the
     # device's background (theme_void() has none)
     white <- ggplot2::element_rect(fill = "white", colour = NA)
-    text_theme <- ggplot2::theme_void() +
+    text_theme <- ggplot2::theme_void(base_family = font_family) +
         ggplot2::theme(
             plot.margin = ggplot2::margin(5, 0, 5, 0),
             plot.background = white
@@ -429,23 +504,48 @@ plot_subgroup_forest <- function(
     forest <- ggplot2::ggplot(d_est, ggplot2::aes(y = y)) +
         base_layers(x_limits) +
         # null line from the bottom of the rows to the header rule, not through
-        # the header
-        ggplot2::annotate(
-            "segment",
-            x = null_value,
-            xend = null_value,
-            y = -Inf,
-            yend = y$y_top + 0.2,
-            linewidth = 0.4,
-            color = "gray30"
-        ) +
-        ggplot2::geom_errorbar(
-            mapping = ggplot2::aes(xmin = .low, xmax = .high, color = .group),
-            orientation = "y",
-            width = 0.45,
+        # the header; skipped when outside x_limits, as clip = "off" would draw
+        # it over the text panels
+        (if (null_value >= x_limits[1] && null_value <= x_limits[2]) {
+            ggplot2::annotate(
+                "segment",
+                x = null_value,
+                xend = null_value,
+                y = -Inf,
+                yend = y$y_top + 0.2,
+                linewidth = 0.4,
+                color = "gray30"
+            )
+        }) +
+        # CIs: a capped whisker within the limits; a CI running past a limit
+        # gets an arrow at that limit instead of a cap, so it doesn't look like
+        # it ends there
+        ggplot2::geom_segment(
+            data = ci_parts$lines,
+            mapping = ggplot2::aes(x = x, xend = xend, yend = y, color = .group),
             linewidth = 0.45
         ) +
+        ggplot2::geom_segment(
+            data = ci_parts$caps,
+            mapping = ggplot2::aes(
+                x = x,
+                xend = x,
+                y = y - 0.225,
+                yend = y + 0.225,
+                color = .group
+            ),
+            linewidth = 0.45
+        ) +
+        ggplot2::geom_segment(
+            data = ci_parts$arrows,
+            mapping = ggplot2::aes(x = x, xend = xend, yend = y, color = .group),
+            linewidth = 0.45,
+            arrow = grid::arrow(length = grid::unit(0.05, "in"), type = "open")
+        ) +
+        # an estimate beyond the limits is not drawn (its arrow shows the
+        # direction), rather than drawn at a value it doesn't have
         ggplot2::geom_point(
+            data = ci_parts$points,
             mapping = ggplot2::aes(
                 x = .est,
                 color = .group,
@@ -465,7 +565,10 @@ plot_subgroup_forest <- function(
         ) +
         header(forest_header_x, lab[["forest"]], hjust = 0.5) +
         ggplot2::labs(x = lab[["x_axis"]], y = NULL) +
-        ggplot2::theme_classic(base_size = text_size) +
+        ggplot2::theme_classic(
+            base_size = text_size,
+            base_family = font_family
+        ) +
         ggplot2::theme(
             axis.line.y = ggplot2::element_blank(),
             axis.ticks.y = ggplot2::element_blank(),
@@ -522,11 +625,14 @@ plot_subgroup_forest <- function(
 #' @param ... Other arguments passed to [plot_subgroup_forest()]. Those that
 #'   change the layout (`subgroup`, `level`, `group_col`, `n_col`, `events_col`,
 #'   `pvalue_col`, `ref_col`, `estimate_digits`, `ref_label`, `labels`,
-#'   `text_size`, `forest_width`, `gap_level`, `gap_subgroup`) must match; the
+#'   `font_family`, `forest_width`, `gap_level`, `gap_subgroup`) must match; the
 #'   others are ignored, so the same arguments can be passed to both functions.
-#' @param row_height Numeric. Height of one row, in inches. Default `0.115`.
+#' @param text_size Numeric. Text size, in points, as for
+#'   [plot_subgroup_forest()]. Default `8`.
+#' @param row_height Numeric. Height of one row, in inches. Default
+#'   `0.115 * text_size / 7`, scaling with the text.
 #' @param axis_height Numeric. Height of the estimate axis and the plot margins,
-#'   in inches. Default `0.45`.
+#'   in inches. Default `0.45 * text_size / 7`, scaling with the text.
 #'
 #' @return Named numeric vector: `width` and `height`, in inches.
 #' @export
@@ -549,8 +655,9 @@ subgroup_forest_size <- function(
     ci_low,
     ci_high,
     ...,
-    row_height = 0.115,
-    axis_height = 0.45
+    text_size = 8,
+    row_height = 0.115 * text_size / 7,
+    axis_height = 0.45 * text_size / 7
 ) {
     stopifnot(
         "row_height must be a single positive number" = is.numeric(
@@ -569,6 +676,7 @@ subgroup_forest_size <- function(
         effect_size = effect_size,
         ci_low = ci_low,
         ci_high = ci_high,
+        text_size = text_size,
         ...
     )
     c(
@@ -582,7 +690,7 @@ subgroup_forest_size <- function(
 #' Shared by [plot_subgroup_forest()] and [subgroup_forest_size()], so the size
 #' always matches the plot.
 #'
-#' @param data,effect_size,ci_low,ci_high,subgroup,level,group_col,n_col,events_col,pvalue_col,ref_col,estimate_digits,pvalue_threshold,ref_label,labels,text_size,forest_width,gap_level,gap_subgroup
+#' @param data,effect_size,ci_low,ci_high,subgroup,level,group_col,n_col,events_col,pvalue_col,ref_col,estimate_digits,pvalue_threshold,ref_label,labels,text_size,font_family,forest_width,gap_level,gap_subgroup
 #'   As for [plot_subgroup_forest()].
 #' @param ... Ignored (other arguments of [plot_subgroup_forest()]).
 #' @return A list: `layout` (from `subgroup_forest_layout()`), `labels` (column
@@ -606,7 +714,8 @@ subgroup_forest_spec <- function(
     pvalue_threshold = 0.05,
     ref_label = "Ref.",
     labels = NULL,
-    text_size = 7,
+    text_size = 8,
+    font_family = "",
     forest_width = 1.8,
     gap_level = 0.2,
     gap_subgroup = 0.4,
@@ -616,6 +725,9 @@ subgroup_forest_spec <- function(
         "text_size must be a single positive number" = is.numeric(text_size) &&
             length(text_size) == 1 &&
             text_size > 0,
+        "font_family must be a single string" = is.character(font_family) &&
+            length(font_family) == 1 &&
+            !is.na(font_family),
         "forest_width must be a single positive number" = is.numeric(
             forest_width
         ) &&
@@ -628,10 +740,10 @@ subgroup_forest_spec <- function(
         subgroup = "Subgroup",
         group = "Group",
         counts = if (is.null(events_col)) "N" else "Events / N",
-        forest = "Hazard Ratio",
-        estimate = "HR (95% CI)",
+        forest = "Estimate",
+        estimate = "Estimate (95% CI)",
         pvalue = "P for\nInteraction",
-        x_axis = "Hazard Ratio (95% CI)"
+        x_axis = "Estimate (95% CI)"
     )
     unknown <- setdiff(names(labels), names(default_labels))
     if (length(unknown) > 0) {
@@ -659,7 +771,9 @@ subgroup_forest_spec <- function(
         gap_subgroup = gap_subgroup
     )
     d <- layout$rows
-    tw <- function(x, bold = FALSE) text_width_in(x, text_size, bold)
+    tw <- function(x, bold = FALSE) {
+        text_width_in(x, text_size, bold, family = font_family)
+    }
 
     # text columns, left to right, each `gap` inches after the widest text of
     # the column before it
@@ -824,6 +938,16 @@ subgroup_forest_layout <- function(
     if (!is.null(ref_col) && !is.logical(data[[ref_col]])) {
         stop("ref_col column must be logical")
     }
+    has_est <- !is.na(data[[effect_size]])
+    stopifnot(
+        "subgroup column must not contain NA" = !anyNA(data[[subgroup]]),
+        "group_col column must not contain NA" = is.null(group_col) ||
+            !anyNA(data[[group_col]]),
+        "rows with an effect_size need non-NA ci_low and ci_high" = !anyNA(
+            data[[ci_low]][has_est]
+        ) &&
+            !anyNA(data[[ci_high]][has_est])
+    )
     has_group <- !is.null(group_col)
     has_counts <- !is.null(n_col)
     has_pvalue <- !is.null(pvalue_col)
@@ -937,11 +1061,18 @@ subgroup_forest_layout <- function(
     )
     d$level_bold <- d$level == ""
     fmt <- paste0("%.", estimate_digits, "f")
+    # an en dash range is ambiguous next to minus signs ("-3.4--0.8"), so use
+    # " to " for the whole column when any CI bound is negative
+    ci_sep <- if (any(c(d$.low, d$.high) < 0, na.rm = TRUE)) {
+        " to "
+    } else {
+        "\u2013"
+    }
     d$est_label <- ifelse(
         missing,
-        "—",
+        "\u2014",
         sprintf(
-            paste0(fmt, " (", fmt, "–", fmt, ")"),
+            paste0(fmt, " (", fmt, ci_sep, fmt, ")"),
             d$.est,
             d$.low,
             d$.high
@@ -952,12 +1083,18 @@ subgroup_forest_layout <- function(
         d$events_label <- ""
         d$n_label <- ""
     } else if (is.null(events_col)) {
-        # N only: right-aligned, like the events in Events / N
-        d$events_label <- ifelse(missing, "—", count_text(d$.n))
+        # N only: right-aligned, like the events in Events / N. Counts stay
+        # visible when the estimate is missing (e.g. 0 / 45, no events, no HR),
+        # so the reader sees why; a dash only where the count itself is missing
+        d$events_label <- ifelse(is.na(d$.n), "\u2014", count_text(d$.n))
         d$n_label <- ""
     } else {
-        d$events_label <- ifelse(missing, "—", count_text(d$.events))
-        d$n_label <- ifelse(missing, "", paste0("/ ", count_text(d$.n)))
+        d$events_label <- ifelse(
+            is.na(d$.events),
+            "\u2014",
+            count_text(d$.events)
+        )
+        d$n_label <- ifelse(is.na(d$.n), "", paste0("/ ", count_text(d$.n)))
     }
     is_ref <- !is.na(d$.ref) & d$.ref
     if (has_pvalue) {
@@ -992,6 +1129,63 @@ subgroup_forest_layout <- function(
         has_group = has_group,
         has_counts = has_counts,
         has_pvalue = has_pvalue
+    )
+}
+
+#' Split the CIs into the pieces drawn in the forest panel
+#'
+#' A CI within `x_limits` is a line with a cap at each end. A CI running past a
+#' limit is cut there and drawn with an arrow at the cut end (no cap), and one
+#' entirely beyond a limit as a short arrow just inside that edge. Estimates
+#' beyond the limits are dropped, not moved onto the edge.
+#'
+#' @param d Rows with an estimate: `y`, `.group`, `.est`, `.low`, `.high`.
+#' @param x_limits Axis limits.
+#' @param to_axis,from_axis Transforms to and from the axis scale (`log`/`exp`
+#'   on a log scale), so the arrow stubs and midpoints are even on the axis.
+#' @return A list of data.frames: `lines` and `arrows` (`y`, `.group`, `x`,
+#'   `xend`), `caps` (`y`, `.group`, `x`) and `points` (rows of `d`).
+#' @noRd
+subgroup_forest_ci_parts <- function(d, x_limits, to_axis, from_axis) {
+    lo <- x_limits[1]
+    hi <- x_limits[2]
+    axis_at <- function(edge, frac) {
+        from_axis(to_axis(edge) + frac * diff(to_axis(x_limits)))
+    }
+    low_cut <- d$.low < lo
+    high_cut <- d$.high > hi
+    a <- pmin(pmax(d$.low, lo), hi)
+    b <- pmax(pmin(d$.high, hi), lo)
+    # wholly beyond a limit: a short stub ending in an arrow at that edge
+    a[d$.low > hi] <- axis_at(hi, -0.08)
+    b[d$.high < lo] <- axis_at(lo, 0.08)
+    seg <- function(keep, x, xend) {
+        data.frame(
+            y = d$y[keep],
+            .group = d$.group[keep],
+            x = x[keep],
+            xend = xend[keep]
+        )
+    }
+    only_low <- low_cut & !high_cut
+    only_high <- high_cut & !low_cut
+    both <- low_cut & high_cut
+    mid <- rep(axis_at(lo, 0.5), nrow(d))
+    list(
+        lines = seg(!low_cut & !high_cut, a, b),
+        # (no cap at the inner end of a stub, which isn't a CI bound)
+        caps = rbind(
+            seg(!low_cut & d$.low <= hi, a, a)[c("y", ".group", "x")],
+            seg(!high_cut & d$.high >= lo, b, b)[c("y", ".group", "x")]
+        ),
+        # arrows point from inside the limits toward the cut end
+        arrows = rbind(
+            seg(only_low, b, a),
+            seg(only_high, a, b),
+            seg(both, mid, a),
+            seg(both, mid, b)
+        ),
+        points = d[d$.est >= lo & d$.est <= hi, ]
     )
 }
 
@@ -1046,19 +1240,49 @@ subgroup_forest_scale <- function(values, groups, default, name) {
 
 #' Width of the widest of some strings, in inches
 #'
-#' Measured with the font metrics of a throwaway PDF device (the default sans
-#' font), so it works without an open graphics device and leaves the current one
-#' active.
+#' The default family (`""`) and the PDF families (`"sans"`, `"Helvetica"`,
+#' ...) are measured with the font metrics of a throwaway PDF device, so it
+#' works without an open graphics device and leaves the current one active.
+#' Any other family is measured with systemfonts, as drawn by ragg.
 #'
 #' @param x Character vector (`NA` and `""` are ignored; may contain newlines).
 #' @param size Font size, in points.
 #' @param bold Bold font?
+#' @param family Font family; `""` for the default sans font.
 #' @return The width of the widest string, in inches (0 if there are none).
 #' @noRd
-text_width_in <- function(x, size, bold = FALSE) {
+text_width_in <- function(x, size, bold = FALSE, family = "") {
     x <- x[!is.na(x) & x != ""]
     if (length(x) == 0) {
         return(0)
+    }
+    if (family != "" && !family %in% names(grDevices::pdfFonts())) {
+        rlang::check_installed(
+            "systemfonts",
+            version = "1.2.4",
+            reason = paste0("to measure the font family \"", family, "\".")
+        )
+        known <- c(
+            systemfonts::system_fonts()$family,
+            systemfonts::registry_fonts()$family
+        )
+        if (!family %in% known) {
+            warning(
+                "Font family \"",
+                family,
+                "\" not found; text is drawn and measured with a fallback font."
+            )
+        }
+        # string_width() does not break lines, so measure each line
+        lines <- unlist(strsplit(x, "\n", fixed = TRUE))
+        px <- systemfonts::string_width(
+            lines,
+            family = family,
+            weight = if (bold) "bold" else "normal",
+            size = size,
+            res = 72
+        )
+        return(max(px) / 72)
     }
     old_dev <- grDevices::dev.cur()
     grDevices::pdf(NULL)
@@ -1066,16 +1290,11 @@ text_width_in <- function(x, size, bold = FALSE) {
         grDevices::dev.off()
         if (old_dev > 1) grDevices::dev.set(old_dev)
     })
-    gp <- grid::gpar(fontsize = size, fontface = if (bold) "bold" else "plain")
-    max(vapply(
-        x,
-        function(s) {
-            grid::convertWidth(
-                grid::grobWidth(grid::textGrob(s, gp = gp)),
-                "in",
-                valueOnly = TRUE
-            )
-        },
-        numeric(1)
-    ))
+    gp <- grid::gpar(
+        fontsize = size,
+        fontface = if (bold) "bold" else "plain",
+        fontfamily = family
+    )
+    grid::pushViewport(grid::viewport(gp = gp))
+    max(grid::convertWidth(grid::stringWidth(x), "in", valueOnly = TRUE))
 }
