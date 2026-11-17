@@ -57,6 +57,8 @@
   : Gene–Pathway network plot (cnetplot)
 - [`plot_pvalue_barplot()`](https://github.com/jarbet/statplot/reference/plot_pvalue_barplot.md)
   : Plot p-value barplot
+- [`plot_subgroup_forest()`](https://github.com/jarbet/statplot/reference/plot_subgroup_forest.md)
+  : Table-style subgroup forest plot
 - [`plot_survival_curves()`](https://github.com/jarbet/statplot/reference/plot_survival_curves.md)
   : Kaplan–Meier plot from a Surv object
 - [`plot_upset()`](https://github.com/jarbet/statplot/reference/plot_upset.md)
@@ -67,6 +69,8 @@
   : Render a collaborator comment for Quarto output
 - [`run_gsea()`](https://github.com/jarbet/statplot/reference/run_gsea.md)
   : Run Gene Set Enrichment Analysis (GSEA)
+- [`subgroup_forest_size()`](https://github.com/jarbet/statplot/reference/subgroup_forest_size.md)
+  : Figure size for a table-style subgroup forest plot
 - [`table_basic()`](https://github.com/jarbet/statplot/reference/table_basic.md)
   : Create a basic table using tinytable
 - [`table_overall()`](https://github.com/jarbet/statplot/reference/table_overall.md)
