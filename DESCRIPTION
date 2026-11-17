@@ -13,8 +13,10 @@ Suggests:
     clusterProfiler,
     DOSE,
     enrichplot,
+    systemfonts (>= 1.2.4),
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Config/testthat/parallel: true
 Imports: 
     asht,
     BoutrosLab.plotting.general,
@@ -25,7 +27,7 @@ Imports:
     effectsize,
     forcats,
     ggnewscale,
-    ggplot2,
+    ggplot2 (>= 3.5.0),
     ggtext,
     ggraph,
     ggsurvfit,
@@ -55,4 +57,4 @@ BugReports: https://github.com/jarbet/statplot/issues
 Depends: 
     R (>= 4.1)
 LazyData: true
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.1
