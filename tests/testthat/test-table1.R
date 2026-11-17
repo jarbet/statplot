@@ -9,7 +9,7 @@ make_df <- function(n = 120) {
 }
 
 test_that("ungrouped table returns gt with svg graphics", {
-    tab <- table_visual(make_df()[, -1])
+    tab <- table1(make_df()[, -1])
     expect_s3_class(tab, "gt_tbl")
     html <- as.character(gt::as_raw_html(tab, inline_css = FALSE))
     expect_match(html, "<svg")
@@ -18,7 +18,7 @@ test_that("ungrouped table returns gt with svg graphics", {
 })
 
 test_that("grouped table has overall + group columns and colored swatches", {
-    tab <- table_visual(make_df(), name_groupvar = "grp")
+    tab <- table1(make_df(), name_groupvar = "grp")
     expect_true(all(c("stat_0", "stat_1", "stat_2", "stat_3") %in% names(tab[["_data"]])))
     html <- as.character(gt::as_raw_html(tab, inline_css = FALSE))
     expect_match(html, "#0072B2")
@@ -26,41 +26,41 @@ test_that("grouped table has overall + group columns and colored swatches", {
 })
 
 test_that("overall = FALSE drops overall column", {
-    tab <- table_visual(make_df(), name_groupvar = "grp", overall = FALSE)
+    tab <- table1(make_df(), name_groupvar = "grp", overall = FALSE)
     html <- as.character(gt::as_raw_html(tab, inline_css = FALSE))
     expect_false(grepl("Overall", html))
 })
 
 test_that("continuous_plot options all render", {
     for (type in c("violin_box", "boxplot", "density")) {
-        tab <- table_visual(make_df()[, -1], continuous_plot = type)
+        tab <- table1(make_df()[, -1], continuous_plot = type)
         html <- as.character(gt::as_raw_html(tab, inline_css = FALSE))
         expect_match(html, "<svg")
     }
-    expect_error(table_visual(make_df(), continuous_plot = "nope"))
+    expect_error(table1(make_df(), continuous_plot = "nope"))
 })
 
 test_that("custom colors are validated and applied", {
-    tab <- table_visual(
+    tab <- table1(
         make_df(), "grp",
         colors = c(A = "#111111", B = "#222222", C = "#333333")
     )
     html <- as.character(gt::as_raw_html(tab, inline_css = FALSE))
     expect_match(html, "#222222")
-    expect_error(table_visual(make_df(), "grp", colors = c(A = "red")), "missing group")
-    expect_error(table_visual(make_df(), "grp", colors = "red"), "at least one color")
+    expect_error(table1(make_df(), "grp", colors = c(A = "red")), "missing group")
+    expect_error(table1(make_df(), "grp", colors = "red"), "at least one color")
 })
 
 test_that("bar widths reflect column percentages", {
     d <- data.frame(x = c(rep("a", 3), "b"))
-    html <- as.character(gt::as_raw_html(table_visual(d, bar_width = 100), inline_css = FALSE))
+    html <- as.character(gt::as_raw_html(table1(d, bar_width = 100), inline_css = FALSE))
     expect_match(html, 'width="75.0"')
     expect_match(html, 'width="25.0"')
 })
 
 test_that("binary bars use the level gtsummary displays", {
     bar_html <- function(d) {
-        as.character(gt::as_raw_html(table_visual(d, bar_width = 100), inline_css = FALSE))
+        as.character(gt::as_raw_html(table1(d, bar_width = 100), inline_css = FALSE))
     }
     # 0/1 numeric: shown level is 1
     html <- bar_html(data.frame(y = c(1, 1, 1, 0)))
@@ -93,16 +93,16 @@ test_that("gtsummary p25/p75 use type-2 quantiles, as the box plot assumes", {
 
 test_that("constant and all-NA numeric variables do not error", {
     d <- data.frame(k = rep(5, 10), z = rep(NA_real_, 10), s = letters[1:10])
-    expect_s3_class(table_visual(d), "gt_tbl")
+    expect_s3_class(table1(d), "gt_tbl")
 })
 
 test_that("invalid inputs error", {
-    expect_error(table_visual("x"))
-    expect_error(table_visual(make_df(), name_groupvar = "nope"))
+    expect_error(table1("x"))
+    expect_error(table1(make_df(), name_groupvar = "nope"))
 })
 
 test_that("combined layout draws one distribution column with a lane per group", {
-    tab <- table_visual(make_df(), name_groupvar = "grp", plot_layout = "combined")
+    tab <- table1(make_df(), name_groupvar = "grp", plot_layout = "combined")
     expect_true("distribution" %in% names(tab[["_data"]]))
     html <- as.character(gt::as_raw_html(tab, inline_css = FALSE))
     expect_match(html, "Distribution")
@@ -119,7 +119,7 @@ test_that("combined layout draws one distribution column with a lane per group",
 
 test_that("combined bars reflect column percentages per group", {
     d <- data.frame(g = c("A", "A", "B", "B"), x = c("u", "u", "u", "v"))
-    tab <- table_visual(d, "g", overall = FALSE, plot_layout = "combined", plot_width = 100)
+    tab <- table1(d, "g", overall = FALSE, plot_layout = "combined", plot_width = 100)
     html <- as.character(gt::as_raw_html(tab, inline_css = FALSE))
     expect_match(html, "<title>A: 100.0%</title>")
     expect_match(html, "<title>B: 50.0%</title>")
@@ -127,14 +127,14 @@ test_that("combined bars reflect column percentages per group", {
 })
 
 test_that("plot_layout is ignored without a group and validated", {
-    tab <- table_visual(make_df()[, -1], plot_layout = "combined")
+    tab <- table1(make_df()[, -1], plot_layout = "combined")
     expect_false("distribution" %in% names(tab[["_data"]]))
-    expect_error(table_visual(make_df(), "grp", plot_layout = "nope"))
+    expect_error(table1(make_df(), "grp", plot_layout = "nope"))
 })
 
 test_that("combined layout works for every continuous_plot type", {
     for (type in c("violin_box", "boxplot", "density")) {
-        tab <- table_visual(make_df(), "grp", continuous_plot = type, plot_layout = "combined")
+        tab <- table1(make_df(), "grp", continuous_plot = type, plot_layout = "combined")
         html <- as.character(gt::as_raw_html(tab, inline_css = FALSE))
         expect_match(html, "Distribution of age")
     }
@@ -143,19 +143,19 @@ test_that("combined layout works for every continuous_plot type", {
 test_that("show_outliers toggles outlier dots in both layouts", {
     for (layout in c("columns", "combined")) {
         on <- as.character(gt::as_raw_html(
-            table_visual(make_df(), "grp", plot_layout = layout), inline_css = FALSE))
+            table1(make_df(), "grp", plot_layout = layout), inline_css = FALSE))
         off <- as.character(gt::as_raw_html(
-            table_visual(make_df(), "grp", plot_layout = layout, show_outliers = FALSE),
+            table1(make_df(), "grp", plot_layout = layout, show_outliers = FALSE),
             inline_css = FALSE))
         expect_match(on, "<circle")
         expect_false(grepl("<circle", off))
         expect_match(off, "<rect") # boxes still drawn
     }
-    expect_error(table_visual(make_df(), show_outliers = NA))
+    expect_error(table1(make_df(), show_outliers = NA))
 })
 
 test_that("combined continuous plot spans the variable's statistic rows", {
-    tab <- table_visual(make_df(), "grp", plot_layout = "combined")
+    tab <- table1(make_df(), "grp", plot_layout = "combined")
     tb <- tab[["_data"]]
     age_rows <- which(tb$variable == "age")
     html <- as.character(gt::as_raw_html(tab, inline_css = TRUE))
@@ -173,14 +173,14 @@ test_that("combined continuous plot spans the variable's statistic rows", {
 test_that("axis tick labels are shown by default and can be turned off", {
     for (layout in c("columns", "combined")) {
         on <- as.character(gt::as_raw_html(
-            table_visual(make_df(), "grp", plot_layout = layout), inline_css = FALSE))
+            table1(make_df(), "grp", plot_layout = layout), inline_css = FALSE))
         off <- as.character(gt::as_raw_html(
-            table_visual(make_df(), "grp", plot_layout = layout, show_axis = FALSE),
+            table1(make_df(), "grp", plot_layout = layout, show_axis = FALSE),
             inline_css = FALSE))
         expect_false(grepl("<text", off))
         expect_match(on, "<text[^>]*>[0-9,.-]+</text>")
     }
-    expect_error(table_visual(make_df(), show_axis = NA))
+    expect_error(table1(make_df(), show_axis = NA))
 })
 
 test_that("axis tick labels stay in range and don't overlap", {
@@ -198,7 +198,7 @@ test_that("axis tick labels stay in range and don't overlap", {
 })
 
 test_that("axis_breaks sets ticks per variable; others stay automatic", {
-    tab <- table_visual(
+    tab <- table1(
         make_df(), "grp", plot_layout = "columns",
         axis_breaks = list(age = c(0, 75, 150))
     )
@@ -215,18 +215,18 @@ test_that("axis_breaks names become labels and out-of-range breaks widen the sca
     # break at 0 below the data range is still drawn inside the graphic
     d <- data.frame(x = 50:70)
     html <- as.character(gt::as_raw_html(
-        table_visual(d, show_axis = TRUE, axis_breaks = list(x = c(0, 50, 100))),
+        table1(d, show_axis = TRUE, axis_breaks = list(x = c(0, 50, 100))),
         inline_css = FALSE))
     expect_match(html, ">0</text>")
     expect_match(html, ">100</text>")
 })
 
 test_that("axis_breaks is validated", {
-    expect_error(table_visual(make_df(), show_axis = TRUE, axis_breaks = c(1, 2)), "named list")
-    expect_error(table_visual(make_df(), show_axis = TRUE, axis_breaks = list(nope = 1)), "not found")
-    expect_error(table_visual(make_df(), show_axis = TRUE, axis_breaks = list(age = "a")), "finite numeric")
+    expect_error(table1(make_df(), show_axis = TRUE, axis_breaks = c(1, 2)), "named list")
+    expect_error(table1(make_df(), show_axis = TRUE, axis_breaks = list(nope = 1)), "not found")
+    expect_error(table1(make_df(), show_axis = TRUE, axis_breaks = list(age = "a")), "finite numeric")
     expect_warning(
-        table_visual(make_df(), show_axis = FALSE, axis_breaks = list(age = c(20, 40))),
+        table1(make_df(), show_axis = FALSE, axis_breaks = list(age = c(20, 40))),
         "ignored"
     )
 })
@@ -240,7 +240,7 @@ make_miss_df <- function() {
 
 test_that("N missing row shows n (%) with hatched bars in both layouts", {
     for (layout in c("columns", "combined")) {
-        tab <- table_visual(make_miss_df(), "grp", plot_layout = layout)
+        tab <- table1(make_miss_df(), "grp", plot_layout = layout)
         tb <- tab[["_data"]]
         miss <- tb[tb$variable == "sex" & tb$row_type == "missing", ]
         expect_match(miss$stat_0, "^[0-9]+ \\([0-9.]+%\\)$")
@@ -252,7 +252,7 @@ test_that("N missing row shows n (%) with hatched bars in both layouts", {
 
 test_that("% missing bar is out of all observations in the column", {
     d <- data.frame(x = c("a", "a", NA, NA))
-    html <- as.character(gt::as_raw_html(table_visual(d, bar_width = 100), inline_css = FALSE))
+    html <- as.character(gt::as_raw_html(table1(d, bar_width = 100), inline_css = FALSE))
     # 2 of 4 missing -> 50; category "a" is 100% of non-missing
     expect_match(html, 'width="50.0" height="10" fill="url\\(#tv-hatch-')
     expect_match(html, 'width="100.0" height="10" fill="#7F7F7F"')
@@ -261,7 +261,7 @@ test_that("% missing bar is out of all observations in the column", {
 test_that("combined continuous plots do not span the N missing row", {
     d <- make_df()
     d$age[1:10] <- NA
-    tab <- table_visual(d, "grp", plot_layout = "combined")
+    tab <- table1(d, "grp", plot_layout = "combined")
     tb <- tab[["_data"]]
     html <- as.character(gt::as_raw_html(tab, inline_css = FALSE))
     miss_row <- which(tb$variable == "age" & tb$row_type == "missing")
@@ -273,27 +273,27 @@ test_that("combined continuous plots do not span the N missing row", {
 
 test_that("missing group rows are excluded with a note, or shown as a column", {
     d <- make_miss_df()
-    ex <- table_visual(d, "grp")
+    ex <- table1(d, "grp")
     html <- as.character(gt::as_raw_html(ex, inline_css = FALSE))
     expect_match(html, "3 observations with missing grp excluded.")
     expect_match(html, "N = 117")
-    sh <- table_visual(d, "grp", missing_group = "show")
+    sh <- table1(d, "grp", missing_group = "show")
     html <- as.character(gt::as_raw_html(sh, inline_css = FALSE))
     expect_false(grepl("excluded", html))
     expect_match(html, "Missing")
     expect_match(html, "N = 120")
     expect_true("stat_4" %in% names(sh[["_data"]]))
     # named colors may include the Missing group
-    sh2 <- table_visual(d, "grp", missing_group = "show",
+    sh2 <- table1(d, "grp", missing_group = "show",
                         colors = c(A = "#111111", B = "#222222", C = "#333333", Missing = "#444444"))
     expect_match(as.character(gt::as_raw_html(sh2, inline_css = FALSE)), "#444444")
 })
 
 test_that("denominator notes appear only when relevant", {
-    html <- as.character(gt::as_raw_html(table_visual(make_df()[, -1]), inline_css = FALSE))
+    html <- as.character(gt::as_raw_html(table1(make_df()[, -1]), inline_css = FALSE))
     expect_false(grepl("Category percentages exclude", html)) # no missing categories
     expect_match(html, "% missing is out of all observations") # age has an NA
-    html <- as.character(gt::as_raw_html(table_visual(make_miss_df(), "grp"), inline_css = FALSE))
+    html <- as.character(gt::as_raw_html(table1(make_miss_df(), "grp"), inline_css = FALSE))
     expect_match(html, "Category percentages exclude missing values.")
 })
 
@@ -304,8 +304,8 @@ test_that("header_align centers column labels by default, left optional", {
         aligns <- unlist(lapply(st$styles, function(x) x$cell_text$align))
         utils::tail(aligns, 1)
     }
-    expect_equal(label_align(table_visual(make_df(), "grp"), "stat_1"), "center")
-    expect_equal(label_align(table_visual(make_df(), "grp", plot_layout = "combined"), "distribution"), "center")
-    expect_equal(label_align(table_visual(make_df(), "grp", header_align = "left"), "stat_1"), "left")
-    expect_error(table_visual(make_df(), header_align = "right"))
+    expect_equal(label_align(table1(make_df(), "grp"), "stat_1"), "center")
+    expect_equal(label_align(table1(make_df(), "grp", plot_layout = "combined"), "distribution"), "center")
+    expect_equal(label_align(table1(make_df(), "grp", header_align = "left"), "stat_1"), "left")
+    expect_error(table1(make_df(), header_align = "right"))
 })

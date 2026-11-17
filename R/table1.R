@@ -98,34 +98,34 @@
 #' # ---- Defaults ----
 #'
 #' # Whole cohort: one column of summaries with inline graphics
-#' table_visual(df)
+#' table1(df)
 #'
 #' # By group: groups drawn together in one "Distribution" column for direct
 #' # comparison
-#' table_visual(df, name_groupvar = "grp")
+#' table1(df, name_groupvar = "grp")
 #'
 #' # Missing data, whole cohort: "N missing" rows show n (%) with hatched bars
-#' table_visual(df_miss)
+#' table1(df_miss)
 #'
 #' # Missing data by group
-#' table_visual(df_miss, name_groupvar = "grp")
+#' table1(df_miss, name_groupvar = "grp")
 #'
 #' # ---- Other options ----
 #'
 #' # Separate graphic in each group's column instead of a Distribution column
-#' table_visual(df, name_groupvar = "grp", plot_layout = "columns")
+#' table1(df, name_groupvar = "grp", plot_layout = "columns")
 #'
 #' # Missing data by group, with graphics in each group's column
-#' table_visual(df_miss, name_groupvar = "grp", plot_layout = "columns")
+#' table1(df_miss, name_groupvar = "grp", plot_layout = "columns")
 #'
 #' # Boxplots only (no violin) and no outlier dots
-#' table_visual(df, name_groupvar = "grp", continuous_plot = "boxplot", show_outliers = FALSE)
+#' table1(df, name_groupvar = "grp", continuous_plot = "boxplot", show_outliers = FALSE)
 #'
 #' # Hide the x-axis tick labels for a more compact table
-#' table_visual(df, name_groupvar = "grp", show_axis = FALSE)
+#' table1(df, name_groupvar = "grp", show_axis = FALSE)
 #'
 #' # Choose your own ticks for some variables (names become tick labels)
-#' table_visual(
+#' table1(
 #'   df,
 #'   name_groupvar = "grp",
 #'   axis_breaks = list(
@@ -134,7 +134,7 @@
 #'   )
 #' )
 #' @export
-table_visual <- function(
+table1 <- function(
     d,
     name_groupvar = NULL,
     overall = TRUE,
