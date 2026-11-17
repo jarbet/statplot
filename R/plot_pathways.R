@@ -453,7 +453,7 @@ plot_pathways <- function(
     if (!is.null(max_genes_shown) && length(abs_fc_path) > 0) {
         if (sum(abs_fc_path >= effective_threshold) > max_genes_shown) {
             effective_threshold <- max(
-                unname(quantile(
+                unname(stats::quantile(
                     abs_fc_path,
                     probs = 1 - max_genes_shown / length(abs_fc_path)
                 )),

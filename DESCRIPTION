@@ -13,8 +13,11 @@ Suggests:
     clusterProfiler,
     DOSE,
     enrichplot,
+    flextable,
     systemfonts (>= 1.2.4),
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr,
+    xml2
 Config/testthat/edition: 3
 Config/testthat/parallel: true
 Imports: 
@@ -34,6 +37,7 @@ Imports:
     ggtangle,
     ggupset,
     grid,
+    gt (>= 0.10.0),
     gtsummary,
     htmltools,
     igraph,
@@ -51,7 +55,10 @@ Imports:
     tibble,
     tidyr,
     tinytable,
-    UpSetR
+    UpSetR,
+    grDevices,
+    stats,
+    utils
 URL: https://github.com/jarbet/statplot
 BugReports: https://github.com/jarbet/statplot/issues
 Depends: 

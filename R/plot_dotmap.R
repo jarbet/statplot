@@ -72,7 +72,8 @@
 #' df$row <- factor(df$row, levels = rev(genes))
 #' plot_dotmap(df, x = "col", y = "row", effect = "effect", p = "p",
 #'             mlog10_transform_pvalue = TRUE)
-#' # Add Fisher's combination pvalue barplot on the right which combines p-values across columns for each row category
+#' # Add Fisher's combination pvalue barplot on the right which combines
+#' # p-values across columns for each row category
 #' plot_dotmap(
 #'   df,
 #'   x = "col",
@@ -92,9 +93,12 @@
 #' # consistent correction across several plots) and want the barplot to display
 #' # those exact values rather than re-deriving them.
 #' #
-#' # A common use case is when you pre-compute qvalues for tons of tests (too many to plot visually)
-#' # and you want to use the dotmap just for a small subset of those tests but still have the barplot reflect the same q-values that you have already computed for all tests.
-#' # In that case you can pass the pre-computed q-values via a column in your original data frame and specify that column name in custom_qvalues
+#' # A common use case is when you pre-compute qvalues for tons of tests (too
+#' # many to plot visually) and you want to use the dotmap just for a small
+#' # subset of those tests, but still have the barplot reflect the same
+#' # q-values that you have already computed for all tests. In that case you
+#' # can pass the pre-computed q-values via a column in your original data
+#' # frame and specify that column name in custom_qvalues
 #' #
 #' # --- show only top N significant rows in combined barplot ---
 #' # Use `only_show_top_sig` to restrict the combined p-value barplot to the

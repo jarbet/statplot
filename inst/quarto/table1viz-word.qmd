@@ -1,0 +1,88 @@
+---
+title: "table1viz in Word"
+format: docx
+---
+
+<!--
+Manual check of table1viz() Word output: render with
+  quarto render inst/quarto/table1viz-word.qmd
+from the package root and open the .docx. Each table should be a native,
+editable Word table with the graphics drawn as vector shapes in the cells.
+Loads the development version of the package from the source tree (two
+levels up from this file).
+-->
+
+```{r}
+#| include: false
+devtools::load_all("../..", quiet = TRUE)
+set.seed(1)
+df <- data.frame(
+  grp = sample(c("A", "B", "C"), 200, TRUE),
+  age = rnorm(200, 60, 15),
+  los = rlnorm(200, 5, 0.8),
+  sex = sample(c("Female", "Male"), 200, TRUE),
+  diabetes = rbinom(200, 1, 0.4)
+)
+df_miss <- df
+df_miss$los[sample(200, 30)] <- NA
+df_miss$sex[sample(200, 12)] <- NA
+```
+
+## By group (combined layout), defaults
+
+```{r}
+#| echo: false
+table1viz(df_miss, name_groupvar = "grp")
+```
+
+## By group, graphics in each column
+
+```{r}
+#| echo: false
+table1viz(df_miss, name_groupvar = "grp", plot_layout = "columns")
+```
+
+## Whole cohort
+
+```{r}
+#| echo: false
+table1viz(df_miss)
+```
+
+## Variable dividers and bar axes (combined layout)
+
+```{r}
+#| echo: false
+table1viz(
+  df_miss,
+  name_groupvar = "grp",
+  variable_divider = TRUE,
+  bar_axis = TRUE
+)
+```
+
+## Variable dividers and bar axes (columns layout)
+
+```{r}
+#| echo: false
+table1viz(
+  df_miss,
+  name_groupvar = "grp",
+  plot_layout = "columns",
+  variable_divider = TRUE,
+  bar_axis = TRUE
+)
+```
+
+## No Overall divider, custom bar ticks
+
+```{r}
+#| echo: false
+table1viz(
+  df_miss,
+  name_groupvar = "grp",
+  overall_divider = FALSE,
+  bar_axis = TRUE,
+  bar_axis_breaks = c(0, 25, 50, 75, 100)
+)
+```

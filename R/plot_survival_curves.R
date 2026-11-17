@@ -420,7 +420,7 @@ plot_survival_curves <- function(
     }
 
     if (is.null(time_limits) || is.null(x_breaks)) {
-        surv_formula_tmp <- as.formula(
+        surv_formula_tmp <- stats::as.formula(
             sprintf(".surv_obj ~ `%s`", group_var)
         )
 
@@ -508,7 +508,7 @@ plot_survival_curves <- function(
     }
 
     if (n_groups == 2) {
-        cox_formula <- as.formula(
+        cox_formula <- stats::as.formula(
             sprintf(".surv_obj ~ `%s`", group_var)
         )
 
@@ -543,7 +543,7 @@ plot_survival_curves <- function(
             p_symbol = "= "
         )
     } else {
-        sd_formula <- as.formula(
+        sd_formula <- stats::as.formula(
             sprintf(".surv_obj ~ `%s`", group_var)
         )
 
@@ -581,7 +581,7 @@ plot_survival_curves <- function(
         annot_label <- custom_hr_pvalue_text
     }
 
-    surv_formula <- as.formula(
+    surv_formula <- stats::as.formula(
         sprintf(".surv_obj ~ `%s`", group_var)
     )
 
