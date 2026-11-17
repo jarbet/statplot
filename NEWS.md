@@ -1,4 +1,4 @@
-# statplot (development version)
+# statplot 0.9.0 - 2026-11-17
 
 ## Added
 
