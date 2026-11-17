@@ -492,7 +492,8 @@ test_that("overall_divider draws a line right of the Overall column", {
         on <- stat0_cells(table1viz(make_df(), "grp", overall_divider = TRUE, plot_layout = lay))
         expect_true(all(grepl("border-right[^;]*#9E9E9E", on)))
     }
-    expect_false(any(grepl("#9E9E9E", stat0_cells(table1viz(make_df(), "grp")))))
+    expect_true(all(grepl("border-right[^;]*#9E9E9E", stat0_cells(table1viz(make_df(), "grp"))))) # default
+    expect_false(any(grepl("#9E9E9E", stat0_cells(table1viz(make_df(), "grp", overall_divider = FALSE)))))
     # ignored without group columns
     expect_s3_class(table1viz(make_df(), overall_divider = TRUE), "gt_tbl")
     expect_s3_class(table1viz(make_df(), "grp", overall = FALSE, overall_divider = TRUE), "gt_tbl")
@@ -504,6 +505,6 @@ test_that("overall_divider draws a line right of the Overall column", {
     j <- match("stat_0", ft$col_keys)
     expect_true(all(ft$body$styles$cells$border.color.right$data[, j] == "#9E9E9E"))
     expect_true(all(ft$header$styles$cells$border.color.right$data[, j] == "#9E9E9E"))
-    ft <- table1viz(make_df(), "grp", output = "flextable")
+    ft <- table1viz(make_df(), "grp", overall_divider = FALSE, output = "flextable")
     expect_false(any(ft$body$styles$cells$border.color.right$data[, j] == "#9E9E9E"))
 })

@@ -74,7 +74,7 @@
 #'   distribution column.
 #' @param overall_divider logical(1). Draw a vertical line to the right of
 #'   the Overall column to set it apart from the group columns? Default
-#'   `FALSE`. Only used when grouping with `overall = TRUE`.
+#'   `TRUE`. Only used when grouping with `overall = TRUE`.
 #' @param output character(1). Table type to return: `"auto"` (default)
 #'   returns a flextable when knitting to Word (`.docx`, e.g. Quarto
 #'   `format: docx`) and a gt table otherwise; `"gt"` or `"flextable"` force
@@ -141,8 +141,8 @@
 #' # Boxplots only (no violin) and no outlier dots
 #' table1viz(df, name_groupvar = "grp", continuous_plot = "boxplot", show_outliers = FALSE)
 #'
-#' # Vertical line separating the Overall column from the groups
-#' table1viz(df, name_groupvar = "grp", overall_divider = TRUE)
+#' # No vertical line between the Overall column and the groups
+#' table1viz(df, name_groupvar = "grp", overall_divider = FALSE)
 #'
 #' # Hide the x-axis tick labels for a more compact table
 #' table1viz(df, name_groupvar = "grp", show_axis = FALSE)
@@ -196,7 +196,7 @@ table1viz <- function(
     plot_layout = c("combined", "columns"),
     distribution_label = '**Distribution**',
     header_align = c("left", "center"),
-    overall_divider = FALSE,
+    overall_divider = TRUE,
     output = c("auto", "gt", "flextable")
 ) {
     missing <- match.arg(missing)

@@ -28,7 +28,7 @@ table1viz(
   plot_layout = c("combined", "columns"),
   distribution_label = "**Distribution**",
   header_align = c("left", "center"),
-  overall_divider = FALSE,
+  overall_divider = TRUE,
   output = c("auto", "gt", "flextable")
 )
 }
@@ -110,7 +110,7 @@ Overall, group and Distribution columns: \code{"left"} (default) or \code{"cente
 
 \item{overall_divider}{logical(1). Draw a vertical line to the right of
 the Overall column to set it apart from the group columns? Default
-\code{FALSE}. Only used when grouping with \code{overall = TRUE}.}
+\code{TRUE}. Only used when grouping with \code{overall = TRUE}.}
 
 \item{output}{character(1). Table type to return: \code{"auto"} (default)
 returns a flextable when knitting to Word (\code{.docx}, e.g. Quarto
@@ -197,8 +197,8 @@ table1viz(df_miss, name_groupvar = "grp", plot_layout = "columns")
 # Boxplots only (no violin) and no outlier dots
 table1viz(df, name_groupvar = "grp", continuous_plot = "boxplot", show_outliers = FALSE)
 
-# Vertical line separating the Overall column from the groups
-table1viz(df, name_groupvar = "grp", overall_divider = TRUE)
+# No vertical line between the Overall column and the groups
+table1viz(df, name_groupvar = "grp", overall_divider = FALSE)
 
 # Hide the x-axis tick labels for a more compact table
 table1viz(df, name_groupvar = "grp", show_axis = FALSE)
