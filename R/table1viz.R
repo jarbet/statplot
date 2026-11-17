@@ -69,15 +69,35 @@
 #'   `"columns"` instead draws a separate graphic in each group's column.
 #'   Ignored when `name_groupvar` is `NULL`.
 #' @param header_align character(1). Alignment of the column headers for the
-#'   Overall, group and Distribution columns: `"center"` (default) or `"left"`.
+#'   Overall, group and Distribution columns: `"left"` (default) or `"center"`.
 #' @param distribution_label character(1). Header of the combined
 #'   distribution column.
+#' @param overall_divider logical(1). Draw a vertical line to the right of
+#'   the Overall column to set it apart from the group columns? Default
+#'   `FALSE`. Only used when grouping with `overall = TRUE`.
+#' @param output character(1). Table type to return: `"auto"` (default)
+#'   returns a flextable when knitting to Word (`.docx`, e.g. Quarto
+#'   `format: docx`) and a gt table otherwise; `"gt"` or `"flextable"` force
+#'   one. Requires the flextable and xml2 packages for `"flextable"`.
 #'
 #' @references Furmaga J, et al. A new type of table one: showing instead of
 #'   telling. *Journal of Clinical Epidemiology*. 2026;196.
 #'
-#' @return A `gt::gt_tbl` object. Graphics are inline SVG, so they render in
-#'   HTML output (Quarto/R Markdown HTML, RStudio viewer, `gt::gtsave(".html")`).
+#' @return A `gt::gt_tbl` (`output = "gt"`) or a `flextable` with class
+#'   `"table1viz_flextable"` (`output = "flextable"`).
+#'
+#'   The gt table draws graphics as inline SVG, so it renders in HTML output
+#'   (Quarto/R Markdown HTML, RStudio viewer, `gt::gtsave(".html")`).
+#'
+#'   The flextable is for Word. When knitted to `.docx` it becomes a native,
+#'   editable Word table: text, fonts, borders and widths can be edited in
+#'   Word, and the graphics are Word vector shapes (drawing groups) inside the
+#'   cells, so no image files or post-processing are needed. Graphics are
+#'   stored as placeholders until knitting, so print it or knit it as is;
+#'   flextable functions that restyle the table (e.g. [flextable::fontsize()])
+#'   keep them, but [flextable::save_as_docx()] and other officer exports do
+#'   not draw them. When printed or knitted to HTML, the graphics are drawn as
+#'   SVG.
 #'
 #' @examples
 #' # Simulated cohort: group, two continuous, two categorical variables
@@ -98,34 +118,44 @@
 #' # ---- Defaults ----
 #'
 #' # Whole cohort: one column of summaries with inline graphics
-#' table1(df)
+#' table1viz(df)
 #'
 #' # By group: groups drawn together in one "Distribution" column for direct
 #' # comparison
-#' table1(df, name_groupvar = "grp")
+#' table1viz(df, name_groupvar = "grp")
 #'
 #' # Missing data, whole cohort: "N missing" rows show n (%) with hatched bars
-#' table1(df_miss)
+#' table1viz(df_miss)
 #'
 #' # Missing data by group
-#' table1(df_miss, name_groupvar = "grp")
+#' table1viz(df_miss, name_groupvar = "grp")
 #'
 #' # ---- Other options ----
 #'
 #' # Separate graphic in each group's column instead of a Distribution column
-#' table1(df, name_groupvar = "grp", plot_layout = "columns")
+#' table1viz(df, name_groupvar = "grp", plot_layout = "columns")
 #'
 #' # Missing data by group, with graphics in each group's column
-#' table1(df_miss, name_groupvar = "grp", plot_layout = "columns")
+#' table1viz(df_miss, name_groupvar = "grp", plot_layout = "columns")
 #'
 #' # Boxplots only (no violin) and no outlier dots
-#' table1(df, name_groupvar = "grp", continuous_plot = "boxplot", show_outliers = FALSE)
+#' table1viz(df, name_groupvar = "grp", continuous_plot = "boxplot", show_outliers = FALSE)
+#'
+#' # Vertical line separating the Overall column from the groups
+#' table1viz(df, name_groupvar = "grp", overall_divider = TRUE)
 #'
 #' # Hide the x-axis tick labels for a more compact table
-#' table1(df, name_groupvar = "grp", show_axis = FALSE)
+#' table1viz(df, name_groupvar = "grp", show_axis = FALSE)
+#'
+#' # Word: in a Quarto document with `format: docx`, table1viz() returns an
+#' # editable Word table automatically. Force it elsewhere with:
+#' if (requireNamespace("flextable", quietly = TRUE) &&
+#'     requireNamespace("xml2", quietly = TRUE)) {
+#'   table1viz(df, name_groupvar = "grp", output = "flextable")
+#' }
 #'
 #' # Choose your own ticks for some variables (names become tick labels)
-#' table1(
+#' table1viz(
 #'   df,
 #'   name_groupvar = "grp",
 #'   axis_breaks = list(
@@ -134,7 +164,7 @@
 #'   )
 #' )
 #' @export
-table1 <- function(
+table1viz <- function(
     d,
     name_groupvar = NULL,
     overall = TRUE,
@@ -165,13 +195,25 @@ table1 <- function(
     bar_width = 60,
     plot_layout = c("combined", "columns"),
     distribution_label = '**Distribution**',
-    header_align = c("center", "left")
+    header_align = c("left", "center"),
+    overall_divider = FALSE,
+    output = c("auto", "gt", "flextable")
 ) {
     missing <- match.arg(missing)
     missing_group <- match.arg(missing_group)
     header_align <- match.arg(header_align)
     continuous_plot <- match.arg(continuous_plot)
     plot_layout <- match.arg(plot_layout)
+    output <- match.arg(output)
+    if (output == 'auto') {
+        output <- if (isTRUE(knitr::pandoc_to('docx'))) 'flextable' else 'gt'
+    }
+    if (output == 'flextable') {
+        rlang::check_installed(
+            c('flextable', 'xml2'),
+            reason = 'to make a Word table with `table1viz()`.'
+        )
+    }
     stopifnot(is.data.frame(d))
     stopifnot(
         is.null(name_groupvar) ||
@@ -180,6 +222,11 @@ table1 <- function(
                 name_groupvar %in% colnames(d))
     )
     stopifnot(is.logical(overall) && length(overall) == 1)
+    stopifnot(
+        is.logical(overall_divider) &&
+            length(overall_divider) == 1 &&
+            !is.na(overall_divider)
+    )
     stopifnot(is.list(statistic), is.list(digits))
     stopifnot(
         is.logical(binary_01_only_show1) && length(binary_01_only_show1) == 1
@@ -315,13 +362,17 @@ table1 <- function(
 
     # ---- build inline HTML for each cell ----
     tb <- tbl$table_body
-    html <- lapply(names(col_rows), function(cc) {
+    # Raw SVG per cell; bar cells also keep their n (%) text next to the bar
+    cell_svg <- lapply(names(col_rows), function(cc) {
         rep(NA_character_, nrow(tb))
     })
-    names(html) <- names(col_rows)
-    dist_html <- rep(NA_character_, nrow(tb))
+    names(cell_svg) <- names(col_rows)
+    cell_bar <- lapply(cell_svg, function(z) rep(FALSE, length(z)))
+    dist_svg <- rep(NA_character_, nrow(tb))
     span_rows <- integer(0) # distribution cells covered by a plot above
     span_start <- integer(0) # distribution cells holding a spanning plot
+    span_px <- rep(NA_real_, nrow(tb)) # gt: row height of a spanned row
+    span_groups <- list() # rows (first = plot row) spanned by each plot
     span_row_min_px <- 24 # > height of a one-line text row in gt's compact theme
     lane_height <- max(10, round(plot_height * 0.6))
 
@@ -339,7 +390,7 @@ table1 <- function(
                 numeric(1)
             )
             if (combined) {
-                dist_html[miss_row] <- svg_bars_combined(
+                dist_svg[miss_row] <- svg_bars_combined(
                     p_miss,
                     colors = col_colors,
                     lane_names = col_names,
@@ -349,13 +400,13 @@ table1 <- function(
                 )
             } else {
                 for (cc in names(col_rows)) {
-                    html[[cc]][miss_row] <- html_bar_cell(
-                        tb[[cc]][miss_row],
+                    cell_svg[[cc]][miss_row] <- svg_bar(
                         p_miss[[cc]],
                         color = col_colors[[cc]],
                         width = bar_width,
                         hatched = TRUE
                     )
+                    cell_bar[[cc]][miss_row] <- TRUE
                 }
             }
         }
@@ -370,7 +421,11 @@ table1 <- function(
             breaks <- axis_breaks[[v]]
             xlim <- range(c(x_num, breaks), na.rm = TRUE)
             dens <- lapply(col_rows, function(r) {
-                compute_density(x_num[r], xlim)
+                compute_density(
+                    x_num[r],
+                    xlim,
+                    trim = continuous_plot == 'violin_box'
+                )
             })
             ymax <- max(vapply(
                 dens,
@@ -379,18 +434,24 @@ table1 <- function(
             ))
             if (combined) {
                 # The plot spans all rows of this variable (label + statistic
-                # rows): gt has no rowspan, so the plot sits in the label row
-                # and overflows downward over fixed-height spacers below it.
-                # Spacers are taller than a text row and their cells have no
-                # vertical padding, so they (not the text) set the row heights
-                # and the plot can fill the span exactly.
+                # rows). flextable merges those cells. gt has no rowspan, so
+                # the plot sits in the label row and overflows downward over
+                # fixed-height spacers below it. Spacers are taller than a
+                # text row and their cells have no vertical padding, so they
+                # (not the text) set the row heights and the plot can fill
+                # the span exactly.
                 k <- length(col_rows)
                 n_r <- length(idx)
                 row_px <- max(
                     span_row_min_px,
                     ceiling((k * lane_height + axis_h) / n_r)
                 )
-                svg <- svg_continuous_combined(
+                lane_h <- if (output == 'gt') {
+                    (n_r * row_px - axis_h) / k
+                } else {
+                    lane_height
+                }
+                dist_svg[label_row] <- svg_continuous_combined(
                     dens,
                     xs = lapply(col_rows, function(r) x_num[r]),
                     xlim = xlim,
@@ -398,28 +459,22 @@ table1 <- function(
                     colors = col_colors,
                     lane_names = col_names,
                     width = plot_width,
-                    lane_height = (n_r * row_px - axis_h) / k,
+                    lane_height = lane_h,
                     title = sprintf('Distribution of %s', tb$label[label_row]),
                     type = continuous_plot,
                     show_outliers = show_outliers,
                     axis_height = axis_h,
                     axis_breaks = breaks
                 )
-                dist_html[label_row] <- sprintf(
-                    paste0(
-                        '<div style="position:relative;height:%dpx">',
-                        '<div style="position:absolute;top:0;left:0">%s</div></div>'
-                    ),
-                    row_px, svg
-                )
                 other <- setdiff(idx, label_row)
-                dist_html[other] <- sprintf('<div style="height:%dpx"></div>', row_px)
+                span_px[idx] <- row_px
                 span_rows <- c(span_rows, other)
                 span_start <- c(span_start, label_row)
+                span_groups <- c(span_groups, list(c(label_row, other)))
                 next
             }
             for (cc in names(col_rows)) {
-                html[[cc]][label_row] <- svg_continuous(
+                cell_svg[[cc]][label_row] <- svg_continuous(
                     dens[[cc]],
                     x = x_num[col_rows[[cc]]],
                     xlim = xlim,
@@ -468,7 +523,7 @@ table1 <- function(
             props <- matrix(props, nrow = length(values)) # rows = levels
             if (combined) {
                 for (j in seq_along(rows)) {
-                    dist_html[rows[j]] <- svg_bars_combined(
+                    dist_svg[rows[j]] <- svg_bars_combined(
                         props[j, ],
                         colors = col_colors,
                         lane_names = col_names,
@@ -481,19 +536,79 @@ table1 <- function(
             for (k in seq_along(col_rows)) {
                 cc <- names(col_rows)[k]
                 for (j in seq_along(rows)) {
-                    p <- props[j, k]
-                    html[[cc]][rows[j]] <- html_bar_cell(
-                        tb[[cc]][rows[j]],
-                        p,
+                    cell_svg[[cc]][rows[j]] <- svg_bar(
+                        props[j, k],
                         color = col_colors[[cc]],
                         width = bar_width
                     )
+                    cell_bar[[cc]][rows[j]] <- TRUE
                 }
             }
         }
     }
 
+    # ---- notes on denominators / excluded rows ----
+    vars <- unique(tb$variable)
+    cat_vars <- unique(tb$variable[tb$var_type %in% c('categorical', 'dichotomous')])
+    any_miss_cat <- any(vapply(cat_vars, function(v) anyNA(d[[v]]), logical(1)))
+    any_miss_row <- any(tb$row_type == 'missing')
+    note <- c(
+        if (any_miss_cat) 'Category percentages exclude missing values.',
+        if (any_miss_row) '% missing is out of all observations in the column.',
+        if (n_group_dropped > 0) {
+            sprintf(
+                '%s observation%s with missing %s excluded.',
+                fmt_n(n_group_dropped),
+                if (n_group_dropped == 1) '' else 's',
+                name_groupvar
+            )
+        }
+    )
+
+    divider <- overall_divider && grouped && overall
+    if (output == 'flextable') {
+        return(table1viz_flextable(
+            tbl,
+            cell_svg = cell_svg,
+            cell_bar = cell_bar,
+            dist_svg = dist_svg,
+            span_groups = span_groups,
+            combined = combined,
+            grouped = grouped,
+            col_rows = col_rows,
+            col_colors = col_colors,
+            col_names = col_names,
+            plot_width = plot_width,
+            bar_width = bar_width,
+            header_align = header_align,
+            overall_divider = divider,
+            group_header = group_header,
+            distribution_label = distribution_label,
+            note = note
+        ))
+    }
+
     # ---- render to gt and swap in HTML ----
+    html <- lapply(names(cell_svg), function(cc) {
+        ifelse(
+            cell_bar[[cc]],
+            html_bar_cell(tb[[cc]], cell_svg[[cc]]),
+            cell_svg[[cc]]
+        )
+    })
+    names(html) <- names(cell_svg)
+    dist_html <- dist_svg
+    dist_html[span_start] <- sprintf(
+        paste0(
+            '<div style="position:relative;height:%dpx">',
+            '<div style="position:absolute;top:0;left:0">%s</div></div>'
+        ),
+        span_px[span_start], dist_svg[span_start]
+    )
+    dist_html[span_rows] <- sprintf(
+        '<div style="height:%dpx"></div>',
+        span_px[span_rows]
+    )
     gt_tbl <- gtsummary::as_gt(tbl)
     for (cc in names(html)) {
         idx <- which(!is.na(html[[cc]]))
@@ -562,23 +677,6 @@ table1 <- function(
             )
         }
     }
-    # ---- notes on denominators / excluded rows ----
-    vars <- unique(tb$variable)
-    cat_vars <- unique(tb$variable[tb$var_type %in% c('categorical', 'dichotomous')])
-    any_miss_cat <- any(vapply(cat_vars, function(v) anyNA(d[[v]]), logical(1)))
-    any_miss_row <- any(tb$row_type == 'missing')
-    note <- c(
-        if (any_miss_cat) 'Category percentages exclude missing values.',
-        if (any_miss_row) '% missing is out of all observations in the column.',
-        if (n_group_dropped > 0) {
-            sprintf(
-                '%s observation%s with missing %s excluded.',
-                fmt_n(n_group_dropped),
-                if (n_group_dropped == 1) '' else 's',
-                name_groupvar
-            )
-        }
-    )
     if (length(note) > 0) {
         gt_tbl <- gt::tab_source_note(gt_tbl, paste(note, collapse = ' '))
     }
@@ -596,8 +694,25 @@ table1 <- function(
             )
         )
 
+    if (divider) {
+        gt_tbl <- gt::tab_style(
+            gt_tbl,
+            style = gt::cell_borders(
+                sides = 'right',
+                color = divider_color,
+                weight = gt::px(1.5)
+            ),
+            locations = list(
+                gt::cells_body(columns = 'stat_0'),
+                gt::cells_column_labels(columns = 'stat_0')
+            )
+        )
+    }
+
     return(gt_tbl)
 }
+
+divider_color <- '#9E9E9E'
 
 # ---- internal helpers -------------------------------------------------------
 
@@ -655,12 +770,21 @@ resolve_group_colors <- function(colors, lev) {
     unname(colors[seq_along(lev)])
 }
 
-compute_density <- function(x, xlim) {
+# Kernel density of x on the shared axis range xlim. With trim = TRUE (used
+# for violins, like ggplot2::geom_violin's default) the density is evaluated
+# only over x's own range, so no violin extends past its group's min/max.
+compute_density <- function(x, xlim, trim = FALSE) {
     x <- x[!is.na(x)]
     if (length(x) < 2 || diff(xlim) == 0 || stats::sd(x) == 0) {
         return(NULL)
     }
-    dd <- stats::density(x, from = xlim[1], to = xlim[2], n = 128)
+    from <- xlim[1]
+    to <- xlim[2]
+    if (trim) {
+        from <- max(from, min(x))
+        to <- min(to, max(x))
+    }
+    dd <- stats::density(x, from = from, to = to, n = 128)
     list(x = dd$x, y = dd$y)
 }
 
@@ -1074,7 +1198,8 @@ svg_bars_combined <- function(
     svg_wrap(paste0(defs, paste(bars, collapse = '')), width, height, title)
 }
 
-html_bar_cell <- function(text, p, color, width, height = 10, hatched = FALSE) {
+# Percentage bar (0-100%) for a single table cell.
+svg_bar <- function(p, color, width, height = 10, hatched = FALSE) {
     p <- min(max(p, 0), 1)
     defs <- ''
     fill <- color
@@ -1087,11 +1212,9 @@ html_bar_cell <- function(text, p, color, width, height = 10, hatched = FALSE) {
     }
     sprintf(
         paste0(
-            '<span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap">',
             '<svg width="%s" height="%s" style="flex:none">%s',
             '<rect width="%s" height="%s" fill="#E6E6E6"/>',
-            '<rect width="%.1f" height="%s" fill="%s"%s/></svg>',
-            '<span>%s</span></span>'
+            '<rect width="%.1f" height="%s" fill="%s"%s/></svg>'
         ),
         width,
         height,
@@ -1101,8 +1224,20 @@ html_bar_cell <- function(text, p, color, width, height = 10, hatched = FALSE) {
         p * width,
         height,
         fill,
-        stroke,
-        htmltools::htmlEscape(if (is.na(text)) '' else text)
+        stroke
+    )
+}
+
+# HTML cell: bar graphic followed by its n (%) text (vectorized).
+html_bar_cell <- function(text, svg) {
+    text[is.na(text)] <- ''
+    sprintf(
+        paste0(
+            '<span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap">',
+            '%s<span>%s</span></span>'
+        ),
+        svg,
+        htmltools::htmlEscape(text)
     )
 }
 
