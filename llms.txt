@@ -97,6 +97,8 @@ pak::pak("jarbet/statplot")
   : Run Gene Set Enrichment Analysis (GSEA)
 - [`subgroup_forest_size()`](https://github.com/jarbet/statplot/reference/subgroup_forest_size.md)
   : Figure size for a table-style subgroup forest plot
+- [`table1viz()`](https://github.com/jarbet/statplot/reference/table1viz.md)
+  : Visual "Table 1": summary table with inline distribution graphics
 - [`table_basic()`](https://github.com/jarbet/statplot/reference/table_basic.md)
   : Create a basic table using tinytable
 - [`table_overall()`](https://github.com/jarbet/statplot/reference/table_overall.md)
