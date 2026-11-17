@@ -14,10 +14,11 @@
 
 ## Changed
 
-* Fewer dependencies: BoutrosLab.plotting.general, effectsize, rcompanion, poolr, forcats, labelled and tidyr are no longer required, and asht moved from Imports to Suggests. This removes about 50 packages from a fresh install. The effect sizes are now computed by statplot itself and checked in the tests against `effectsize` on hundreds of random datasets:
+* Fewer dependencies: BoutrosLab.plotting.general, effectsize, rcompanion, poolr, forcats, labelled, tidyr, tibble and broom are no longer required, and asht moved from Imports to Suggests. This removes about 50 packages from a fresh install. The effect sizes are now computed by statplot itself and checked in the tests against `effectsize` on hundreds of random datasets:
   * `plot_2_categorical_vars`: bias-corrected Cramér's V matches `effectsize::cramers_v(adjust = TRUE)`. Its 95% CI is found by exact root-finding rather than `effectsize`'s `optim()` search, so CI limits can differ slightly (usually < 0.001). In rare cases where `optim()` failed to converge, the old upper limit was wrong (e.g. equal to the estimate) and is now correct. Empty rows/columns (e.g. unused factor levels) are dropped instead of causing an error.
   * `plot_numeric_by_3plusgroups`: rank epsilon-squared is unchanged (`H / (n - 1)`). Its bootstrap CI uses the same within-group resampling as before but different random draws, so CI limits change slightly.
   * `plot_numeric_by_3plusgroups`: the p-value in the subtitle is formatted with `format_pvalue()`, like the other plots (e.g. `p= 0.034`; `p= 0.0012` now shows as `0.001`).
+  * `plot_numeric_by_2groups`: the returned `wilcox` results are now a plain data.frame for both `effect_size` options (before, `"median_difference"` gave a tibble and `"c_index"` a data.frame). Columns and values are unchanged.
   * `plot_numeric_by_2groups`: `effect_size = "c_index"` now needs the suggested asht package (you are prompted to install it if missing).
   * `plot_heatmap`: a `row_var`/`col_var` combination with more than one distinct `value_var` now gives a clear error.
 

@@ -701,3 +701,26 @@ test_that("long_to_matrix puts every value of the example data in its cell", {
     )
     expect_equal(sum(!is.na(mat)), nrow(unique(df[c("external_gene_name", "sample")])))
 })
+
+test_that("column_to_rownames moves a column into the row names", {
+    d <- data.frame(id = factor(c("b", "a")), x = 1:2, y = c("u", "v"))
+    res <- statplot:::column_to_rownames(d, "id")
+    expect_identical(rownames(res), c("b", "a"))
+    expect_identical(names(res), c("x", "y"))
+    expect_identical(res$x, 1:2)
+
+    one_col <- statplot:::column_to_rownames(d[c("id", "x")], "id")
+    expect_s3_class(one_col, "data.frame")
+    expect_identical(names(one_col), "x")
+
+    expect_error(statplot:::column_to_rownames(d, "missing"))
+    expect_error(
+        statplot:::column_to_rownames(rbind(d, d), "id"),
+        "unique, non-missing"
+    )
+    d$id[1] <- NA
+    expect_error(
+        statplot:::column_to_rownames(d, "id"),
+        "unique, non-missing"
+    )
+})

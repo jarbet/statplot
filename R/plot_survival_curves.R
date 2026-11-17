@@ -205,7 +205,6 @@
 #' @return A ggsurvfit ggplot object.
 #'
 #' @importFrom survival Surv coxph survdiff
-#' @importFrom broom tidy
 #' @importFrom ggsurvfit survfit2 ggsurvfit add_confidence_interval add_risktable
 #' @importFrom stats pchisq
 #' @importFrom ggtext geom_richtext
@@ -524,21 +523,23 @@ plot_survival_curves <- function(
             }
         )
 
-        fit_res <- broom::tidy(
-            fit,
-            conf.int = TRUE,
-            exponentiate = TRUE
-        )
+        # hazard ratio, 95% CI and p-value for the group term; confint()
+        # and the last column of summary()$coefficients use the robust
+        # variance when the model was fit with robust = TRUE
+        hr <- exp(unname(stats::coef(fit)[1]))
+        hr_ci <- exp(unname(stats::confint(fit)[1, ]))
+        coef_tab <- summary(fit)$coefficients
+        hr_p <- unname(coef_tab[1, ncol(coef_tab)])
 
         hr_text <- sprintf(
             "HR = %.2f (%.2f-%.2f), p",
-            fit_res$estimate[1],
-            fit_res$conf.low[1],
-            fit_res$conf.high[1]
+            hr,
+            hr_ci[1],
+            hr_ci[2]
         )
 
         annot_label <- format_pvalue(
-            x = fit_res$p.value[1],
+            x = hr_p,
             p_text = hr_text,
             p_symbol = "= "
         )

@@ -402,7 +402,7 @@ plot_heatmap <- function(
                 dplyr::across(dplyr::all_of(col_key)),
                 .keep_all = TRUE
             ) |>
-            tibble::column_to_rownames(col_key)
+            column_to_rownames(col_key)
         col_df <- col_df[colnames(mat), , drop = FALSE]
     } else {
         col_df <- NULL
@@ -415,7 +415,7 @@ plot_heatmap <- function(
                 dplyr::across(dplyr::all_of(row_key)),
                 .keep_all = TRUE
             ) |>
-            tibble::column_to_rownames(row_key)
+            column_to_rownames(row_key)
         row_df <- row_df[rownames(mat), , drop = FALSE]
     } else {
         row_df <- NULL
@@ -960,4 +960,35 @@ long_to_matrix <- function(df, row_key, col_key, val_key) {
     )
     mat[cbind(match(row_ids, rows), match(col_ids, cols))] <- vals
     mat
+}
+
+#' Move a column into the row names
+#'
+#' Base-R equivalent of `tibble::column_to_rownames()`: returns a plain
+#' data.frame whose row names are the (character) values of column `var`,
+#' with that column removed.
+#'
+#' @param df A data frame.
+#' @param var Character scalar. Name of a column of `df` with unique,
+#'   non-missing values.
+#' @return A data.frame.
+#' @examples
+#' d <- data.frame(id = c("a", "b"), x = 1:2)
+#' statplot:::column_to_rownames(d, "id")
+#' @keywords internal
+#' @noRd
+column_to_rownames <- function(df, var) {
+    stopifnot(
+        is.data.frame(df),
+        is.character(var),
+        length(var) == 1,
+        var %in% names(df)
+    )
+    if (anyNA(df[[var]]) || anyDuplicated(df[[var]])) {
+        stop("Column `", var, "` must have unique, non-missing values.")
+    }
+    df <- as.data.frame(df)
+    rownames(df) <- as.character(df[[var]])
+    df[[var]] <- NULL
+    df
 }

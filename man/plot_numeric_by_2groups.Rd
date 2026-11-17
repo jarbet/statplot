@@ -66,10 +66,12 @@ A list with elements:
 \item{ggplot}{A ggplot2 object (violin + boxplot). Add
 \code{+ ggplot2::facet_wrap()} or \code{+ ggplot2::facet_grid()} to
 create multi-panel layouts; annotations facet automatically.}
-\item{wilcox}{A tibble with the Wilcoxon test results (from
-\code{broom::tidy}). When \code{facet_cols} is supplied the tibble
-includes the faceting column(s) identifying which facet each row belongs
-to.}
+\item{wilcox}{A data.frame with the Wilcoxon test results, one row per
+test, with columns \code{estimate}, \code{statistic}, \code{p.value},
+\code{conf.low}, \code{conf.high}, \code{method}, \code{alternative} and
+\code{outcome}. When \code{facet_cols} is supplied it also includes the
+faceting column(s) identifying which facet each row belongs to, and a
+\code{qvalue} column (FDR-adjusted p-values).}
 }
 }
 \description{

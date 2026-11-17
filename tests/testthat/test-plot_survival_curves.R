@@ -1465,3 +1465,67 @@ testthat::test_that("unweighted risktable labels are unaffected by risktable_cou
 
     testthat::expect_null(get_risktable_labels(p))
 })
+
+# HR annotation text from the built plot
+hr_annotation <- function(p) {
+    labs <- unlist(lapply(ggplot2::ggplot_build(p)$data, function(l) {
+        if ("label" %in% names(l)) unique(as.character(l$label))
+    }))
+    grep("^HR = ", labs, value = TRUE)
+}
+
+testthat::test_that("HR annotation reports the Cox model HR, 95% CI and Wald p-value", {
+    dat <- survival::lung
+    dat$sex <- factor(dat$sex, labels = c("Male", "Female"))
+    surv_obj <- with(dat, survival::Surv(time, status == 2))
+    p <- plot_survival_curves(surv_obj = surv_obj, data = dat, group_var = "sex")
+
+    fit <- survival::coxph(surv_obj ~ sex, data = dat)
+    coef_tab <- summary(fit)$coefficients
+    expected <- format_pvalue(
+        unname(coef_tab[1, "Pr(>|z|)"]),
+        p_text = sprintf(
+            "HR = %.2f (%.2f-%.2f), p",
+            exp(stats::coef(fit)[[1]]),
+            exp(stats::confint(fit)[1, 1]),
+            exp(stats::confint(fit)[1, 2])
+        ),
+        p_symbol = "= "
+    )
+    testthat::expect_identical(hr_annotation(p), expected)
+})
+
+testthat::test_that("weighted HR annotation uses the robust variance", {
+    dat <- survival::lung
+    dat$sex <- factor(dat$sex, labels = c("Male", "Female"))
+    dat$w <- withr::with_seed(9, stats::runif(nrow(dat), 0.5, 2))
+    surv_obj <- with(dat, survival::Surv(time, status == 2))
+    p <- plot_survival_curves(
+        surv_obj = surv_obj,
+        data = dat,
+        group_var = "sex",
+        weights = "w"
+    )
+
+    fit <- survival::coxph(
+        surv_obj ~ sex,
+        data = dat,
+        weights = w,
+        robust = TRUE,
+        id = seq_len(nrow(dat))
+    )
+    coef_tab <- summary(fit)$coefficients
+    se_robust <- coef_tab[1, "robust se"]
+    beta <- stats::coef(fit)[[1]]
+    expected <- format_pvalue(
+        unname(coef_tab[1, "Pr(>|z|)"]),
+        p_text = sprintf(
+            "HR = %.2f (%.2f-%.2f), p",
+            exp(beta),
+            exp(beta - stats::qnorm(0.975) * se_robust),
+            exp(beta + stats::qnorm(0.975) * se_robust)
+        ),
+        p_symbol = "= "
+    )
+    testthat::expect_identical(hr_annotation(p), expected)
+})
