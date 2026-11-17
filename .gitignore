@@ -3,3 +3,4 @@ docs
 
 /.quarto/
 **/*.quarto_ipynb
+Rplots.pdf
