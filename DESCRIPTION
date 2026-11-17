@@ -32,6 +32,7 @@ Imports:
     ggtangle,
     ggupset,
     grid,
+    gt (>= 0.10.0),
     gtsummary,
     htmltools,
     igraph,
@@ -55,4 +56,4 @@ BugReports: https://github.com/jarbet/statplot/issues
 Depends: 
     R (>= 4.1)
 LazyData: true
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.1
