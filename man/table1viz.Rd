@@ -14,7 +14,7 @@ table1viz(
   missing_group = c("exclude", "show"),
   statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{min}; {max}"),
     gtsummary::all_categorical() ~ c("{n} ({p}\%)")),
-  digits = list(gtsummary::all_continuous() ~ c(rep(1, 7))),
+  digits = NULL,
   binary_01_only_show1 = TRUE,
   continuous_plot = c("violin_box", "boxplot", "density"),
   show_outliers = TRUE,
@@ -62,9 +62,12 @@ bar on the same 0-100\% scale as the category bars.}
 
 \item{statistic, digits}{Passed to \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}}. By default
 continuous variables show mean (SD) and min; max; the graphic already
-shows the median and quartiles. Add a median (Q1, Q3) row, labelled
-"Median (IQR)", with e.g.
-\code{statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{median} ({p25}, {p75})", "{min}; {max}"), gtsummary::all_categorical() ~ "{n} ({p}\%)")}.}
+shows the median and quartiles. For skewed variables, consider adding a
+"Median (Q1, Q3)" row with e.g.
+\code{statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{median} ({p25}, {p75})", "{min}; {max}"), gtsummary::all_categorical() ~ "{n} ({p}\%)")}. \code{digits = NULL} (default)
+lets gtsummary choose the decimals for each variable from its spread, so
+variables on a small scale (e.g. 0.03) are not rounded to 0.0; pass e.g.
+\code{list(gtsummary::all_continuous() ~ 1)} to fix them.}
 
 \item{binary_01_only_show1}{logical(1). If \code{TRUE}, binary variables only show
 one row (e.g. the "1"/"Yes" level). Default \code{TRUE}.}

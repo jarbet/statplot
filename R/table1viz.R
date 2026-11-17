@@ -38,11 +38,14 @@
 #'   `#8C564B`, unless `colors` is named and includes `"Missing"`).
 #' @param statistic,digits Passed to [gtsummary::tbl_summary()]. By default
 #'   continuous variables show mean (SD) and min; max; the graphic already
-#'   shows the median and quartiles. Add a median (Q1, Q3) row, labelled
-#'   "Median (IQR)", with e.g.
+#'   shows the median and quartiles. For skewed variables, consider adding a
+#'   "Median (Q1, Q3)" row with e.g.
 #'   `statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})",
 #'   "{median} ({p25}, {p75})", "{min}; {max}"),
-#'   gtsummary::all_categorical() ~ "{n} ({p}%)")`.
+#'   gtsummary::all_categorical() ~ "{n} ({p}%)")`. `digits = NULL` (default)
+#'   lets gtsummary choose the decimals for each variable from its spread, so
+#'   variables on a small scale (e.g. 0.03) are not rounded to 0.0; pass e.g.
+#'   `list(gtsummary::all_continuous() ~ 1)` to fix them.
 #' @param binary_01_only_show1 logical(1). If `TRUE`, binary variables only show
 #'   one row (e.g. the "1"/"Yes" level). Default `TRUE`.
 #' @param continuous_plot character(1). Graphic for continuous variables:
@@ -224,9 +227,7 @@ table1viz <- function(
         ),
         gtsummary::all_categorical() ~ c('{n} ({p}%)')
     ),
-    digits = list(
-        gtsummary::all_continuous() ~ c(rep(1, 7))
-    ),
+    digits = NULL,
     binary_01_only_show1 = TRUE,
     continuous_plot = c("violin_box", "boxplot", "density"),
     show_outliers = TRUE,
@@ -281,7 +282,20 @@ table1viz <- function(
             !is.na(variable_divider)
     )
     stopifnot(is.logical(row_lines) && length(row_lines) == 1 && !is.na(row_lines))
-    stopifnot(is.list(statistic), is.list(digits))
+    stopifnot(is.list(statistic), is.null(digits) || is.list(digits))
+    is_datetime <- vapply(
+        d,
+        function(x) inherits(x, c('Date', 'POSIXt', 'difftime')),
+        logical(1)
+    )
+    if (any(is_datetime)) {
+        stop(
+            'Date/time columns are not supported: ',
+            paste0('`', names(d)[is_datetime], '`', collapse = ', '),
+            '. Convert them to numbers (e.g. days or years) first.',
+            call. = FALSE
+        )
+    }
     stopifnot(
         is.logical(binary_01_only_show1) && length(binary_01_only_show1) == 1
     )
@@ -410,21 +424,6 @@ table1viz <- function(
     if (grouped && overall) {
         tbl <- gtsummary::add_overall(tbl, last = FALSE)
     }
-    # "Median (IQR)" is the usual clinical label for median (Q1, Q3); only
-    # the default label is changed, so custom statistics keep theirs.
-    tbl <- gtsummary::modify_table_body(
-        tbl,
-        ~ dplyr::mutate(
-            .x,
-            label = dplyr::if_else(
-                .data$row_type == 'level' &
-                    .data$var_type == 'continuous2' &
-                    .data$label == 'Median (Q1, Q3)',
-                'Median (IQR)',
-                .data$label
-            )
-        )
-    )
 
     headers <- vapply(
         names(col_rows),
