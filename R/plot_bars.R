@@ -11,8 +11,8 @@
 #'               If unnamed, its length must equal the number of groups. Missing group names are filled with "black".
 #' @param sort Character. How to sort the bars: "desc" for descending, "asc" for ascending, or "none" for no reordering.
 #' @param title Optional plot title
-#' @param xvar_label Optional character label for x variable. If NULL the label is obtained using labelled::get_variable_labels().
-#' @param yvar_label Optional character label for y variable. If NULL the label is obtained using labelled::get_variable_labels().
+#' @param xvar_label Optional character label for x variable. If NULL the label is taken from the column's `"label"` attribute (e.g. set with `labelled::var_label()`), falling back to the column name.
+#' @param yvar_label Optional character label for y variable. If NULL the label is taken from the column's `"label"` attribute (e.g. set with `labelled::var_label()`), falling back to the column name.
 #' @param show_legend Logical. Whether to show the legend for fill colors. Default is FALSE.
 #' @examples
 #' ggplot2::theme_set(theme_bw2())
@@ -54,61 +54,43 @@ plot_bars <- function(
     }
     dat2 <- dat
 
-    if (sort == "desc") {
-        dat2[[xvar]] <- forcats::fct_reorder(
-            as.factor(dat2[[xvar]]),
-            dat2[[yvar]],
-            .desc = TRUE
-        )
-    } else if (sort == "asc") {
-        dat2[[xvar]] <- forcats::fct_reorder(
-            as.factor(dat2[[xvar]]),
-            dat2[[yvar]],
-            .desc = FALSE
-        )
-    } else if (sort == "none") {
-        dat2[[xvar]] <- as.factor(dat2[[xvar]])
+    xfac <- as.factor(dat2[[xvar]])
+    if (sort != "none") {
+        # reorder levels by the median of yvar within each level, ties kept
+        # in their original order (equivalent to forcats::fct_reorder())
+        med <- tapply(dat2[[yvar]], xfac, stats::median, na.rm = TRUE)
+        new_order <- if (sort == "desc") {
+            order(-med, na.last = FALSE)
+        } else {
+            order(med)
+        }
+        xfac <- factor(xfac, levels = levels(xfac)[new_order])
     }
-    # restore labels if any
-    labelled::var_label(dat2) <- labelled::var_label(dat)
+    dat2[[xvar]] <- xfac
+    # restore the variable label (if any) dropped by the factor conversion
+    attr(dat2[[xvar]], "label") <- attr(dat[[xvar]], "label", exact = TRUE)
 
-    # helper: previous behavior to extract label from attr
+    # variable label stored in the "label" attribute (e.g. set by labelled
+    # or haven), falling back to `default`
     get_col_label <- function(vec, default) {
         lab <- attr(vec, "label", exact = TRUE)
         if (is.null(lab) || length(lab) == 0 || identical(lab, "")) {
             default
         } else {
-            as.character(lab)
+            as.character(lab[[1]])
         }
     }
 
-    # Resolve labels for title: prefer supplied args, then labelled::get_variable_labels(), then fallback
+    # Resolve labels for title: prefer supplied args, then the "label"
+    # attribute, then the column name
     if (is.null(yvar_label)) {
-        y_lab_raw <- labelled::get_variable_labels(dat2[[yvar]])
-        if (
-            is.null(y_lab_raw) ||
-                length(y_lab_raw) == 0 ||
-                identical(y_lab_raw, "")
-        ) {
-            yvar_label <- get_col_label(dat2[[yvar]], yvar)
-        } else {
-            yvar_label <- as.character(y_lab_raw[[1]])
-        }
+        yvar_label <- get_col_label(dat2[[yvar]], yvar)
     } else {
         yvar_label <- as.character(yvar_label)
     }
 
     if (is.null(xvar_label)) {
-        x_lab_raw <- labelled::get_variable_labels(dat2[[xvar]])
-        if (
-            is.null(x_lab_raw) ||
-                length(x_lab_raw) == 0 ||
-                identical(x_lab_raw, "")
-        ) {
-            xvar_label <- get_col_label(dat2[[xvar]], xvar)
-        } else {
-            xvar_label <- as.character(x_lab_raw[[1]])
-        }
+        xvar_label <- get_col_label(dat2[[xvar]], xvar)
     } else {
         xvar_label <- as.character(xvar_label)
     }

@@ -23,7 +23,7 @@
 #' @param effect_size character(1) Type of effect size to compute. Either
 #'   \code{"median_difference"} (default; Hodges-Lehmann estimate of location
 #'   shift) or \code{"c_index"} (concordance probability using
-#'   \code{asht::wmwTest}).
+#'   \code{asht::wmwTest}; requires the suggested package \pkg{asht}).
 #' @param facet_cols character vector of column names to facet by.
 #'   Default \code{NULL} (single panel).
 #' @param facet_pvalue character(1) When \code{facet_cols} is supplied, which
@@ -57,13 +57,15 @@
 #' res$ggplot
 #' res$wilcox
 #'
-#' # Show C-index effect size instead of median difference
-#' plot_numeric_by_2groups(
-#'   yvar = "mpg",
-#'   group = "vs",
-#'   d = mtcars,
-#'   effect_size = "c_index"
-#' )
+#' # Show C-index effect size instead of median difference (requires asht)
+#' if (requireNamespace("asht", quietly = TRUE)) {
+#'   plot_numeric_by_2groups(
+#'     yvar = "mpg",
+#'     group = "vs",
+#'     d = mtcars,
+#'     effect_size = "c_index"
+#'   )
+#' }
 #'
 #' # Faceted example: compare a "score" between exercisers and non-exercisers,
 #' # faceted by group (A/B/C/D)
@@ -80,8 +82,7 @@
 #'   d          = df,
 #'   facet_cols = "group",
 #'   colors     = c("No" = "grey80", "Yes" = "steelblue"),
-#'   alpha      = 0.6,
-#'   effect_size = "c_index"
+#'   alpha      = 0.6
 #' )
 #' res_facet$ggplot + ggplot2::facet_wrap(~group, ncol = 2)
 #' res_facet$wilcox
@@ -111,6 +112,12 @@ plot_numeric_by_2groups <- function(
             c("median_difference", "c_index") &
             length(effect_size) == 1
     )
+    if (effect_size == "c_index") {
+        rlang::check_installed(
+            "asht",
+            reason = 'to use `effect_size = "c_index"`.'
+        )
+    }
     stopifnot(length(yvar) == 1, length(group) == 1, is.data.frame(d))
     stopifnot(all(c(yvar, group) %in% names(d)))
     stopifnot(is.factor(d[[group]]) & length(levels(d[[group]])) == 2)

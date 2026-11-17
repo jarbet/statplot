@@ -14,6 +14,13 @@
 
 ## Changed
 
+* Fewer dependencies: BoutrosLab.plotting.general, effectsize, rcompanion, poolr, forcats, labelled and tidyr are no longer required, and asht moved from Imports to Suggests. This removes about 50 packages from a fresh install. The effect sizes are now computed by statplot itself and checked in the tests against `effectsize` on hundreds of random datasets:
+  * `plot_2_categorical_vars`: bias-corrected Cramér's V matches `effectsize::cramers_v(adjust = TRUE)`. Its 95% CI is found by exact root-finding rather than `effectsize`'s `optim()` search, so CI limits can differ slightly (usually < 0.001). In rare cases where `optim()` failed to converge, the old upper limit was wrong (e.g. equal to the estimate) and is now correct. Empty rows/columns (e.g. unused factor levels) are dropped instead of causing an error.
+  * `plot_numeric_by_3plusgroups`: rank epsilon-squared is unchanged (`H / (n - 1)`). Its bootstrap CI uses the same within-group resampling as before but different random draws, so CI limits change slightly.
+  * `plot_numeric_by_3plusgroups`: the p-value in the subtitle is formatted with `format_pvalue()`, like the other plots (e.g. `p= 0.034`; `p= 0.0012` now shows as `0.001`).
+  * `plot_numeric_by_2groups`: `effect_size = "c_index"` now needs the suggested asht package (you are prompted to install it if missing).
+  * `plot_heatmap`: a `row_var`/`col_var` combination with more than one distinct `value_var` now gives a clear error.
+
 * `plot_1_categorical_var`: add option to include category labels as text inside bar segments (TRUE by default)
 
 * `theme_bw2`/`theme_classic2`: new `markdown` argument (default `TRUE`). By default, the plot title, subtitle, caption, axis titles, and legend title are now rendered with `ggtext::element_markdown()` instead of `ggplot2::element_text()`, so these labels can contain markdown/HTML, e.g. `labs(x = "log<sub>2</sub> FC", title = "*Volcano plot*")`. Axis tick labels and legend text are left as plain text (they are often populated from data values), but can still be switched to markdown manually via `theme(axis.text.x = ggtext::element_markdown())`. Use `"<br>"` instead of `"\n"` for line breaks in labels that go through these markdown elements. Set `markdown = FALSE` to restore the previous plain-text behavior. All of `statplot`'s own plotting functions that bold these elements internally were updated to use `ggtext::element_markdown()` to remain compatible with the new default; `plot_upset()` (with `backend = "UpSetR"`, the default) additionally isolates its call to `UpSetR::upset()` from the global theme, since UpSetR's own internal theme overrides are incompatible with a globally set `element_markdown()` theme (e.g. via `ggplot2::theme_set(theme_bw2())`).
@@ -25,6 +32,10 @@
   **Potentially breaking:** in ggplot2 >= 4.0, further overriding one of these markdown elements with `ggplot2::element_text()` (e.g. `theme_bw2() + theme(axis.text.x = element_text(angle = 45))` — note `axis.text.x` is not one of the markdown elements, so this example is unaffected; but `theme(plot.title = element_text(size = 14))` is) now errors ("Only elements of the same class can be merged"). Use `ggtext::element_markdown()` for such overrides instead, or set `markdown = FALSE`.
 
 ## Fixed
+
+* `plot_numeric_by_3plusgroups`: `n_boot` is now used for the epsilon-squared bootstrap CI (it was ignored before, so 200 resamples were always used; the default is 1000).
+
+* `plot_numeric_by_3plusgroups`: `show_effect_size = FALSE` no longer errors; the returned `stats` has `NA` effect sizes.
 
 * `plot_survival_curves`: fixed the log-rank p-value degrees of freedom for `group_var` with more than 2 levels. Previously computed as `length(sd$n) - 1`, which is only correct when every group has at least one expected event; now uses `survival::survdiff()`'s own `pvalue`, which correctly handles groups with zero expected events.
 

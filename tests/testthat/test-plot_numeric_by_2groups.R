@@ -380,3 +380,23 @@ test_that("plot_numeric_by_2groups handles faceting with missing values", {
     expect_true("category" %in% names(result$wilcox))
     expect_setequal(result$wilcox$category, c("X", "Y"))
 })
+
+test_that("effect_size = 'c_index' uses asht::wmwTest", {
+    skip_if_not_installed("asht")
+    withr::local_seed(42)
+    df <- data.frame(
+        value = stats::rnorm(30),
+        group = factor(rep(c("A", "B"), each = 15))
+    )
+    result <- plot_numeric_by_2groups(
+        "value",
+        "group",
+        df,
+        effect_size = "c_index"
+    )
+    ref <- asht::wmwTest(value ~ group, data = df)
+    expect_equal(result$wilcox$estimate, unname(ref$estimate))
+    expect_equal(result$wilcox$conf.low, ref$conf.int[1])
+    expect_equal(result$wilcox$conf.high, ref$conf.int[2])
+    expect_equal(result$wilcox$p.value, ref$p.value)
+})

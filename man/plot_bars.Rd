@@ -30,9 +30,9 @@ If unnamed, its length must equal the number of groups. Missing group names are 
 
 \item{title}{Optional plot title}
 
-\item{xvar_label}{Optional character label for x variable. If NULL the label is obtained using labelled::get_variable_labels().}
+\item{xvar_label}{Optional character label for x variable. If NULL the label is taken from the column's \code{"label"} attribute (e.g. set with \code{labelled::var_label()}), falling back to the column name.}
 
-\item{yvar_label}{Optional character label for y variable. If NULL the label is obtained using labelled::get_variable_labels().}
+\item{yvar_label}{Optional character label for y variable. If NULL the label is taken from the column's \code{"label"} attribute (e.g. set with \code{labelled::var_label()}), falling back to the column name.}
 
 \item{show_legend}{Logical. Whether to show the legend for fill colors. Default is FALSE.}
 }

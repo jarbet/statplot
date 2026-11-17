@@ -302,15 +302,7 @@ plot_heatmap <- function(
     }
 
     # --- matrix (rows x cols)
-    mat <- df |>
-        dplyr::select(dplyr::all_of(c(row_key, col_key, val_key))) |>
-        dplyr::distinct() |>
-        tidyr::pivot_wider(
-            names_from = !!rlang::sym(col_key),
-            values_from = !!rlang::sym(val_key)
-        ) |>
-        tibble::column_to_rownames(row_key) |>
-        as.matrix()
+    mat <- long_to_matrix(df, row_key, col_key, val_key)
 
     # -- convert matrix to correct type ---------------------------------------
     # Use mode() rather than is.numeric() to robustly detect numeric storage
@@ -915,4 +907,57 @@ plot_heatmap <- function(
     } else {
         return(invisible(ht_drawn))
     }
+}
+
+#' Reshape long data to a matrix
+#'
+#' Pivots a long data frame to a matrix with one row per unique `row_key`
+#' value and one column per unique `col_key` value, both ordered by first
+#' appearance (equivalent to `tidyr::pivot_wider()` followed by
+#' `tibble::column_to_rownames()` and `as.matrix()`). Missing combinations are
+#' `NA`. Factor values become character.
+#'
+#' @param df A data frame.
+#' @param row_key,col_key,val_key Character scalars naming the row, column and
+#'   value columns of `df`.
+#' @return A matrix with row and column names.
+#' @examples
+#' d <- data.frame(g = c("a", "b", "a"), s = c("x", "x", "y"), v = 1:3)
+#' statplot:::long_to_matrix(d, "g", "s", "v")
+#' @keywords internal
+#' @noRd
+long_to_matrix <- function(df, row_key, col_key, val_key) {
+    stopifnot(
+        is.data.frame(df),
+        is.character(row_key),
+        length(row_key) == 1,
+        is.character(col_key),
+        length(col_key) == 1,
+        is.character(val_key),
+        length(val_key) == 1,
+        all(c(row_key, col_key, val_key) %in% names(df))
+    )
+    long <- unique(as.data.frame(df)[c(row_key, col_key, val_key)])
+    row_ids <- as.character(long[[row_key]])
+    col_ids <- as.character(long[[col_key]])
+    if (anyDuplicated(data.frame(row_ids, col_ids))) {
+        stop(
+            "Each combination of `row_var` and `col_var` must have a single ",
+            "value of `value_var`."
+        )
+    }
+    rows <- unique(row_ids)
+    cols <- unique(col_ids)
+    vals <- long[[val_key]]
+    if (is.factor(vals)) {
+        vals <- as.character(vals)
+    }
+    mat <- matrix(
+        vals[NA_integer_],
+        nrow = length(rows),
+        ncol = length(cols),
+        dimnames = list(rows, cols)
+    )
+    mat[cbind(match(row_ids, rows), match(col_ids, cols))] <- vals
+    mat
 }

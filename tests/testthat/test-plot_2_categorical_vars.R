@@ -587,3 +587,31 @@ test_that("yvar_colors accepts unnamed vector (positional)", {
         )
     )
 })
+
+# ---------------------------------------------------------------------------
+# Cramer's V values
+# ---------------------------------------------------------------------------
+
+test_that("stats report the bias-corrected Cramer's V from cramers_v_adjusted", {
+    d <- make_cat_df()
+    res <- plot_2_categorical_vars(d, "cyl", "gear")
+    v <- statplot:::cramers_v_adjusted(table(d$cyl, d$gear))
+    expect_equal(res$stats$value, v$estimate)
+    expect_equal(res$stats$CI_low, v$ci_low)
+    expect_equal(res$stats$CI_high, v$ci_high)
+    expect_equal(res$stats$effect_type, "Cramers_v_adjusted")
+})
+
+test_that("Cramer's V in stats matches effectsize::cramers_v", {
+    skip_if_not_installed("effectsize")
+    d <- make_cat_df()
+    res <- plot_2_categorical_vars(d, "cyl", "gear")
+    ref <- effectsize::cramers_v(
+        table(d$cyl, d$gear),
+        adjust = TRUE,
+        alternative = "two.sided"
+    )
+    expect_equal(res$stats$value, ref$Cramers_v_adjusted, tolerance = 1e-10)
+    expect_lt(abs(res$stats$CI_low - ref$CI_low), 0.01)
+    expect_lt(abs(res$stats$CI_high - ref$CI_high), 0.01)
+})

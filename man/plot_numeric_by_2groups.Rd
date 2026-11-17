@@ -39,7 +39,7 @@ passed to the \code{alpha} argument of
 \item{effect_size}{character(1) Type of effect size to compute. Either
 \code{"median_difference"} (default; Hodges-Lehmann estimate of location
 shift) or \code{"c_index"} (concordance probability using
-\code{asht::wmwTest}).}
+\code{asht::wmwTest}; requires the suggested package \pkg{asht}).}
 
 \item{facet_cols}{character vector of column names to facet by.
 Default \code{NULL} (single panel).}
@@ -94,13 +94,15 @@ res <- plot_numeric_by_2groups("mpg", "vs", mtcars)
 res$ggplot
 res$wilcox
 
-# Show C-index effect size instead of median difference
-plot_numeric_by_2groups(
-  yvar = "mpg",
-  group = "vs",
-  d = mtcars,
-  effect_size = "c_index"
-)
+# Show C-index effect size instead of median difference (requires asht)
+if (requireNamespace("asht", quietly = TRUE)) {
+  plot_numeric_by_2groups(
+    yvar = "mpg",
+    group = "vs",
+    d = mtcars,
+    effect_size = "c_index"
+  )
+}
 
 # Faceted example: compare a "score" between exercisers and non-exercisers,
 # faceted by group (A/B/C/D)
@@ -117,8 +119,7 @@ res_facet <- plot_numeric_by_2groups(
   d          = df,
   facet_cols = "group",
   colors     = c("No" = "grey80", "Yes" = "steelblue"),
-  alpha      = 0.6,
-  effect_size = "c_index"
+  alpha      = 0.6
 )
 res_facet$ggplot + ggplot2::facet_wrap(~group, ncol = 2)
 res_facet$wilcox

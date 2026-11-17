@@ -157,14 +157,14 @@ plot_numeric_by_3plusgroups <- function(
     # epsilon squared effect size
     if (show_effect_size) {
         set.seed(123)
-        es <- effectsize::rank_epsilon_squared(
-            f,
-            data = d_sub,
-            alternative = "two.sided"
+        es <- rank_epsilon_squared(
+            x = d_sub[[yvar]],
+            g = d_sub[[group]],
+            iterations = n_boot
         )
-        es_est <- as.numeric(es$rank_epsilon_squared)
-        es_ci_low <- as.numeric(es$CI_low)
-        es_ci_high <- as.numeric(es$CI_high)
+        es_est <- es$estimate
+        es_ci_low <- es$ci_low
+        es_ci_high <- es$ci_high
 
         es_text <- sprintf(
             " = %.2f (%.2f, %.2f), p",
@@ -172,16 +172,16 @@ plot_numeric_by_3plusgroups <- function(
             es_ci_low,
             es_ci_high
         )
-        p_text <- BoutrosLab.plotting.general::display.statistical.result(
-            x = p_val,
-            statistic.type = es_text,
-            symbol = '= '
-        )
-        es_plotmath <- expression(epsilon^2)
-        p_text <- as.expression(bquote(.(es_plotmath[[1]]) ~ .(p_text[[1]])))
+        p_expr <- str2expression(format_pvalue(
+            p_val,
+            p_text = es_text,
+            p_symbol = "= ",
+            format = "plotmath"
+        ))
+        p_text <- as.expression(bquote(epsilon^2 ~ .(p_expr[[1]])))
     } else {
         p_text <- NULL
-        es <- NULL
+        es_est <- es_ci_low <- es_ci_high <- NA_real_
     }
 
     # pairwise wilcoxon tests and compact-letter generation (optional)
@@ -195,7 +195,7 @@ plot_numeric_by_3plusgroups <- function(
             )
         )
         tab2 <- tab$p.value
-        tab3 <- rcompanion::fullPTable(tab2)
+        tab3 <- full_pvalue_matrix(tab2)
         letters <- multcompView::multcompLetters(
             tab3,
             Letters = LETTERS
@@ -298,9 +298,9 @@ plot_numeric_by_3plusgroups <- function(
     es2 <- data.frame(
         outcome = yvar,
         predictor = group,
-        value = as.numeric(es$rank_epsilon_squared),
-        CI_low = as.numeric(es$CI_low),
-        CI_high = as.numeric(es$CI_high),
+        value = es_est,
+        CI_low = es_ci_low,
+        CI_high = es_ci_high,
         stringsAsFactors = FALSE,
         effect_type = "epsilon_squared",
         pvalue = p_val,
