@@ -22,6 +22,7 @@ table1viz_flextable <- function(
     bar_width,
     header_align,
     overall_divider,
+    var_start,
     group_header,
     distribution_label,
     note
@@ -152,6 +153,14 @@ table1viz_flextable <- function(
         for (part in c('header', 'body')) {
             ft <- flextable::vline(ft, j = 'stat_0', border = line, part = part)
         }
+    }
+    if (length(var_start) > 0) {
+        ft <- flextable::hline(
+            ft,
+            i = var_start - 1,
+            border = flextable::fp_border_default(color = divider_color, width = 1.5),
+            part = 'body'
+        )
     }
     # autofit() measures the placeholder text, not the graphic: widen as needed
     widths <- stats::setNames(ft$body$colwidths, ft$col_keys)

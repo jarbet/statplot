@@ -12,14 +12,16 @@ table1viz(
   stats_col_label = "Overall",
   missing = c("ifany", "no", "always"),
   missing_group = c("exclude", "show"),
-  statistic = list(gtsummary::all_continuous() ~ c("{median} ({p25}, {p75})",
-    "{mean} +/- {sd}", "{min}, {max}"), gtsummary::all_categorical() ~ c("{n} ({p}\%)")),
+  statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{min}; {max}"),
+    gtsummary::all_categorical() ~ c("{n} ({p}\%)")),
   digits = list(gtsummary::all_continuous() ~ c(rep(1, 7))),
   binary_01_only_show1 = TRUE,
   continuous_plot = c("violin_box", "boxplot", "density"),
   show_outliers = TRUE,
   show_axis = TRUE,
   axis_breaks = NULL,
+  bar_axis = FALSE,
+  bar_axis_breaks = c(0, 50, 100),
   colors = NULL,
   overall_color = "#7F7F7F",
   plot_width = 140,
@@ -29,6 +31,8 @@ table1viz(
   distribution_label = "**Distribution**",
   header_align = c("left", "center"),
   overall_divider = TRUE,
+  variable_divider = TRUE,
+  row_lines = FALSE,
   output = c("auto", "gt", "flextable")
 )
 }
@@ -56,7 +60,11 @@ bar on the same 0-100\% scale as the category bars.}
 \code{"show"} keeps them as an extra "Missing" group column (colored brown,
 \verb{#8C564B}, unless \code{colors} is named and includes \code{"Missing"}).}
 
-\item{statistic, digits}{Passed to \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}}. Defaults match \code{\link[=table_overall]{table_overall()}}.}
+\item{statistic, digits}{Passed to \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}}. By default
+continuous variables show mean (SD) and min; max; the graphic already
+shows the median and quartiles. Add a median (Q1, Q3) row, labelled
+"Median (IQR)", with e.g.
+\code{statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{median} ({p25}, {p75})", "{min}; {max}"), gtsummary::all_categorical() ~ "{n} ({p}\%)")}.}
 
 \item{binary_01_only_show1}{logical(1). If \code{TRUE}, binary variables only show
 one row (e.g. the "1"/"Yes" level). Default \code{TRUE}.}
@@ -81,6 +89,16 @@ continuous variables when \code{show_axis = TRUE}, e.g.
 variables not listed get automatic ticks. Ticks outside the data range
 widen that variable's (shared) scale so they are shown. If a vector has
 names, they are used as the tick labels, e.g. \code{c("0" = 0, "1 yr" = 365)}.}
+
+\item{bar_axis}{logical(1). Add a small 0-100\% x-axis under the
+percentage bars? Default \code{FALSE}. The axis is drawn once per variable,
+under its last bar (the "N missing" row if shown, otherwise the last
+level).}
+
+\item{bar_axis_breaks}{numeric. Tick positions, in percent (0-100), for
+the bar axis when \code{bar_axis = TRUE}. Default \code{c(0, 50, 100)}, labelled
+"0\%", "50\%", "100\%". If the vector has names, they are used as the tick
+labels, e.g. \code{c("0" = 0, "1/4" = 25, "1/2" = 50)}.}
 
 \item{colors}{Optional character vector of colors for the group columns
 (unnamed in group order, or named by group level). Defaults to the
@@ -111,6 +129,16 @@ Overall, group and Distribution columns: \code{"left"} (default) or \code{"cente
 \item{overall_divider}{logical(1). Draw a vertical line to the right of
 the Overall column to set it apart from the group columns? Default
 \code{TRUE}. Only used when grouping with \code{overall = TRUE}.}
+
+\item{variable_divider}{logical(1). Draw a thicker horizontal line above
+each variable (except the first) so it is clearer where a new variable
+starts? Default \code{TRUE}.}
+
+\item{row_lines}{logical(1). Draw the thin horizontal lines between the
+rows within a variable (e.g. between its statistic rows or levels)?
+Default \code{FALSE}, so only the lines between variables are drawn.
+Applies to gt output; the Word (flextable) table has no lines within a
+variable.}
 
 \item{output}{character(1). Table type to return: \code{"auto"} (default)
 returns a flextable when knitting to Word (\code{.docx}, e.g. Quarto
@@ -146,6 +174,9 @@ inner boxplot (box = IQR, thick line = median, whiskers to the most
 extreme values within 1.5 x IQR, dots = outliers beyond that) in the
 variable's label row, above the numeric summaries. All columns share the
 same x-axis (and violin width) scale so groups are directly comparable.
+Each violin has the same area (like \code{\link[ggplot2:geom_violin]{ggplot2::geom_violin()}}'s default),
+so a violin's width shows the shape of that group's distribution, not
+its sample size; N is given in each column header.
 \item \strong{Categorical} and \strong{binary} variables: a percentage bar next to each
 \verb{n (\%)}.
 }
@@ -202,6 +233,26 @@ table1viz(df, name_groupvar = "grp", overall_divider = FALSE)
 
 # Hide the x-axis tick labels for a more compact table
 table1viz(df, name_groupvar = "grp", show_axis = FALSE)
+
+# Thin lines between the rows within a variable
+table1viz(df_miss, name_groupvar = "grp", row_lines = TRUE)
+
+# No thicker lines between variables
+table1viz(df_miss, name_groupvar = "grp", variable_divider = FALSE)
+
+# Add a median (IQR) row for continuous variables
+table1viz(
+  df,
+  name_groupvar = "grp",
+  statistic = list(
+    gtsummary::all_continuous() ~ c("{mean} ({sd})", "{median} ({p25}, {p75})", "{min}; {max}"),
+    gtsummary::all_categorical() ~ "{n} ({p}\%)"
+  )
+)
+
+# Add a 0-100\% axis under the percentage bars, with custom ticks
+table1viz(df, name_groupvar = "grp", bar_axis = TRUE)
+table1viz(df, name_groupvar = "grp", bar_axis = TRUE, bar_axis_breaks = c(0, 25, 50, 75, 100))
 
 # Word: in a Quarto document with `format: docx`, table1viz() returns an
 # editable Word table automatically. Force it elsewhere with:

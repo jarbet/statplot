@@ -379,7 +379,7 @@ test_that("flextable keeps a graphic per cell and merges spanning plots", {
     expect_gte(length(comb$statplot_graphics), n_cont)
     expect_true(all(grepl("^<svg", comb$statplot_graphics)))
     # the age plot spans its label + statistic rows in one merged cell
-    age_rows <- which(tb$label == "age") + 0:3 # label + 3 statistic rows
+    age_rows <- which(tb$label == "age") + 0:2 # label + 2 statistic rows
     spans <- comb$body$spans$columns[age_rows, match("distribution", comb$col_keys)]
     expect_equal(spans, c(length(age_rows), rep(0, length(age_rows) - 1)))
 
@@ -490,10 +490,10 @@ test_that("overall_divider draws a line right of the Overall column", {
     }
     for (lay in c("combined", "columns")) {
         on <- stat0_cells(table1viz(make_df(), "grp", overall_divider = TRUE, plot_layout = lay))
-        expect_true(all(grepl("border-right[^;]*#9E9E9E", on)))
+        expect_true(all(grepl("border-right-width: 2px; border-right-style: solid; border-right-color: #D3D3D3", fixed = TRUE, on)))
     }
-    expect_true(all(grepl("border-right[^;]*#9E9E9E", stat0_cells(table1viz(make_df(), "grp"))))) # default
-    expect_false(any(grepl("#9E9E9E", stat0_cells(table1viz(make_df(), "grp", overall_divider = FALSE)))))
+    expect_true(all(grepl("border-right-width: 2px; border-right-style: solid; border-right-color: #D3D3D3", fixed = TRUE, stat0_cells(table1viz(make_df(), "grp"))))) # default
+    expect_false(any(grepl("border-right-width: 2px; border-right-style: solid; border-right-color: #D3D3D3", fixed = TRUE, stat0_cells(table1viz(make_df(), "grp", overall_divider = FALSE)))))
     # ignored without group columns
     expect_s3_class(table1viz(make_df(), overall_divider = TRUE), "gt_tbl")
     expect_s3_class(table1viz(make_df(), "grp", overall = FALSE, overall_divider = TRUE), "gt_tbl")
@@ -503,8 +503,193 @@ test_that("overall_divider draws a line right of the Overall column", {
     skip_if_not_installed("xml2")
     ft <- table1viz(make_df(), "grp", overall_divider = TRUE, output = "flextable")
     j <- match("stat_0", ft$col_keys)
-    expect_true(all(ft$body$styles$cells$border.color.right$data[, j] == "#9E9E9E"))
-    expect_true(all(ft$header$styles$cells$border.color.right$data[, j] == "#9E9E9E"))
+    expect_true(all(ft$body$styles$cells$border.color.right$data[, j] == "#D3D3D3"))
+    expect_true(all(ft$header$styles$cells$border.color.right$data[, j] == "#D3D3D3"))
     ft <- table1viz(make_df(), "grp", overall_divider = FALSE, output = "flextable")
-    expect_false(any(ft$body$styles$cells$border.color.right$data[, j] == "#9E9E9E"))
+    expect_false(any(ft$body$styles$cells$border.color.right$data[, j] == "#D3D3D3"))
+})
+
+test_that("the caller's gtsummary theme is restored", {
+    gtsummary::reset_gtsummary_theme()
+    withr::defer(gtsummary::reset_gtsummary_theme())
+    # no theme before -> none after
+    table1viz(make_df(), "grp")
+    expect_length(gtsummary::get_gtsummary_theme(), 0)
+    expect_s3_class(table1viz(make_df(), "grp", output = "flextable"), "flextable")
+    expect_length(gtsummary::get_gtsummary_theme(), 0)
+    # a user's own theme survives the call
+    suppressMessages(gtsummary::theme_gtsummary_language("fr"))
+    before <- gtsummary::get_gtsummary_theme()
+    table1viz(make_df(), "grp")
+    expect_identical(gtsummary::get_gtsummary_theme(), before)
+    # but the table itself still uses the package theme (English, compact)
+    html <- as.character(gt::as_raw_html(table1viz(make_df(), "grp"), inline_css = FALSE))
+    expect_match(html, "N missing")
+})
+
+test_that("the caller's gtsummary theme does not change the table's numbers", {
+    gtsummary::reset_gtsummary_theme()
+    withr::defer(gtsummary::reset_gtsummary_theme())
+    stats <- function() table1viz(make_df(), "grp")[["_data"]][, c("label", "stat_0", "stat_1")]
+    base <- stats()
+    gtsummary::set_gtsummary_theme(list(
+        "tbl_summary-fn:percent_fun" = function(x) gtsummary::style_percent(x, digits = 2)
+    ))
+    expect_identical(stats(), base)
+    # and the caller's theme is still in place afterwards
+    expect_true("tbl_summary-fn:percent_fun" %in% names(gtsummary::get_gtsummary_theme()))
+})
+
+test_that("bar_axis adds one 0-100% axis per variable, under its last bar", {
+    d <- make_df()
+    d$sex[1:5] <- NA # sex gets an N missing row
+    count_axes <- function(html, lab) {
+        lengths(regmatches(html, gregexpr(sprintf(">%s</text>", lab), html)))
+    }
+    for (lay in c("combined", "columns")) {
+        off <- as.character(gt::as_raw_html(
+            table1viz(d, "grp", plot_layout = lay), inline_css = FALSE))
+        expect_equal(count_axes(off, "50%"), 0)
+        tab <- table1viz(d, "grp", plot_layout = lay, bar_axis = TRUE)
+        html <- as.character(gt::as_raw_html(tab, inline_css = FALSE))
+        # variables with bars: sex (axis on its N missing row), diabetes,
+        # and age's N missing row; one axis per variable (per column if "columns")
+        n_cols <- if (lay == "combined") 1 else 4
+        expect_equal(count_axes(html, "0%"), 3 * n_cols)
+        expect_equal(count_axes(html, "100%"), 3 * n_cols)
+    }
+    # the axis sits on sex's N missing row, not on its last level ("M")
+    skip_if_not_installed("flextable")
+    skip_if_not_installed("xml2")
+    g <- table1viz(d, "grp", bar_axis = TRUE, output = "flextable")$statplot_graphics
+    has_axis <- grepl(">50%</text>", g)
+    expect_false(any(has_axis[grepl("<title>M</title>", g)]))
+    expect_true(all(has_axis[grepl("<title>Missing</title>", g)]))
+    expect_true(all(has_axis[grepl("<title>diabetes</title>", g)]))
+})
+
+test_that("bar_axis_breaks sets ticks and labels and is validated", {
+    tab <- table1viz(make_df(), "grp", bar_axis = TRUE, bar_axis_breaks = c(0, 25, 100))
+    html <- as.character(gt::as_raw_html(tab, inline_css = FALSE))
+    expect_match(html, ">25%</text>")
+    expect_false(grepl(">50%</text>", html))
+    tab <- table1viz(make_df(), "grp", bar_axis = TRUE, bar_axis_breaks = c(none = 0, half = 50))
+    html <- as.character(gt::as_raw_html(tab, inline_css = FALSE))
+    expect_match(html, ">half</text>")
+    expect_error(table1viz(make_df(), "grp", bar_axis = TRUE, bar_axis_breaks = c(0, 150)))
+    expect_error(table1viz(make_df(), "grp", bar_axis = NA))
+})
+
+test_that("bar axis is drawn in Word output", {
+    skip_if_not_installed("flextable")
+    skip_if_not_installed("xml2")
+    ft <- table1viz(make_df(), "grp", bar_axis = TRUE, output = "flextable")
+    svgs <- ft$statplot_graphics
+    expect_true(any(grepl(">50%</text>", svgs)))
+    wml <- svg_to_wml(svgs[grepl(">50%</text>", svgs)][[1]])
+    expect_match(wml, "50%</w:t>")
+})
+
+test_that("narrow bar axes keep every tick but hide overlapping labels", {
+    ax <- svg_axis(c(0, 100), 60, y0 = 0, height = 12, pad = 0,
+        breaks = c("0%" = 0, "50%" = 50, "100%" = 100), drop_overlapping = TRUE)
+    expect_equal(lengths(regmatches(ax, gregexpr("<line", ax))), 4) # baseline + 3 ticks
+    expect_match(ax, ">0%</text>")
+    expect_match(ax, ">100%</text>")
+    expect_false(grepl(">50%</text>", ax))
+    wide <- svg_axis(c(0, 100), 140, y0 = 0, height = 12, pad = 0,
+        breaks = c("0%" = 0, "50%" = 50, "100%" = 100), drop_overlapping = TRUE)
+    expect_match(wide, ">50%</text>")
+})
+
+test_that("variable_divider draws a thicker line above each variable but the first", {
+    d <- make_df()
+    for (lay in c("combined", "columns")) {
+        tab <- table1viz(d, "grp", plot_layout = lay)
+        n_cols <- ncol(tab[["_data"]]) - sum(tab[["_boxhead"]]$type == "hidden")
+        html <- as.character(gt::as_raw_html(tab, inline_css = TRUE))
+        # 3 variables -> lines above the 2nd and 3rd, across every column
+        n_lines <- lengths(regmatches(html, gregexpr("border-top-width: 2px; border-top-style: solid; border-top-color: #D3D3D3", html)))
+        expect_equal(n_lines, 2 * n_cols)
+        expect_match(html, "border-top-width: 2px")
+    }
+    off <- as.character(gt::as_raw_html(
+        table1viz(d, "grp", variable_divider = FALSE, overall_divider = FALSE),
+        inline_css = TRUE
+    ))
+    expect_false(grepl("border-top-width: 2px; border-top-style: solid; border-top-color: #D3D3D3", off, fixed = TRUE))
+    expect_error(table1viz(d, "grp", variable_divider = NA))
+})
+
+test_that("variable_divider draws lines in Word output", {
+    skip_if_not_installed("flextable")
+    skip_if_not_installed("xml2")
+    d <- make_df()
+    ft <- table1viz(d, "grp", output = "flextable")
+    starts <- which(ft$body$dataset$row_type == "label")
+    if (is.null(ft$body$dataset$row_type)) {
+        starts <- which(table1viz(d, "grp", variable_divider = FALSE)[["_data"]]$row_type == "label")
+    }
+    bottom <- ft$body$styles$cells$border.color.bottom$data[, 1]
+    expect_true(all(bottom[starts[-1] - 1] == "#D3D3D3"))
+    off <- table1viz(d, "grp", variable_divider = FALSE, output = "flextable")
+    expect_false(any(off$body$styles$cells$border.color.bottom$data[, 1] == "#D3D3D3"))
+})
+
+test_that("continuous variables show Mean (SD) and min; max by default; median (IQR) can be added", {
+    # >= 10 distinct values so gtsummary treats x as continuous
+    d <- data.frame(grp = rep(c("A", "B"), 6), x = c(-5, 1:10, 2500.5))
+    tab <- table1viz(d, "grp")[["_data"]]
+    expect_equal(tab$label[tab$row_type == "level"], c("Mean (SD)", "Min; Max"))
+    # ";" keeps min and max apart from thousands commas
+    expect_equal(tab$stat_0[tab$label == "Min; Max"], "-5.0; 2,500.5")
+    with_median <- table1viz(
+        d,
+        "grp",
+        statistic = list(
+            gtsummary::all_continuous() ~ c("{mean} ({sd})", "{median} ({p25}, {p75})", "{min}; {max}"),
+            gtsummary::all_categorical() ~ "{n} ({p}%)"
+        )
+    )[["_data"]]$label
+    expect_true("Median (IQR)" %in% with_median)
+    expect_false("Median (Q1, Q3)" %in% with_median)
+    # a differently formatted median statistic keeps gtsummary's label
+    custom <- table1viz(
+        d,
+        "grp",
+        statistic = list(
+            gtsummary::all_continuous() ~ "{median} ({p25} to {p75})",
+            gtsummary::all_categorical() ~ "{n} ({p}%)"
+        )
+    )[["_data"]]$label
+    expect_false("Median (IQR)" %in% custom)
+})
+
+test_that("lines within a variable are hidden by default; row_lines = TRUE shows them", {
+    d <- make_df()
+    top_hidden <- function(tab) {
+        h <- as.character(gt::as_raw_html(tab, inline_css = TRUE))
+        # one stat_0 cell per body row, in row order
+        cells <- regmatches(h, gregexpr('<td[^>]*headers="stat_0"[^>]*>', h))[[1]]
+        grepl("border-top-style: hidden", cells)
+    }
+    for (lay in c("combined", "columns")) {
+        tab <- table1viz(d, "grp", plot_layout = lay)
+        label_row <- tab[["_data"]]$row_type == "label"
+        hidden <- top_hidden(tab)
+        expect_true(all(hidden[!label_row]))
+        expect_false(any(hidden[label_row]))
+        expect_false(any(top_hidden(table1viz(d, "grp", plot_layout = lay, row_lines = TRUE))))
+    }
+    expect_error(table1viz(d, "grp", row_lines = NA))
+})
+
+test_that("the line under the column labels is darker; the Group spanner line stays light", {
+    tab <- table1viz(make_df(), "grp")
+    h <- as.character(gt::as_raw_html(tab, inline_css = TRUE))
+    labels <- regmatches(h, gregexpr('<th[^>]*id="(label|stat_[0-9]+|distribution)"[^>]*>', h))[[1]]
+    expect_length(labels, ncol(tab[["_data"]]) - sum(tab[["_boxhead"]]$type == "hidden"))
+    expect_true(all(grepl("border-bottom-width: 2px; border-bottom-style: solid; border-bottom-color: #9E9E9E", labels, fixed = TRUE)))
+    spanner <- regmatches(h, regexpr('<div class="gt_column_spanner"[^>]*>', h))
+    expect_match(spanner, "border-bottom-color: #D3D3D3", fixed = TRUE)
 })

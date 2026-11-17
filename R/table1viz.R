@@ -9,6 +9,9 @@
 #'   extreme values within 1.5 x IQR, dots = outliers beyond that) in the
 #'   variable's label row, above the numeric summaries. All columns share the
 #'   same x-axis (and violin width) scale so groups are directly comparable.
+#'   Each violin has the same area (like [ggplot2::geom_violin()]'s default),
+#'   so a violin's width shows the shape of that group's distribution, not
+#'   its sample size; N is given in each column header.
 #' * **Categorical** and **binary** variables: a percentage bar next to each
 #'   `n (%)`.
 #'
@@ -33,7 +36,13 @@
 #'   `"exclude"` (default) drops them and reports how many in a table note;
 #'   `"show"` keeps them as an extra "Missing" group column (colored brown,
 #'   `#8C564B`, unless `colors` is named and includes `"Missing"`).
-#' @param statistic,digits Passed to [gtsummary::tbl_summary()]. Defaults match [table_overall()].
+#' @param statistic,digits Passed to [gtsummary::tbl_summary()]. By default
+#'   continuous variables show mean (SD) and min; max; the graphic already
+#'   shows the median and quartiles. Add a median (Q1, Q3) row, labelled
+#'   "Median (IQR)", with e.g.
+#'   `statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})",
+#'   "{median} ({p25}, {p75})", "{min}; {max}"),
+#'   gtsummary::all_categorical() ~ "{n} ({p}%)")`.
 #' @param binary_01_only_show1 logical(1). If `TRUE`, binary variables only show
 #'   one row (e.g. the "1"/"Yes" level). Default `TRUE`.
 #' @param continuous_plot character(1). Graphic for continuous variables:
@@ -53,6 +62,14 @@
 #'   variables not listed get automatic ticks. Ticks outside the data range
 #'   widen that variable's (shared) scale so they are shown. If a vector has
 #'   names, they are used as the tick labels, e.g. `c("0" = 0, "1 yr" = 365)`.
+#' @param bar_axis logical(1). Add a small 0-100% x-axis under the
+#'   percentage bars? Default `FALSE`. The axis is drawn once per variable,
+#'   under its last bar (the "N missing" row if shown, otherwise the last
+#'   level).
+#' @param bar_axis_breaks numeric. Tick positions, in percent (0-100), for
+#'   the bar axis when `bar_axis = TRUE`. Default `c(0, 50, 100)`, labelled
+#'   "0%", "50%", "100%". If the vector has names, they are used as the tick
+#'   labels, e.g. `c("0" = 0, "1/4" = 25, "1/2" = 50)`.
 #' @param colors Optional character vector of colors for the group columns
 #'   (unnamed in group order, or named by group level). Defaults to the
 #'   Okabe-Ito palette.
@@ -75,6 +92,14 @@
 #' @param overall_divider logical(1). Draw a vertical line to the right of
 #'   the Overall column to set it apart from the group columns? Default
 #'   `TRUE`. Only used when grouping with `overall = TRUE`.
+#' @param variable_divider logical(1). Draw a thicker horizontal line above
+#'   each variable (except the first) so it is clearer where a new variable
+#'   starts? Default `TRUE`.
+#' @param row_lines logical(1). Draw the thin horizontal lines between the
+#'   rows within a variable (e.g. between its statistic rows or levels)?
+#'   Default `FALSE`, so only the lines between variables are drawn.
+#'   Applies to gt output; the Word (flextable) table has no lines within a
+#'   variable.
 #' @param output character(1). Table type to return: `"auto"` (default)
 #'   returns a flextable when knitting to Word (`.docx`, e.g. Quarto
 #'   `format: docx`) and a gt table otherwise; `"gt"` or `"flextable"` force
@@ -147,6 +172,26 @@
 #' # Hide the x-axis tick labels for a more compact table
 #' table1viz(df, name_groupvar = "grp", show_axis = FALSE)
 #'
+#' # Thin lines between the rows within a variable
+#' table1viz(df_miss, name_groupvar = "grp", row_lines = TRUE)
+#'
+#' # No thicker lines between variables
+#' table1viz(df_miss, name_groupvar = "grp", variable_divider = FALSE)
+#'
+#' # Add a median (IQR) row for continuous variables
+#' table1viz(
+#'   df,
+#'   name_groupvar = "grp",
+#'   statistic = list(
+#'     gtsummary::all_continuous() ~ c("{mean} ({sd})", "{median} ({p25}, {p75})", "{min}; {max}"),
+#'     gtsummary::all_categorical() ~ "{n} ({p}%)"
+#'   )
+#' )
+#'
+#' # Add a 0-100% axis under the percentage bars, with custom ticks
+#' table1viz(df, name_groupvar = "grp", bar_axis = TRUE)
+#' table1viz(df, name_groupvar = "grp", bar_axis = TRUE, bar_axis_breaks = c(0, 25, 50, 75, 100))
+#'
 #' # Word: in a Quarto document with `format: docx`, table1viz() returns an
 #' # editable Word table automatically. Force it elsewhere with:
 #' if (requireNamespace("flextable", quietly = TRUE) &&
@@ -174,9 +219,8 @@ table1viz <- function(
     missing_group = c("exclude", "show"),
     statistic = list(
         gtsummary::all_continuous() ~ c(
-            '{median} ({p25}, {p75})',
-            '{mean} +/- {sd}',
-            '{min}, {max}'
+            '{mean} ({sd})',
+            '{min}; {max}' # ";", not ",", since numbers use "," for thousands
         ),
         gtsummary::all_categorical() ~ c('{n} ({p}%)')
     ),
@@ -188,6 +232,8 @@ table1viz <- function(
     show_outliers = TRUE,
     show_axis = TRUE,
     axis_breaks = NULL,
+    bar_axis = FALSE,
+    bar_axis_breaks = c(0, 50, 100),
     colors = NULL,
     overall_color = '#7F7F7F',
     plot_width = 140,
@@ -197,6 +243,8 @@ table1viz <- function(
     distribution_label = '**Distribution**',
     header_align = c("left", "center"),
     overall_divider = TRUE,
+    variable_divider = TRUE,
+    row_lines = FALSE,
     output = c("auto", "gt", "flextable")
 ) {
     missing <- match.arg(missing)
@@ -227,6 +275,12 @@ table1viz <- function(
             length(overall_divider) == 1 &&
             !is.na(overall_divider)
     )
+    stopifnot(
+        is.logical(variable_divider) &&
+            length(variable_divider) == 1 &&
+            !is.na(variable_divider)
+    )
+    stopifnot(is.logical(row_lines) && length(row_lines) == 1 && !is.na(row_lines))
     stopifnot(is.list(statistic), is.list(digits))
     stopifnot(
         is.logical(binary_01_only_show1) && length(binary_01_only_show1) == 1
@@ -244,13 +298,44 @@ table1viz <- function(
     stopifnot(is.logical(show_axis) && length(show_axis) == 1 && !is.na(show_axis))
     axis_h <- if (show_axis) 12 else 0
     check_axis_breaks(axis_breaks, d)
+    stopifnot(is.logical(bar_axis) && length(bar_axis) == 1 && !is.na(bar_axis))
+    stopifnot(
+        is.numeric(bar_axis_breaks),
+        length(bar_axis_breaks) > 0,
+        all(is.finite(bar_axis_breaks)),
+        all(bar_axis_breaks >= 0 & bar_axis_breaks <= 100)
+    )
+    bar_axis_h <- if (bar_axis) 12 else 0
+    if (is.null(names(bar_axis_breaks))) {
+        names(bar_axis_breaks) <- paste0(
+            format(bar_axis_breaks, trim = TRUE, drop0trailing = TRUE),
+            '%'
+        )
+    }
     if (!is.null(axis_breaks) && !show_axis) {
         warning('`axis_breaks` is ignored because `show_axis = FALSE`.', call. = FALSE)
         axis_breaks <- NULL
     }
 
-    gtsummary::theme_gtsummary_language("en", big.mark = ",")
-    gtsummary::theme_gtsummary_compact()
+    # Use the package's gtsummary theme for this call only, then restore the
+    # caller's theme so later gtsummary tables are unaffected.
+    old_theme <- gtsummary::get_gtsummary_theme()
+    on.exit(
+        suppressMessages({
+            gtsummary::reset_gtsummary_theme()
+            gtsummary::set_gtsummary_theme(old_theme)
+        }),
+        add = TRUE
+    )
+    new_theme <- c(
+        gtsummary::theme_gtsummary_language("en", big.mark = ",", set_theme = FALSE),
+        gtsummary::theme_gtsummary_compact(set_theme = FALSE)
+    )
+    new_theme <- new_theme[names(new_theme) != 'pkgwide-str:theme_name']
+    # Start from a clean theme so the caller's theme (e.g. percent formatting)
+    # can't change the numbers shown; on.exit() restores it afterwards.
+    suppressMessages(gtsummary::reset_gtsummary_theme())
+    gtsummary::set_gtsummary_theme(new_theme)
 
     type <- if (binary_01_only_show1) {
         list(gtsummary::all_continuous() ~ 'continuous2')
@@ -325,6 +410,21 @@ table1viz <- function(
     if (grouped && overall) {
         tbl <- gtsummary::add_overall(tbl, last = FALSE)
     }
+    # "Median (IQR)" is the usual clinical label for median (Q1, Q3); only
+    # the default label is changed, so custom statistics keep theirs.
+    tbl <- gtsummary::modify_table_body(
+        tbl,
+        ~ dplyr::mutate(
+            .x,
+            label = dplyr::if_else(
+                .data$row_type == 'level' &
+                    .data$var_type == 'continuous2' &
+                    .data$label == 'Median (Q1, Q3)',
+                'Median (IQR)',
+                .data$label
+            )
+        )
+    )
 
     headers <- vapply(
         names(col_rows),
@@ -396,7 +496,9 @@ table1viz <- function(
                     lane_names = col_names,
                     width = plot_width,
                     title = 'Missing',
-                    hatched = TRUE
+                    hatched = TRUE,
+                    axis_height = bar_axis_h,
+                    axis_breaks = bar_axis_breaks
                 )
             } else {
                 for (cc in names(col_rows)) {
@@ -404,7 +506,9 @@ table1viz <- function(
                         p_miss[[cc]],
                         color = col_colors[[cc]],
                         width = bar_width,
-                        hatched = TRUE
+                        hatched = TRUE,
+                        axis_height = bar_axis_h,
+                        axis_breaks = bar_axis_breaks
                     )
                     cell_bar[[cc]][miss_row] <- TRUE
                 }
@@ -521,6 +625,8 @@ table1viz <- function(
                 numeric(length(values))
             )
             props <- matrix(props, nrow = length(values)) # rows = levels
+            # one bar axis per variable, under its last bar
+            axis_row <- if (length(miss_row) == 1) 0L else length(rows)
             if (combined) {
                 for (j in seq_along(rows)) {
                     dist_svg[rows[j]] <- svg_bars_combined(
@@ -528,7 +634,9 @@ table1viz <- function(
                         colors = col_colors,
                         lane_names = col_names,
                         width = plot_width,
-                        title = tb$label[rows[j]]
+                        title = tb$label[rows[j]],
+                        axis_height = if (j == axis_row) bar_axis_h else 0,
+                        axis_breaks = bar_axis_breaks
                     )
                 }
                 next
@@ -539,7 +647,9 @@ table1viz <- function(
                     cell_svg[[cc]][rows[j]] <- svg_bar(
                         props[j, k],
                         color = col_colors[[cc]],
-                        width = bar_width
+                        width = bar_width,
+                        axis_height = if (j == axis_row) bar_axis_h else 0,
+                        axis_breaks = bar_axis_breaks
                     )
                     cell_bar[[cc]][rows[j]] <- TRUE
                 }
@@ -566,6 +676,12 @@ table1viz <- function(
     )
 
     divider <- overall_divider && grouped && overall
+    # first row of each variable after the first
+    var_start <- if (variable_divider) {
+        which(tb$row_type == 'label')[-1]
+    } else {
+        integer(0)
+    }
     if (output == 'flextable') {
         return(table1viz_flextable(
             tbl,
@@ -582,6 +698,7 @@ table1viz <- function(
             bar_width = bar_width,
             header_align = header_align,
             overall_divider = divider,
+            var_start = var_start,
             group_header = group_header,
             distribution_label = distribution_label,
             note = note
@@ -683,6 +800,17 @@ table1viz <- function(
 
     gt_tbl <- gt_tbl |>
         gt::cols_align('left', columns = dplyr::all_of(names(col_rows))) |>
+        # darker line under the column labels only; gt's option for it also
+        # colors the line under the spanner ("Group"), which stays light
+        gt::tab_options(table_body.border.top.color = header_line_color) |>
+        gt::tab_style(
+            style = gt::cell_borders(
+                sides = 'bottom',
+                color = header_line_color,
+                weight = gt::px(2)
+            ),
+            locations = gt::cells_column_labels()
+        ) |>
         gt::tab_style(
             style = gt::cell_text(v_align = 'middle'),
             locations = gt::cells_body()
@@ -700,7 +828,7 @@ table1viz <- function(
             style = gt::cell_borders(
                 sides = 'right',
                 color = divider_color,
-                weight = gt::px(1.5)
+                weight = gt::px(2)
             ),
             locations = list(
                 gt::cells_body(columns = 'stat_0'),
@@ -709,10 +837,37 @@ table1viz <- function(
         )
     }
 
+    if (length(var_start) > 0) {
+        gt_tbl <- gt::tab_style(
+            gt_tbl,
+            style = gt::cell_borders(
+                sides = 'top',
+                color = divider_color,
+                weight = gt::px(2)
+            ),
+            locations = gt::cells_body(rows = var_start)
+        )
+    }
+
+    if (!row_lines) {
+        # every row except a variable's first (label) row
+        within <- which(tb$row_type != 'label')
+        if (length(within) > 0) {
+            gt_tbl <- gt::tab_style(
+                gt_tbl,
+                style = gt::cell_borders(sides = 'top', style = 'hidden'),
+                locations = gt::cells_body(rows = within)
+            )
+        }
+    }
+
     return(gt_tbl)
 }
 
-divider_color <- '#9E9E9E'
+# Lines between variables and right of the Overall column (gt's light grey)
+divider_color <- '#D3D3D3'
+# Line under the column labels: a bit darker so the header stands out
+header_line_color <- '#9E9E9E'
 
 # ---- internal helpers -------------------------------------------------------
 
@@ -1047,8 +1202,11 @@ svg_continuous_combined <- function(
 
 # Small x-axis (baseline, ticks, labels) in the band y0..y0 + height.
 # Uses the same x mapping as svg_lane(). Empty when height is 0.
+# drop_overlapping: with user `breaks`, keep every tick but hide labels that
+# would overlap (end labels kept first, then interior ones that fit).
 svg_axis <- function(
-    xlim, width, y0, height, pad = 2, font_size = 9, breaks = NULL
+    xlim, width, y0, height, pad = 2, font_size = 9, breaks = NULL,
+    drop_overlapping = FALSE
 ) {
     if (height <= 0 || !all(is.finite(xlim))) {
         return('')
@@ -1071,9 +1229,8 @@ svg_axis <- function(
     }
     # horizontal extent of each label (approximate glyph width), with
     # edge labels anchored inward so they stay inside the graphic
-    layout_ticks <- function(ticks) {
+    layout_ticks <- function(ticks, labs = fmt(ticks)) {
         px <- sx(ticks)
-        labs <- fmt(ticks)
         w <- nchar(labs) * font_size * 0.6
         anchor <- ifelse(px < 12, 'start', ifelse(px > width - 12, 'end', 'middle'))
         left <- ifelse(anchor == 'start', px, ifelse(anchor == 'end', px - w, px - w / 2))
@@ -1085,9 +1242,27 @@ svg_axis <- function(
     }
     if (!is.null(breaks)) {
         # user-supplied ticks: shown as given (names become labels)
-        lt <- layout_ticks(unname(breaks))
-        if (!is.null(names(breaks))) {
-            lt$labs <- names(breaks)
+        lt <- layout_ticks(
+            unname(breaks),
+            labs = if (is.null(names(breaks))) fmt(unname(breaks)) else names(breaks)
+        )
+        if (drop_overlapping && !fits(lt)) {
+            # keep the end labels, then interior labels that fit between
+            ord <- order(lt$px)
+            first <- ord[1]
+            last <- ord[length(ord)]
+            gap_ok <- function(a, b) lt$left[b] - lt$right[a] >= 4
+            keep_last <- gap_ok(first, last)
+            keep <- first
+            for (i in ord[-c(1, length(ord))]) {
+                if (gap_ok(keep[length(keep)], i) && (!keep_last || gap_ok(i, last))) {
+                    keep <- c(keep, i)
+                }
+            }
+            if (keep_last) {
+                keep <- c(keep, last)
+            }
+            lt$labs[-keep] <- ''
         }
     } else if (diff(xlim) == 0) {
         lt <- layout_ticks(xlim[1])
@@ -1157,7 +1332,9 @@ svg_bars_combined <- function(
     title,
     bar_height = 6,
     gap = 1,
-    hatched = FALSE
+    hatched = FALSE,
+    axis_height = 0,
+    axis_breaks = NULL
 ) {
     p <- pmin(pmax(p, 0), 1)
     k <- length(p)
@@ -1195,11 +1372,19 @@ svg_bars_combined <- function(
         },
         character(1)
     )
-    svg_wrap(paste0(defs, paste(bars, collapse = '')), width, height, title)
+    axis <- svg_axis(c(0, 100), width, y0 = height + 1, height = axis_height,
+        pad = 0, breaks = axis_breaks, drop_overlapping = TRUE)
+    if (axis_height > 0) {
+        height <- height + 1 + axis_height
+    }
+    svg_wrap(paste0(defs, paste(bars, collapse = ''), axis), width, height, title)
 }
 
 # Percentage bar (0-100%) for a single table cell.
-svg_bar <- function(p, color, width, height = 10, hatched = FALSE) {
+svg_bar <- function(
+    p, color, width, height = 10, hatched = FALSE,
+    axis_height = 0, axis_breaks = NULL
+) {
     p <- min(max(p, 0), 1)
     defs <- ''
     fill <- color
@@ -1214,17 +1399,19 @@ svg_bar <- function(p, color, width, height = 10, hatched = FALSE) {
         paste0(
             '<svg width="%s" height="%s" style="flex:none">%s',
             '<rect width="%s" height="%s" fill="#E6E6E6"/>',
-            '<rect width="%.1f" height="%s" fill="%s"%s/></svg>'
+            '<rect width="%.1f" height="%s" fill="%s"%s/>%s</svg>'
         ),
         width,
-        height,
+        if (axis_height > 0) height + 1 + axis_height else height,
         defs,
         width,
         height,
         p * width,
         height,
         fill,
-        stroke
+        stroke,
+        svg_axis(c(0, 100), width, y0 = height + 1, height = axis_height,
+            pad = 0, breaks = axis_breaks, drop_overlapping = TRUE)
     )
 }
 
