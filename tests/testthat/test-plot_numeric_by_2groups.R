@@ -12,7 +12,7 @@ test_that("plot_numeric_by_2groups basic functionality works", {
     expect_true(is.list(result))
     expect_named(result, c("ggplot", "wilcox"))
     expect_s3_class(result$ggplot, "ggplot")
-    expect_s3_class(result$wilcox, "tbl_df")
+    expect_s3_class(result$wilcox, "data.frame")
 })
 
 test_that("plot_numeric_by_2groups returns correct wilcox columns", {
@@ -379,4 +379,73 @@ test_that("plot_numeric_by_2groups handles faceting with missing values", {
     expect_equal(nrow(result$wilcox), 2)
     expect_true("category" %in% names(result$wilcox))
     expect_setequal(result$wilcox$category, c("X", "Y"))
+})
+
+test_that("effect_size = 'c_index' uses asht::wmwTest", {
+    skip_if_not_installed("asht")
+    withr::local_seed(42)
+    df <- data.frame(
+        value = stats::rnorm(30),
+        group = factor(rep(c("A", "B"), each = 15))
+    )
+    result <- plot_numeric_by_2groups(
+        "value",
+        "group",
+        df,
+        effect_size = "c_index"
+    )
+    ref <- asht::wmwTest(value ~ group, data = df)
+    expect_equal(result$wilcox$estimate, unname(ref$estimate))
+    expect_equal(result$wilcox$conf.low, ref$conf.int[1])
+    expect_equal(result$wilcox$conf.high, ref$conf.int[2])
+    expect_equal(result$wilcox$p.value, ref$p.value)
+})
+
+test_that("htest_to_df extracts the Wilcoxon test fields", {
+    w <- stats::wilcox.test(
+        mpg ~ am,
+        data = mtcars,
+        conf.int = TRUE,
+        exact = FALSE
+    )
+    res <- statplot:::htest_to_df(w)
+    expect_s3_class(res, "data.frame")
+    expect_identical(
+        names(res),
+        c(
+            "estimate",
+            "statistic",
+            "p.value",
+            "conf.low",
+            "conf.high",
+            "method",
+            "alternative"
+        )
+    )
+    expect_identical(res$estimate, unname(w$estimate))
+    expect_identical(res$statistic, unname(w$statistic))
+    expect_identical(res$p.value, w$p.value)
+    expect_identical(c(res$conf.low, res$conf.high), as.numeric(w$conf.int))
+    expect_identical(res$method, trimws(w$method))
+    expect_identical(res$alternative, "two.sided")
+})
+
+test_that("htest_to_df rejects tests without a single estimate and CI", {
+    expect_error(statplot:::htest_to_df(list(estimate = 1)))
+    expect_error(statplot:::htest_to_df(stats::wilcox.test(1:5, 6:10)))
+})
+
+test_that("wilcox results match wilcox.test", {
+    df <- data.frame(
+        value = c(3.1, 4.2, 2.8, 5.0, 4.4, 6.1, 5.9, 7.2, 6.6, 5.5),
+        group = factor(rep(c("A", "B"), each = 5))
+    )
+    res <- plot_numeric_by_2groups("value", "group", df)
+    w <- stats::wilcox.test(value ~ group, data = df, conf.int = TRUE)
+    expect_equal(res$wilcox$estimate, unname(w$estimate))
+    expect_equal(res$wilcox$p.value, w$p.value)
+    expect_equal(
+        c(res$wilcox$conf.low, res$wilcox$conf.high),
+        as.numeric(w$conf.int)
+    )
 })

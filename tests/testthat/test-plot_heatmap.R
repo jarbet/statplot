@@ -634,3 +634,93 @@ test_that("annotation_legend_param preserves user-provided titles when merge_leg
     # through the draw() behavior, which is harder to assert on
     expect_s4_class(out$ht, "HeatmapList")
 })
+
+# ---------------------------------------------------------------------------
+# long_to_matrix() (internal long -> wide reshape)
+# ---------------------------------------------------------------------------
+
+test_that("long_to_matrix orders rows and columns by first appearance", {
+    d <- data.frame(
+        gene = factor(c("z", "a", "z", "m", "a"), levels = c("m", "z", "a")),
+        sample = c("Q", "P", "P", "Q", "R"),
+        v = c(1.5, 2, 3, 4, 5)
+    )
+    expected <- matrix(
+        c(1.5, NA, 4, 3, 2, NA, NA, 5, NA),
+        nrow = 3,
+        dimnames = list(c("z", "a", "m"), c("Q", "P", "R"))
+    )
+    expect_identical(
+        statplot:::long_to_matrix(d, "gene", "sample", "v"),
+        expected
+    )
+})
+
+test_that("long_to_matrix keeps the value type and converts factors to character", {
+    d <- data.frame(
+        g = c("a", "b", "a"),
+        s = c("x", "x", "y"),
+        int = 1:3,
+        lgl = c(TRUE, FALSE, TRUE),
+        fac = factor(c("lo", "hi", "lo"))
+    )
+    expect_type(statplot:::long_to_matrix(d, "g", "s", "int"), "integer")
+    expect_type(statplot:::long_to_matrix(d, "g", "s", "lgl"), "logical")
+    fac_mat <- statplot:::long_to_matrix(d, "g", "s", "fac")
+    expect_type(fac_mat, "character")
+    expect_identical(fac_mat["b", "x"], "hi")
+    expect_true(is.na(fac_mat["b", "y"]))
+})
+
+test_that("long_to_matrix collapses exact duplicate rows but rejects conflicting values", {
+    d <- data.frame(g = c("a", "a", "b"), s = c("x", "x", "x"), v = c(1, 1, 2))
+    expect_identical(
+        statplot:::long_to_matrix(d, "g", "s", "v"),
+        matrix(c(1, 2), ncol = 1, dimnames = list(c("a", "b"), "x"))
+    )
+    d$v[2] <- 5
+    expect_error(
+        statplot:::long_to_matrix(d, "g", "s", "v"),
+        "single value"
+    )
+})
+
+test_that("long_to_matrix puts every value of the example data in its cell", {
+    df <- make_heatmap_df()
+    mat <- statplot:::long_to_matrix(
+        df,
+        "external_gene_name",
+        "sample",
+        "expression"
+    )
+    expect_identical(rownames(mat), unique(as.character(df$external_gene_name)))
+    expect_identical(colnames(mat), unique(as.character(df$sample)))
+    expect_identical(
+        mat[cbind(as.character(df$external_gene_name), as.character(df$sample))],
+        df$expression
+    )
+    expect_equal(sum(!is.na(mat)), nrow(unique(df[c("external_gene_name", "sample")])))
+})
+
+test_that("column_to_rownames moves a column into the row names", {
+    d <- data.frame(id = factor(c("b", "a")), x = 1:2, y = c("u", "v"))
+    res <- statplot:::column_to_rownames(d, "id")
+    expect_identical(rownames(res), c("b", "a"))
+    expect_identical(names(res), c("x", "y"))
+    expect_identical(res$x, 1:2)
+
+    one_col <- statplot:::column_to_rownames(d[c("id", "x")], "id")
+    expect_s3_class(one_col, "data.frame")
+    expect_identical(names(one_col), "x")
+
+    expect_error(statplot:::column_to_rownames(d, "missing"))
+    expect_error(
+        statplot:::column_to_rownames(rbind(d, d), "id"),
+        "unique, non-missing"
+    )
+    d$id[1] <- NA
+    expect_error(
+        statplot:::column_to_rownames(d, "id"),
+        "unique, non-missing"
+    )
+})

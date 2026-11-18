@@ -258,7 +258,7 @@ plot_dotmap <- function(
     )
 
     fill_col <- if (!is.null(q)) q else p
-    data <- tibble::as_tibble(data) |>
+    data <- as.data.frame(data) |>
         dplyr::mutate(
             size_val = abs(.data[[effect]]),
             dir = dplyr::case_when(
@@ -313,7 +313,7 @@ plot_dotmap <- function(
         }
     }
 
-    legend_df <- tibble::tibble(
+    legend_df <- data.frame(
         label = factor(
             as.character(dot_size_labels),
             levels = as.character(dot_size_labels)

@@ -1,7 +1,7 @@
 library(testthat)
 
 set.seed(1)
-df <- tibble::tibble(
+df <- data.frame(
     item = factor(
         paste0("item", sprintf("%02d", 1:6)),
         levels = rev(paste0("item", sprintf("%02d", 1:6)))
@@ -60,7 +60,7 @@ test_that("fill legend override removes dashed line (override.aes)", {
 })
 
 make_pval_df <- function(n = 6, with_qvalue = FALSE) {
-    df <- tibble::tibble(
+    df <- data.frame(
         term = paste0("gene", seq_len(n)),
         pvalue = c(0.001, 0.01, 0.05, 0.1, 0.2, 0.5)[seq_len(n)]
     )

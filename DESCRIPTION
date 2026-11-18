@@ -1,6 +1,6 @@
 Package: statplot
 Title: Convenient Tools for Generating Standard Statistical Plots
-Version: 0.8.0
+Version: 0.9.0
 Authors@R: c(
     person("Jaron Arbet", role = c("aut", "cre"), email = "jarbet@coh.org"))
 Maintainer: Jaron Arbet <jarbet@coh.org>
@@ -8,12 +8,15 @@ Description: statplot is an R package designed to simplify the creation of commo
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-Suggests: 
+Suggests:
+    asht,
     cluster,
     clusterProfiler,
     DOSE,
+    effectsize,
     enrichplot,
     flextable,
+    poolr,
     systemfonts (>= 1.2.4),
     testthat (>= 3.0.0),
     withr,
@@ -21,14 +24,9 @@ Suggests:
 Config/testthat/edition: 3
 Config/testthat/parallel: true
 Imports: 
-    asht,
-    BoutrosLab.plotting.general,
-    broom,
     circlize,
     ComplexHeatmap,
     dplyr (>= 1.1.0),
-    effectsize,
-    forcats,
     ggnewscale,
     ggplot2 (>= 3.5.0),
     ggtext,
@@ -42,18 +40,13 @@ Imports:
     htmltools,
     igraph,
     knitr,
-    labelled,
     multcompView,
     patchwork,
-    poolr,
     RColorBrewer,
-    rcompanion,
     rlang,
     scales,
     stringr,
     survival (>= 3.4-0),
-    tibble,
-    tidyr,
     tinytable,
     UpSetR,
     grDevices,

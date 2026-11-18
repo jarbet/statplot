@@ -23,7 +23,8 @@
 #' @param sep_linetype Line type for row separator lines. Default `"solid"`.
 #' @param sep_linewidth Line width for row separator lines. Default `0.4`.
 #' @param sep_color Color for row separator lines. Default `"black"`.
-#' @param vline_xintercept Numeric. Position of the vertical reference line. Default `0`.
+#' @param vline_xintercept Numeric or `NULL`. Position of the vertical
+#'   reference line. Default `0`. Use `NULL` for no reference line.
 #' @param vline_linetype Line type for the vertical reference line. Default `"dashed"`.
 #' @param vline_color Color for the vertical reference line. Default `"black"`.
 #' @param color_col Optional string name of a column to use for coloring
@@ -266,10 +267,12 @@ plot_confidence_intervals <- function(
             length(sep_linetype) == 1,
         "sep_color must be a single string" = is.character(sep_color) &&
             length(sep_color) == 1,
-        "vline_xintercept must be a single number" = is.numeric(
+        "vline_xintercept must be NULL or a single finite number" = is.null(
             vline_xintercept
-        ) &&
-            length(vline_xintercept) == 1,
+        ) ||
+            (is.numeric(vline_xintercept) &&
+                length(vline_xintercept) == 1 &&
+                is.finite(vline_xintercept)),
         "vline_linetype must be a single string" = is.character(
             vline_linetype
         ) &&
@@ -347,13 +350,16 @@ plot_confidence_intervals <- function(
     }
 
     # ---- base plot ----
-    p <- ggplot2::ggplot(d, ggplot2::aes(x = .data[[effect_size]])) +
-        ggplot2::geom_vline(
-            xintercept = vline_xintercept,
-            linetype = vline_linetype,
-            linewidth = 0.6,
-            color = vline_color
-        )
+    p <- ggplot2::ggplot(d, ggplot2::aes(x = .data[[effect_size]]))
+    if (!is.null(vline_xintercept)) {
+        p <- p +
+            ggplot2::geom_vline(
+                xintercept = vline_xintercept,
+                linetype = vline_linetype,
+                linewidth = 0.6,
+                color = vline_color
+            )
+    }
 
     # ---- row separator lines ----
     if (!is.null(group_col) && show_separators && n_units > 1) {

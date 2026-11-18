@@ -23,7 +23,7 @@
 #' @param effect_size character(1) Type of effect size to compute. Either
 #'   \code{"median_difference"} (default; Hodges-Lehmann estimate of location
 #'   shift) or \code{"c_index"} (concordance probability using
-#'   \code{asht::wmwTest}).
+#'   \code{asht::wmwTest}; requires the suggested package \pkg{asht}).
 #' @param facet_cols character vector of column names to facet by.
 #'   Default \code{NULL} (single panel).
 #' @param facet_pvalue character(1) When \code{facet_cols} is supplied, which
@@ -43,10 +43,12 @@
 #'   \item{ggplot}{A ggplot2 object (violin + boxplot). Add
 #'     \code{+ ggplot2::facet_wrap()} or \code{+ ggplot2::facet_grid()} to
 #'     create multi-panel layouts; annotations facet automatically.}
-#'   \item{wilcox}{A tibble with the Wilcoxon test results (from
-#'     \code{broom::tidy}). When \code{facet_cols} is supplied the tibble
-#'     includes the faceting column(s) identifying which facet each row belongs
-#'     to.}
+#'   \item{wilcox}{A data.frame with the Wilcoxon test results, one row per
+#'     test, with columns \code{estimate}, \code{statistic}, \code{p.value},
+#'     \code{conf.low}, \code{conf.high}, \code{method}, \code{alternative} and
+#'     \code{outcome}. When \code{facet_cols} is supplied it also includes the
+#'     faceting column(s) identifying which facet each row belongs to, and a
+#'     \code{qvalue} column (FDR-adjusted p-values).}
 #' }
 #' @examples
 #' ggplot2::theme_set(theme_bw2())
@@ -57,13 +59,15 @@
 #' res$ggplot
 #' res$wilcox
 #'
-#' # Show C-index effect size instead of median difference
-#' plot_numeric_by_2groups(
-#'   yvar = "mpg",
-#'   group = "vs",
-#'   d = mtcars,
-#'   effect_size = "c_index"
-#' )
+#' # Show C-index effect size instead of median difference (requires asht)
+#' if (requireNamespace("asht", quietly = TRUE)) {
+#'   plot_numeric_by_2groups(
+#'     yvar = "mpg",
+#'     group = "vs",
+#'     d = mtcars,
+#'     effect_size = "c_index"
+#'   )
+#' }
 #'
 #' # Faceted example: compare a "score" between exercisers and non-exercisers,
 #' # faceted by group (A/B/C/D)
@@ -80,13 +84,11 @@
 #'   d          = df,
 #'   facet_cols = "group",
 #'   colors     = c("No" = "grey80", "Yes" = "steelblue"),
-#'   alpha      = 0.6,
-#'   effect_size = "c_index"
+#'   alpha      = 0.6
 #' )
 #' res_facet$ggplot + ggplot2::facet_wrap(~group, ncol = 2)
 #' res_facet$wilcox
 #' @importFrom stats wilcox.test reformulate
-#' @importFrom broom tidy
 #' @export
 plot_numeric_by_2groups <- function(
     yvar,
@@ -111,6 +113,12 @@ plot_numeric_by_2groups <- function(
             c("median_difference", "c_index") &
             length(effect_size) == 1
     )
+    if (effect_size == "c_index") {
+        rlang::check_installed(
+            "asht",
+            reason = 'to use `effect_size = "c_index"`.'
+        )
+    }
     stopifnot(length(yvar) == 1, length(group) == 1, is.data.frame(d))
     stopifnot(all(c(yvar, group) %in% names(d)))
     stopifnot(is.factor(d[[group]]) & length(levels(d[[group]])) == 2)
@@ -170,7 +178,7 @@ plot_numeric_by_2groups <- function(
         # --- single test, original behaviour ---
         if (effect_size == "median_difference") {
             w <- stats::wilcox.test(f, data = d_sub, conf.int = TRUE)
-            wilcox_res <- broom::tidy(w, conf.int = TRUE)
+            wilcox_res <- htest_to_df(w)
             wilcox_res$outcome <- yvar
             est <- as.numeric(wilcox_res$estimate)
             lo <- as.numeric(wilcox_res$conf.low)
@@ -184,7 +192,7 @@ plot_numeric_by_2groups <- function(
             lo <- ci[1]
             hi <- ci[2]
             pval <- w$p.value
-            # Create a broom-style tibble for consistency
+            # one-row data frame with the same columns as htest_to_df()
             wilcox_res <- data.frame(
                 estimate = est,
                 statistic = NA_real_,
@@ -270,7 +278,7 @@ plot_numeric_by_2groups <- function(
                 if (is.null(w)) {
                     return(NULL)
                 }
-                res <- broom::tidy(w, conf.int = TRUE)
+                res <- htest_to_df(w)
                 res$outcome <- yvar
             } else {
                 # effect_size == "c_index"
@@ -524,4 +532,36 @@ plot_numeric_by_2groups <- function(
     }
 
     list(ggplot = p, wilcox = wilcox_res)
+}
+
+#' Convert a two-sample test result to a one-row data frame
+#'
+#' Base-R equivalent of `broom::tidy()` for an `htest` object with a single
+#' estimate and a confidence interval, such as
+#' `wilcox.test(..., conf.int = TRUE)`.
+#'
+#' @param x An object of class `htest`.
+#' @return A one-row data.frame with columns `estimate`, `statistic`,
+#'   `p.value`, `conf.low`, `conf.high`, `method` and `alternative`.
+#' @examples
+#' w <- stats::wilcox.test(mpg ~ am, data = mtcars, conf.int = TRUE, exact = FALSE)
+#' statplot:::htest_to_df(w)
+#' @keywords internal
+#' @noRd
+htest_to_df <- function(x) {
+    stopifnot(
+        inherits(x, "htest"),
+        length(x$estimate) == 1,
+        length(x$conf.int) == 2
+    )
+    data.frame(
+        estimate = unname(x$estimate),
+        statistic = unname(x$statistic),
+        p.value = x$p.value,
+        conf.low = x$conf.int[1],
+        conf.high = x$conf.int[2],
+        method = trimws(x$method),
+        alternative = x$alternative,
+        stringsAsFactors = FALSE
+    )
 }

@@ -50,7 +50,7 @@
 #' ggplot2::theme_set(theme_bw2())
 #' set.seed(123)
 #' n <- 6
-#' example_df <- tibble::tibble(
+#' example_df <- data.frame(
 #'   cell_line = paste0("Cell", sprintf("%02d", 1:n)),
 #'   pvalue = 10^(-runif(n, 0.2, 3.5)),
 #'   group = rep(c("GroupA", "GroupB", "GroupC"), length.out = n)

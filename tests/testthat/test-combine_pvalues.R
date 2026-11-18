@@ -25,3 +25,23 @@ test_that("methods must be character", {
         "methods must be a character"
     )
 })
+
+test_that("fisher equals the chi-squared formula and poolr::fisher", {
+    withr::local_seed(8)
+    for (i in 1:100) {
+        p <- stats::runif(sample(2:20, 1))
+        res <- combine_pvalues(p, methods = "fisher")
+        expect_equal(
+            unname(res),
+            stats::pchisq(-2 * sum(log(p)), 2 * length(p), lower.tail = FALSE),
+            tolerance = 1e-12
+        )
+        if (requireNamespace("poolr", quietly = TRUE)) {
+            expect_equal(
+                unname(res),
+                as.numeric(poolr::fisher(p)$p),
+                tolerance = 1e-12
+            )
+        }
+    }
+})

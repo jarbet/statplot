@@ -296,11 +296,7 @@ plot_2_categorical_vars <- function(
     ### Cramer's V effect size
     d_sub <- d[!is.na(d[[xvar]]) & !is.na(d[[yvar]]), ]
     tab <- table(d_sub[[xvar]], d_sub[[yvar]])
-    v <- effectsize::cramers_v(
-        tab,
-        adjust = TRUE,
-        alternative = 'two.sided'
-    )
+    v <- cramers_v_adjusted(tab)
     ### test pvalue
     ch <- suppressWarnings(stats::chisq.test(tab))
     pval <- ch$p.value
@@ -320,9 +316,9 @@ plot_2_categorical_vars <- function(
     # Combine effect size and p-value as plain string
     pval_text <- sprintf(
         "V = %.2f (%.2f, %.2f), %s",
-        as.numeric(v['Cramers_v_adjusted']),
-        as.numeric(v['CI_low']),
-        as.numeric(v['CI_high']),
+        v$estimate,
+        v$ci_low,
+        v$ci_high,
         pval_formatted
     )
     ### Make plot
@@ -507,15 +503,6 @@ plot_2_categorical_vars <- function(
                 linewidth = 0.8
             )
     }
-    # } else {
-    #     p <- p +
-    #         ggplot2::scale_fill_manual(
-    #             values = BoutrosLab.plotting.general::default.colours(
-    #                 yvar_nlevels
-    #             )
-    #         )
-    # }
-
     # Add main title and put pval_text_label as the subtitle underneath
     if (!show_effect_size) {
         pval_text <- NULL
@@ -558,9 +545,9 @@ plot_2_categorical_vars <- function(
     v2 <- data.frame(
         outcome = yvar,
         predictor = xvar,
-        value = as.numeric(v$Cramers_v_adjusted),
-        CI_low = as.numeric(v$CI_low),
-        CI_high = as.numeric(v$CI_high),
+        value = v$estimate,
+        CI_low = v$ci_low,
+        CI_high = v$ci_high,
         stringsAsFactors = FALSE,
         effect_type = "Cramers_v_adjusted",
         pvalue = pval,

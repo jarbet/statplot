@@ -42,7 +42,8 @@ combine_pvalues <- function(p, methods = "CMC") {
     }
     methods <- unique(methods)
 
-    fisher <- as.numeric(poolr::fisher(p = p)$p)
+    # Fisher's method: -2 * sum(log(p)) ~ chi-squared with 2n df under H0
+    fisher <- stats::pchisq(-2 * sum(log(p)), df = 2 * n, lower.tail = FALSE)
 
     # https://github.com/zchen2020/Robust-P-value-combination-tests/blob/main/R%20code%20for%20all.R
     cauchy <- 0.5 - atan(mean(tan((0.5 - p) * pi))) / pi

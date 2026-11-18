@@ -713,3 +713,78 @@ test_that("CI_low <= value <= CI_high", {
     expect_true(res$stats$CI_low <= res$stats$value)
     expect_true(res$stats$value <= res$stats$CI_high)
 })
+
+# ---------------------------------------------------------------------------
+# Epsilon-squared values
+# ---------------------------------------------------------------------------
+
+test_that("stats report epsilon-squared = H / (n - 1)", {
+    d <- make_df()
+    res <- plot_numeric_by_3plusgroups(yvar = "mpg", group = "gear", d = d)
+    h <- unname(stats::kruskal.test(mpg ~ gear, data = d)$statistic)
+    expect_equal(res$stats$value, h / (nrow(d) - 1), tolerance = 1e-12)
+})
+
+test_that("epsilon-squared matches effectsize::rank_epsilon_squared", {
+    skip_if_not_installed("effectsize")
+    d <- make_df()
+    res <- plot_numeric_by_3plusgroups(yvar = "mpg", group = "gear", d = d)
+    ref <- effectsize::rank_epsilon_squared(mpg ~ gear, data = d, ci = NULL)
+    expect_equal(res$stats$value, ref$rank_epsilon_squared, tolerance = 1e-12)
+})
+
+test_that("n_boot sets the number of bootstrap resamples for the CI", {
+    d <- make_df()
+    res <- plot_numeric_by_3plusgroups(
+        yvar = "mpg",
+        group = "gear",
+        d = d,
+        n_boot = 50
+    )
+    # the function seeds the RNG with 123 before bootstrapping
+    expected <- withr::with_seed(
+        123,
+        statplot:::rank_epsilon_squared(d$mpg, d$gear, iterations = 50)
+    )
+    expect_equal(res$stats$CI_low, expected$ci_low)
+    expect_equal(res$stats$CI_high, expected$ci_high)
+})
+
+test_that("subtitle is a plotmath expression with epsilon-squared and p-value", {
+    d <- make_df()
+    res <- plot_numeric_by_3plusgroups(yvar = "mpg", group = "gear", d = d)
+    subtitle <- res$ggplot$labels$subtitle
+    expect_true(is.expression(subtitle))
+    txt <- paste(deparse(subtitle[[1]]), collapse = "")
+    expect_match(txt, "epsilon^2", fixed = TRUE)
+    expect_match(txt, sprintf("%.2f", res$stats$value), fixed = TRUE)
+    expect_match(txt, "p=", fixed = TRUE)
+})
+
+test_that("subtitle uses scientific notation for very small p-values", {
+    withr::local_seed(10)
+    d <- data.frame(
+        y = c(stats::rnorm(40, 0), stats::rnorm(40, 3), stats::rnorm(40, 6)),
+        g = factor(rep(c("a", "b", "c"), each = 40))
+    )
+    res <- plot_numeric_by_3plusgroups(yvar = "y", group = "g", d = d)
+    expect_lt(res$stats$pvalue, 0.001)
+    txt <- paste(deparse(res$ggplot$labels$subtitle[[1]]), collapse = "")
+    expect_match(txt, "%*% 10^", fixed = TRUE)
+    # the expression must render without error
+    expect_no_error(ggplot2::ggplotGrob(res$ggplot))
+})
+
+test_that("show_effect_size = FALSE gives NA effect sizes and no subtitle", {
+    d <- make_df()
+    res <- plot_numeric_by_3plusgroups(
+        yvar = "mpg",
+        group = "gear",
+        d = d,
+        show_effect_size = FALSE
+    )
+    expect_true(is.na(res$stats$value))
+    expect_true(is.na(res$stats$CI_low))
+    expect_false(is.na(res$stats$pvalue))
+    expect_null(res$ggplot$labels$subtitle)
+})

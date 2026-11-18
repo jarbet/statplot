@@ -227,6 +227,47 @@ test_that("plot_confidence_intervals works with custom vline parameters", {
     expect_s3_class(p, "ggplot")
 })
 
+test_that("plot_confidence_intervals draws no reference line when vline_xintercept = NULL", {
+    df <- data.frame(
+        cell_line = factor(c("A", "B"), levels = c("A", "B")),
+        est = c(0.2, 0.6),
+        conf.low = c(0.1, 0.4),
+        conf.high = c(0.3, 0.8)
+    )
+    args <- list(
+        df,
+        effect_size = "est",
+        ci_low = "conf.low",
+        ci_high = "conf.high",
+        id = "cell_line"
+    )
+    has_vline <- function(p) {
+        any(vapply(
+            p$layers,
+            function(l) inherits(l$geom, "GeomVline"),
+            logical(1)
+        ))
+    }
+
+    expect_true(has_vline(do.call(plot_confidence_intervals, args)))
+    p_none <- do.call(
+        plot_confidence_intervals,
+        c(args, list(vline_xintercept = NULL))
+    )
+    expect_s3_class(p_none, "ggplot")
+    expect_false(has_vline(p_none))
+    expect_no_error(ggplot2::ggplot_build(p_none))
+
+    expect_error(
+        do.call(plot_confidence_intervals, c(args, list(vline_xintercept = NA_real_))),
+        "vline_xintercept"
+    )
+    expect_error(
+        do.call(plot_confidence_intervals, c(args, list(vline_xintercept = c(0, 1)))),
+        "vline_xintercept"
+    )
+})
+
 test_that("plot_confidence_intervals works with custom dodge_width", {
     df <- data.frame(
         cell_line = factor(c("A", "A", "B", "B"), levels = c("A", "B")),

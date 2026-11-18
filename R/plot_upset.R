@@ -43,10 +43,10 @@ plot_upset <- function(
             )]
         })
 
-        df <- tibble::tibble(
-            element = all_elements,
-            membership = membership
-        )
+        df <- data.frame(element = all_elements)
+        # list-column: assigned after creation so data.frame() doesn't
+        # try to expand the list into separate columns
+        df$membership <- membership
 
         # drop elements that are in no set (shouldn't normally happen, but safe)
         df <- df |> dplyr::filter(lengths(membership) > 0)
