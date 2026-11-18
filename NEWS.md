@@ -14,6 +14,8 @@
 
 ## Changed
 
+* `plot_confidence_intervals`: `vline_xintercept = NULL` now draws no reference line.
+
 * Fewer dependencies: BoutrosLab.plotting.general, effectsize, rcompanion, poolr, forcats, labelled, tidyr, tibble and broom are no longer required, and asht moved from Imports to Suggests. This removes about 50 packages from a fresh install. The effect sizes are now computed by statplot itself and checked in the tests against `effectsize` on hundreds of random datasets:
   * `plot_2_categorical_vars`: bias-corrected Cramér's V matches `effectsize::cramers_v(adjust = TRUE)`. Its 95% CI is found by exact root-finding rather than `effectsize`'s `optim()` search, so CI limits can differ slightly (usually < 0.001). In rare cases where `optim()` failed to converge, the old upper limit was wrong (e.g. equal to the estimate) and is now correct. Empty rows/columns (e.g. unused factor levels) are dropped instead of causing an error.
   * `plot_numeric_by_3plusgroups`: rank epsilon-squared is unchanged (`H / (n - 1)`). Its bootstrap CI uses the same within-group resampling as before but different random draws, so CI limits change slightly.
@@ -31,6 +33,25 @@
 * `plot_covariate_heatmap`: fixed the merged legend title (`merge_legends = TRUE`, when two or more covariates share an identical color mapping) so the combined covariate names still appear on separate lines. Unlike `plot_dotmap`/`plot_pathways`, this function never sets `legend.title` itself, so whether it is markdown (e.g. via `ggplot2::theme_set(theme_bw2())`) or plain text (no `theme_set()`, or `theme_bw2(markdown = FALSE)`) depends entirely on whichever default theme is active when the plot is drawn; the line-break character used to join the covariate names (`"<br>"` for markdown, `"\n"` for plain text) is now chosen to match.
 
   **Potentially breaking:** in ggplot2 >= 4.0, further overriding one of these markdown elements with `ggplot2::element_text()` (e.g. `theme_bw2() + theme(axis.text.x = element_text(angle = 45))` — note `axis.text.x` is not one of the markdown elements, so this example is unaffected; but `theme(plot.title = element_text(size = 14))` is) now errors ("Only elements of the same class can be merged"). Use `ggtext::element_markdown()` for such overrides instead, or set `markdown = FALSE`.
+
+## Removed
+
+* `plot_effectsize_01_intervals()` and `plot_bars()` have been removed. Use `plot_confidence_intervals()` instead of `plot_effectsize_01_intervals()`; to sort rows by estimate and fix the x-axis to 0-1 as before:
+
+  ```r
+  d$effect <- reorder(d$effect, d$estimate)
+  plot_confidence_intervals(
+      d,
+      effect_size = "estimate",
+      ci_low = "lower",
+      ci_high = "upper",
+      id = "effect",
+      vline_xintercept = NULL
+  ) +
+      ggplot2::scale_x_continuous(limits = c(0, 1))
+  ```
+
+  Use `ggplot2::geom_col()` instead of `plot_bars()`.
 
 ## Fixed
 

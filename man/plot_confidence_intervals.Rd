@@ -77,7 +77,8 @@ combination with \code{color_col}.}
 
 \item{sep_color}{Color for row separator lines. Default \code{"black"}.}
 
-\item{vline_xintercept}{Numeric. Position of the vertical reference line. Default \code{0}.}
+\item{vline_xintercept}{Numeric or \code{NULL}. Position of the vertical
+reference line. Default \code{0}. Use \code{NULL} for no reference line.}
 
 \item{vline_linetype}{Line type for the vertical reference line. Default \code{"dashed"}.}
 
