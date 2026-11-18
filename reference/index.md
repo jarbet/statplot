@@ -30,8 +30,6 @@
   : Stacked percent bar chart for two categorical variables
 - [`plot_barplot_by_group()`](https://github.com/jarbet/statplot/reference/plot_barplot_by_group.md)
   : Bar plot comparing a numeric outcome between two conditions
-- [`plot_bars()`](https://github.com/jarbet/statplot/reference/plot_bars.md)
-  : Bar plot by group
 - [`plot_confidence_intervals()`](https://github.com/jarbet/statplot/reference/plot_confidence_intervals.md)
   : Dot-and-whisker plot of estimates with confidence intervals
 - [`plot_covariate_heatmap()`](https://github.com/jarbet/statplot/reference/plot_covariate_heatmap.md)
@@ -41,9 +39,6 @@
 - [`plot_dotmap()`](https://github.com/jarbet/statplot/reference/plot_dotmap.md)
   : Create a dotmap showing effect size (dot size & color) and p-value
   (tile fill)
-- [`plot_effectsize_01_intervals()`](https://github.com/jarbet/statplot/reference/plot_effectsize_01_intervals.md)
-  : Plot effect-size estimates and confidence intervals. All values must
-  be between 0 and 1.
 - [`plot_heatmap()`](https://github.com/jarbet/statplot/reference/plot_heatmap.md)
   : Plot a heatmap from tidy data
 - [`plot_numeric_by_2groups()`](https://github.com/jarbet/statplot/reference/plot_numeric_by_2groups.md)

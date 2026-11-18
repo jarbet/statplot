@@ -1,6 +1,6 @@
 # Changelog
 
-## statplot (development version)
+## statplot 0.9.0 - 2026-11-17
 
 ### Added
 
@@ -111,6 +111,43 @@
 
 ### Changed
 
+- `plot_confidence_intervals`: `vline_xintercept = NULL` now draws no
+  reference line.
+
+- Fewer dependencies: BoutrosLab.plotting.general, effectsize,
+  rcompanion, poolr, forcats, labelled, tidyr, tibble and broom are no
+  longer required, and asht moved from Imports to Suggests. This removes
+  about 50 packages from a fresh install. The effect sizes are now
+  computed by statplot itself and checked in the tests against
+  `effectsize` on hundreds of random datasets:
+
+  - `plot_2_categorical_vars`: bias-corrected Cramér’s V matches
+    `effectsize::cramers_v(adjust = TRUE)`. Its 95% CI is found by exact
+    root-finding rather than `effectsize`’s
+    [`optim()`](https://rdrr.io/r/stats/optim.html) search, so CI limits
+    can differ slightly (usually \< 0.001). In rare cases where
+    [`optim()`](https://rdrr.io/r/stats/optim.html) failed to converge,
+    the old upper limit was wrong (e.g. equal to the estimate) and is
+    now correct. Empty rows/columns (e.g. unused factor levels) are
+    dropped instead of causing an error.
+  - `plot_numeric_by_3plusgroups`: rank epsilon-squared is unchanged
+    (`H / (n - 1)`). Its bootstrap CI uses the same within-group
+    resampling as before but different random draws, so CI limits change
+    slightly.
+  - `plot_numeric_by_3plusgroups`: the p-value in the subtitle is
+    formatted with
+    [`format_pvalue()`](https://github.com/jarbet/statplot/reference/format_pvalue.md),
+    like the other plots (e.g. `p= 0.034`; `p= 0.0012` now shows as
+    `0.001`).
+  - `plot_numeric_by_2groups`: the returned `wilcox` results are now a
+    plain data.frame for both `effect_size` options (before,
+    `"median_difference"` gave a tibble and `"c_index"` a data.frame).
+    Columns and values are unchanged.
+  - `plot_numeric_by_2groups`: `effect_size = "c_index"` now needs the
+    suggested asht package (you are prompted to install it if missing).
+  - `plot_heatmap`: a `row_var`/`col_var` combination with more than one
+    distinct `value_var` now gives a clear error.
+
 - `plot_1_categorical_var`: add option to include category labels as
   text inside bar segments (TRUE by default)
 
@@ -179,7 +216,40 @@
   [`ggtext::element_markdown()`](https://wilkelab.org/ggtext/reference/element_markdown.html)
   for such overrides instead, or set `markdown = FALSE`.
 
+### Removed
+
+- `plot_effectsize_01_intervals()` and `plot_bars()` have been removed.
+  Use
+  [`plot_confidence_intervals()`](https://github.com/jarbet/statplot/reference/plot_confidence_intervals.md)
+  instead of `plot_effectsize_01_intervals()`; to sort rows by estimate
+  and fix the x-axis to 0-1 as before:
+
+  ``` r
+
+  d$effect <- reorder(d$effect, d$estimate)
+  plot_confidence_intervals(
+      d,
+      effect_size = "estimate",
+      ci_low = "lower",
+      ci_high = "upper",
+      id = "effect",
+      vline_xintercept = NULL
+  ) +
+      ggplot2::scale_x_continuous(limits = c(0, 1))
+  ```
+
+  Use
+  [`ggplot2::geom_col()`](https://ggplot2.tidyverse.org/reference/geom_bar.html)
+  instead of `plot_bars()`.
+
 ### Fixed
+
+- `plot_numeric_by_3plusgroups`: `n_boot` is now used for the
+  epsilon-squared bootstrap CI (it was ignored before, so 200 resamples
+  were always used; the default is 1000).
+
+- `plot_numeric_by_3plusgroups`: `show_effect_size = FALSE` no longer
+  errors; the returned `stats` has `NA` effect sizes.
 
 - `plot_survival_curves`: fixed the log-rank p-value degrees of freedom
   for `group_var` with more than 2 levels. Previously computed as

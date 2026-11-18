@@ -113,7 +113,8 @@ plot_confidence_intervals(
 
 - vline_xintercept:
 
-  Numeric. Position of the vertical reference line. Default `0`.
+  Numeric or `NULL`. Position of the vertical reference line. Default
+  `0`. Use `NULL` for no reference line.
 
 - vline_linetype:
 

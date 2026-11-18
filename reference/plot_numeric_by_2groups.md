@@ -65,7 +65,8 @@ plot_numeric_by_2groups(
   character(1) Type of effect size to compute. Either
   `"median_difference"` (default; Hodges-Lehmann estimate of location
   shift) or `"c_index"` (concordance probability using
-  [`asht::wmwTest`](https://rdrr.io/pkg/asht/man/wmwTest.html)).
+  [`asht::wmwTest`](https://rdrr.io/pkg/asht/man/wmwTest.html); requires
+  the suggested package asht).
 
 - facet_cols:
 
@@ -106,10 +107,11 @@ A list with elements:
 
 - wilcox:
 
-  A tibble with the Wilcoxon test results (from
-  [`broom::tidy`](https://generics.r-lib.org/reference/tidy.html)). When
-  `facet_cols` is supplied the tibble includes the faceting column(s)
-  identifying which facet each row belongs to.
+  A data.frame with the Wilcoxon test results, one row per test, with
+  columns `estimate`, `statistic`, `p.value`, `conf.low`, `conf.high`,
+  `method`, `alternative` and `outcome`. When `facet_cols` is supplied
+  it also includes the faceting column(s) identifying which facet each
+  row belongs to, and a `qvalue` column (FDR-adjusted p-values).
 
 ## Details
 
@@ -132,18 +134,20 @@ res <- plot_numeric_by_2groups("mpg", "vs", mtcars)
 res$ggplot
 
 res$wilcox
-#> # A tibble: 1 × 8
-#>   estimate statistic   p.value conf.low conf.high method     alternative outcome
-#>      <dbl>     <dbl>     <dbl>    <dbl>     <dbl> <chr>      <chr>       <chr>  
-#> 1    -7.35      22.5 0.0000195    -11.4     -4.10 Wilcoxon … two.sided   mpg    
+#>   estimate statistic      p.value conf.low conf.high
+#> 1    -7.35      22.5 1.947244e-05    -11.4      -4.1
+#>                         method alternative outcome
+#> 1 Wilcoxon rank sum exact test   two.sided     mpg
 
-# Show C-index effect size instead of median difference
-plot_numeric_by_2groups(
-  yvar = "mpg",
-  group = "vs",
-  d = mtcars,
-  effect_size = "c_index"
-)
+# Show C-index effect size instead of median difference (requires asht)
+if (requireNamespace("asht", quietly = TRUE)) {
+  plot_numeric_by_2groups(
+    yvar = "mpg",
+    group = "vs",
+    d = mtcars,
+    effect_size = "c_index"
+  )
+}
 #> $ggplot
 
 #> 
@@ -171,25 +175,19 @@ res_facet <- plot_numeric_by_2groups(
   d          = df,
   facet_cols = "group",
   colors     = c("No" = "grey80", "Yes" = "steelblue"),
-  alpha      = 0.6,
-  effect_size = "c_index"
+  alpha      = 0.6
 )
 res_facet$ggplot + ggplot2::facet_wrap(~group, ncol = 2)
 
 res_facet$wilcox
-#>    estimate statistic     p.value  conf.low conf.high
-#> 1 0.6956522        NA 0.045404066 0.5039796 0.8323004
-#> 2 0.7686335        NA 0.001093133 0.6119982 0.8705328
-#> 3 0.7041667        NA 0.005890878 0.5599704 0.8127648
-#> 4 0.7693603        NA 0.001345610 0.6091259 0.8726552
-#>                                                                                                                                   method
-#> 1 Wilcoxon-Mann-Whitney test with continuity correction\n (confidence interval requires proportional odds assumption, but test does not)
-#> 2 Wilcoxon-Mann-Whitney test with continuity correction\n (confidence interval requires proportional odds assumption, but test does not)
-#> 3 Wilcoxon-Mann-Whitney test with continuity correction\n (confidence interval requires proportional odds assumption, but test does not)
-#> 4 Wilcoxon-Mann-Whitney test with continuity correction\n (confidence interval requires proportional odds assumption, but test does not)
-#>                       alternative outcome group      qvalue
-#> 1 two distributions are not equal   score     D 0.045404066
-#> 2 two distributions are not equal   score     A 0.002691219
-#> 3 two distributions are not equal   score     B 0.007854504
-#> 4 two distributions are not equal   score     C 0.002691219
+#>     estimate statistic      p.value  conf.low   conf.high
+#> 1 -0.6113676       105 0.0444305696 -1.345396 -0.05543786
+#> 2 -1.0237538       149 0.0008043605 -1.608435 -0.48862601
+#> 3 -0.7148098       284 0.0053209725 -1.227443 -0.23339073
+#> 4 -0.8802748       137 0.0010031844 -1.432571 -0.36064269
+#>                         method alternative outcome group      qvalue
+#> 1 Wilcoxon rank sum exact test   two.sided   score     D 0.044430570
+#> 2 Wilcoxon rank sum exact test   two.sided   score     A 0.002006369
+#> 3 Wilcoxon rank sum exact test   two.sided   score     B 0.007094630
+#> 4 Wilcoxon rank sum exact test   two.sided   score     C 0.002006369
 ```

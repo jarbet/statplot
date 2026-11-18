@@ -11,7 +11,7 @@ Optionally you can facet by additional variables."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">statplot</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -97,7 +97,7 @@ passed to the <code>alpha</code> argument of
 <dd><p>character(1) Type of effect size to compute. Either
 <code>"median_difference"</code> (default; Hodges-Lehmann estimate of location
 shift) or <code>"c_index"</code> (concordance probability using
-<code><a href="https://rdrr.io/pkg/asht/man/wmwTest.html" class="external-link">asht::wmwTest</a></code>).</p></dd>
+<code><a href="https://rdrr.io/pkg/asht/man/wmwTest.html" class="external-link">asht::wmwTest</a></code>; requires the suggested package <span class="pkg">asht</span>).</p></dd>
 
 
 <dt id="arg-facet-cols">facet_cols<a class="anchor" aria-label="anchor" href="#arg-facet-cols"></a></dt>
@@ -137,10 +137,12 @@ annotation. Default <code>"Median diff: "</code>.</p></dd>
 create multi-panel layouts; annotations facet automatically.</p></dd>
 
 <dt>wilcox</dt>
-<dd><p>A tibble with the Wilcoxon test results (from
-<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy</a></code>). When <code>facet_cols</code> is supplied the tibble
-includes the faceting column(s) identifying which facet each row belongs
-to.</p></dd>
+<dd><p>A data.frame with the Wilcoxon test results, one row per
+test, with columns <code>estimate</code>, <code>statistic</code>, <code>p.value</code>,
+<code>conf.low</code>, <code>conf.high</code>, <code>method</code>, <code>alternative</code> and
+<code>outcome</code>. When <code>facet_cols</code> is supplied it also includes the
+faceting column(s) identifying which facet each row belongs to, and a
+<code>qvalue</code> column (FDR-adjusted p-values).</p></dd>
 
 
 </dl></div>
@@ -164,18 +166,20 @@ violins and annotations across panels.</p>
 <span class="r-in"><span><span class="va">res</span><span class="op">$</span><span class="va">ggplot</span></span></span>
 <span class="r-plt img"><img src="plot_numeric_by_2groups-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="va">res</span><span class="op">$</span><span class="va">wilcox</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 8</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   estimate statistic   p.value conf.low conf.high method     alternative outcome</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>    -<span style="color: #BB0000;">7.35</span>      22.5 0.000<span style="text-decoration: underline;">019</span>5    -<span style="color: #BB0000;">11.4</span>     -<span style="color: #BB0000;">4.10</span> Wilcoxon … two.sided   mpg    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   estimate statistic      p.value conf.low conf.high</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    -7.35      22.5 1.947244e-05    -11.4      -4.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                         method alternative outcome</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Wilcoxon rank sum exact test   two.sided     mpg</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Show C-index effect size instead of median difference</span></span></span>
-<span class="r-in"><span><span class="fu">plot_numeric_by_2groups</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  yvar <span class="op">=</span> <span class="st">"mpg"</span>,</span></span>
-<span class="r-in"><span>  group <span class="op">=</span> <span class="st">"vs"</span>,</span></span>
-<span class="r-in"><span>  d <span class="op">=</span> <span class="va">mtcars</span>,</span></span>
-<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"c_index"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Show C-index effect size instead of median difference (requires asht)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"asht"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="fu">plot_numeric_by_2groups</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    yvar <span class="op">=</span> <span class="st">"mpg"</span>,</span></span>
+<span class="r-in"><span>    group <span class="op">=</span> <span class="st">"vs"</span>,</span></span>
+<span class="r-in"><span>    d <span class="op">=</span> <span class="va">mtcars</span>,</span></span>
+<span class="r-in"><span>    effect_size <span class="op">=</span> <span class="st">"c_index"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ggplot</span>
 <span class="r-plt img"><img src="plot_numeric_by_2groups-2.png" alt="" width="700" height="433"></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -203,27 +207,21 @@ violins and annotations across panels.</p>
 <span class="r-in"><span>  d          <span class="op">=</span> <span class="va">df</span>,</span></span>
 <span class="r-in"><span>  facet_cols <span class="op">=</span> <span class="st">"group"</span>,</span></span>
 <span class="r-in"><span>  colors     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"No"</span> <span class="op">=</span> <span class="st">"grey80"</span>, <span class="st">"Yes"</span> <span class="op">=</span> <span class="st">"steelblue"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  alpha      <span class="op">=</span> <span class="fl">0.6</span>,</span></span>
-<span class="r-in"><span>  effect_size <span class="op">=</span> <span class="st">"c_index"</span></span></span>
+<span class="r-in"><span>  alpha      <span class="op">=</span> <span class="fl">0.6</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">res_facet</span><span class="op">$</span><span class="va">ggplot</span> <span class="op">+</span> <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">group</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot_numeric_by_2groups-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="va">res_facet</span><span class="op">$</span><span class="va">wilcox</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    estimate statistic     p.value  conf.low conf.high</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.6956522        NA 0.045404066 0.5039796 0.8323004</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.7686335        NA 0.001093133 0.6119982 0.8705328</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.7041667        NA 0.005890878 0.5599704 0.8127648</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.7693603        NA 0.001345610 0.6091259 0.8726552</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                                                   method</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Wilcoxon-Mann-Whitney test with continuity correction\n (confidence interval requires proportional odds assumption, but test does not)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Wilcoxon-Mann-Whitney test with continuity correction\n (confidence interval requires proportional odds assumption, but test does not)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Wilcoxon-Mann-Whitney test with continuity correction\n (confidence interval requires proportional odds assumption, but test does not)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 Wilcoxon-Mann-Whitney test with continuity correction\n (confidence interval requires proportional odds assumption, but test does not)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                       alternative outcome group      qvalue</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 two distributions are not equal   score     D 0.045404066</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 two distributions are not equal   score     A 0.002691219</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 two distributions are not equal   score     B 0.007854504</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 two distributions are not equal   score     C 0.002691219</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     estimate statistic      p.value  conf.low   conf.high</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.6113676       105 0.0444305696 -1.345396 -0.05543786</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -1.0237538       149 0.0008043605 -1.608435 -0.48862601</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -0.7148098       284 0.0053209725 -1.227443 -0.23339073</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 -0.8802748       137 0.0010031844 -1.432571 -0.36064269</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                         method alternative outcome group      qvalue</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Wilcoxon rank sum exact test   two.sided   score     D 0.044430570</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Wilcoxon rank sum exact test   two.sided   score     A 0.002006369</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Wilcoxon rank sum exact test   two.sided   score     B 0.007094630</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 Wilcoxon rank sum exact test   two.sided   score     C 0.002006369</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
