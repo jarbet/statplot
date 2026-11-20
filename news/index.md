@@ -13,7 +13,8 @@
   statistic. “N missing” rows likewise show `n / N (%)`, with N the
   total number of observations in the column (e.g. `30 / 200 (15%)`),
   unless `show_denominator = "no"`. The table note now reads “Category
-  percentages are n / N, where N excludes missing values.”
+  percentages are n / N, where N excludes missing values.”, and a new
+  note says that hatched (striped) bars show % missing.
 
 ## statplot 0.9.0 - 2026-11-17
 
