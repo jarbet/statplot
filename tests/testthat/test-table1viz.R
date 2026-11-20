@@ -293,6 +293,9 @@ test_that("denominator notes appear only when relevant", {
     html <- as.character(gt::as_raw_html(table1viz(make_df()[, -1]), inline_css = FALSE))
     expect_false(grepl("Category percentages exclude", html)) # no missing categories
     expect_match(html, "% missing is out of all observations") # age has an NA
+    expect_match(html, "Hatched \\(striped\\) bars show % missing.")
+    # all notes on one line
+    expect_length(table1viz(make_miss_df(), "grp")[["_source_notes"]], 1)
     html <- as.character(gt::as_raw_html(table1viz(make_miss_df(), "grp"), inline_css = FALSE))
     expect_match(html, "Category percentages are n / N, where N excludes missing values.")
     html <- as.character(gt::as_raw_html(

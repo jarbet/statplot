@@ -730,6 +730,7 @@ table1viz <- function(
             }
         },
         if (any_miss_row) '% missing is out of all observations in the column.',
+        if (any_miss_row) 'Hatched (striped) bars show % missing.',
         if (n_group_dropped > 0) {
             sprintf(
                 '%s observation%s with missing %s excluded.',
