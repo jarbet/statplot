@@ -16,9 +16,11 @@
 #'   `n (%)`.
 #'
 #' Percentages are column percentages (within each group), so bars are
-#' comparable across groups. Category percentages exclude missing values; the
-#' "N missing" row gives % missing out of all observations in the column. A
-#' table note states this whenever it matters.
+#' comparable across groups. Category percentages exclude missing values, so
+#' for variables with missing values counts are shown as `n / N (%)` with N
+#' the non-missing count (see `show_denominator`); the "N missing" row gives
+#' % missing out of all observations in the column. A table note states this
+#' whenever it matters.
 #'
 #' @param d data.frame. Dataset containing variables to summarize.
 #' @param name_groupvar character(1) or `NULL`. Optional name of a grouping
@@ -29,13 +31,23 @@
 #' @param group_header character(1). Spanning header over the group columns.
 #' @param stats_col_label character(1). Header label for the overall column.
 #' @param missing character(1). When to show an "N missing" row for each
-#'   variable: "ifany" (default), "no", or "always". The row shows `n (%)`
-#'   missing, where % is out of all observations in the column, with a hatched
+#'   variable: "ifany" (default), "no", or "always". The row shows
+#'   `n / N (%)` missing (`n (%)` if `show_denominator = "no"`), where N and
+#'   % are out of all observations in the column, with a hatched
 #'   bar on the same 0-100% scale as the category bars.
 #' @param missing_group character(1). Rows with a missing `name_groupvar`:
 #'   `"exclude"` (default) drops them and reports how many in a table note;
 #'   `"show"` keeps them as an extra "Missing" group column (colored brown,
 #'   `#8C564B`, unless `colors` is named and includes `"Missing"`).
+#' @param show_denominator character(1). When to show category counts as
+#'   `n / N (%)` instead of `n (%)`, where N is the number of non-missing
+#'   values in the column (the percentage's denominator): `"ifmissing"`
+#'   (default) for categorical variables with missing values, so the
+#'   denominator is visible when it differs from the column N; `"always"` for
+#'   all categorical variables; or `"no"`. Only applies to variables whose
+#'   `statistic` is the default `"{n} ({p}%)"`. Unless `"no"`, "N missing"
+#'   rows also show `n / N (%)`, with N the total number of observations in
+#'   the column.
 #' @param statistic,digits Passed to [gtsummary::tbl_summary()]. By default
 #'   continuous variables show mean (SD) and min; max; the graphic already
 #'   shows the median and quartiles. For skewed variables, consider adding a
@@ -152,7 +164,7 @@
 #' # comparison
 #' table1viz(df, name_groupvar = "grp")
 #'
-#' # Missing data, whole cohort: "N missing" rows show n (%) with hatched bars
+#' # Missing data, whole cohort: "N missing" rows show n / N (%) with hatched bars
 #' table1viz(df_miss)
 #'
 #' # Missing data by group
@@ -220,6 +232,7 @@ table1viz <- function(
     stats_col_label = 'Overall',
     missing = c("ifany", "no", "always"),
     missing_group = c("exclude", "show"),
+    show_denominator = c("ifmissing", "always", "no"),
     statistic = list(
         gtsummary::all_continuous() ~ c(
             '{mean} ({sd})',
@@ -250,6 +263,7 @@ table1viz <- function(
 ) {
     missing <- match.arg(missing)
     missing_group <- match.arg(missing_group)
+    show_denominator <- match.arg(show_denominator)
     header_align <- match.arg(header_align)
     continuous_plot <- match.arg(continuous_plot)
     plot_layout <- match.arg(plot_layout)
@@ -410,17 +424,63 @@ table1viz <- function(
     }
 
     # ---- gtsummary table ----
-    tbl <- gtsummary::tbl_summary(
-        data = d,
-        by = if (grouped) dplyr::all_of(name_groupvar) else NULL,
-        type = type,
-        missing = missing,
-        missing_text = 'N missing',
-        missing_stat = '{N_miss} ({p_miss}%)',
-        statistic = statistic,
-        digits = digits,
-        percent = 'column'
-    )
+    make_tbl <- function(statistic, digits) {
+        gtsummary::tbl_summary(
+            data = d,
+            by = if (grouped) dplyr::all_of(name_groupvar) else NULL,
+            type = type,
+            missing = missing,
+            missing_text = 'N missing',
+            missing_stat = if (show_denominator == 'no') {
+                '{N_miss} ({p_miss}%)'
+            } else {
+                '{N_miss} / {N_obs} ({p_miss}%)'
+            },
+            statistic = statistic,
+            digits = digits,
+            percent = 'column'
+        )
+    }
+    tbl <- make_tbl(statistic, digits)
+    # Show the denominator as "n / N (%)" for categorical variables that use
+    # the default "{n} ({p}%)" (custom statistics are left as given).
+    denom_vars <- character(0)
+    if (show_denominator != 'no') {
+        tb0 <- tbl$table_body
+        cat_v <- unique(tb0$variable[tb0$var_type %in% c('categorical', 'dichotomous')])
+        is_default <- vapply(
+            cat_v,
+            function(v) identical(as.character(tbl$inputs$statistic[[v]]), '{n} ({p}%)'),
+            logical(1)
+        )
+        denom_vars <- cat_v[is_default]
+        if (show_denominator == 'ifmissing') {
+            denom_vars <- denom_vars[vapply(
+                denom_vars,
+                function(v) anyNA(d[[v]]),
+                logical(1)
+            )]
+        }
+        if (length(denom_vars) > 0) {
+            # gtsummary matches unnamed `digits` to a statistic's slots by
+            # position, so adding {N} would shift them (c(0, 2) would format
+            # N, not p). Reuse each variable's digits as resolved by name in
+            # the first table, and format N like the integer N_obs. (Formulas,
+            # since gtsummary ignores named entries in a list with formulas.)
+            denom_digits <- lapply(denom_vars, function(v) {
+                dv <- tbl$inputs$digits[[v]]
+                dv$N <- dv$N_obs
+                dplyr::all_of(v) ~ dv
+            })
+            tbl <- make_tbl(
+                c(
+                    statistic,
+                    list(dplyr::all_of(denom_vars) ~ '{n} / {N} ({p}%)')
+                ),
+                c(digits, denom_digits)
+            )
+        }
+    }
     if (grouped && overall) {
         tbl <- gtsummary::add_overall(tbl, last = FALSE)
     }
@@ -662,7 +722,13 @@ table1viz <- function(
     any_miss_cat <- any(vapply(cat_vars, function(v) anyNA(d[[v]]), logical(1)))
     any_miss_row <- any(tb$row_type == 'missing')
     note <- c(
-        if (any_miss_cat) 'Category percentages exclude missing values.',
+        if (any_miss_cat) {
+            if (any(vapply(denom_vars, function(v) anyNA(d[[v]]), logical(1)))) {
+                'Category percentages are n / N, where N excludes missing values.'
+            } else {
+                'Category percentages exclude missing values.'
+            }
+        },
         if (any_miss_row) '% missing is out of all observations in the column.',
         if (n_group_dropped > 0) {
             sprintf(
