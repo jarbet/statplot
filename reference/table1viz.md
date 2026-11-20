@@ -18,6 +18,7 @@ table1viz(
   stats_col_label = "Overall",
   missing = c("ifany", "no", "always"),
   missing_group = c("exclude", "show"),
+  show_denominator = c("ifmissing", "always", "no"),
   statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{min}; {max}"),
     gtsummary::all_categorical() ~ c("{n} ({p}%)")),
   digits = NULL,
@@ -71,9 +72,10 @@ table1viz(
 - missing:
 
   character(1). When to show an "N missing" row for each variable:
-  "ifany" (default), "no", or "always". The row shows `n (%)` missing,
-  where % is out of all observations in the column, with a hatched bar
-  on the same 0-100% scale as the category bars.
+  "ifany" (default), "no", or "always". The row shows `n / N (%)`
+  missing (`n (%)` if `show_denominator = "no"`), where N and % are out
+  of all observations in the column, with a hatched bar on the same
+  0-100% scale as the category bars.
 
 - missing_group:
 
@@ -81,6 +83,18 @@ table1viz(
   (default) drops them and reports how many in a table note; `"show"`
   keeps them as an extra "Missing" group column (colored brown,
   `#8C564B`, unless `colors` is named and includes `"Missing"`).
+
+- show_denominator:
+
+  character(1). When to show category counts as `n / N (%)` instead of
+  `n (%)`, where N is the number of non-missing values in the column
+  (the percentage's denominator): `"ifmissing"` (default) for
+  categorical variables with missing values, so the denominator is
+  visible when it differs from the column N; `"always"` for all
+  categorical variables; or `"no"`. Only applies to variables whose
+  `statistic` is the default `"{n} ({p}%)"`. Unless `"no"`, "N missing"
+  rows also show `n / N (%)`, with N the total number of observations in
+  the column.
 
 - statistic, digits:
 
@@ -244,9 +258,11 @@ HTML, the graphics are drawn as SVG.
   each `n (%)`.
 
 Percentages are column percentages (within each group), so bars are
-comparable across groups. Category percentages exclude missing values;
-the "N missing" row gives % missing out of all observations in the
-column. A table note states this whenever it matters.
+comparable across groups. Category percentages exclude missing values,
+so for variables with missing values counts are shown as `n / N (%)`
+with N the non-missing count (see `show_denominator`); the "N missing"
+row gives % missing out of all observations in the column. A table note
+states this whenever it matters.
 
 ## References
 

@@ -29,9 +29,17 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/jarbet/statplot/blob/v0.9.0/NEWS.md"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/jarbet/statplot/blob/main/NEWS.md"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="statplot-development-version">statplot (development version)<a class="anchor" aria-label="anchor" href="#statplot-development-version"></a></h2>
+<div class="section level3">
+<h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
+<ul><li>
+<code>table1viz</code>: categorical variables with missing values now show counts as <code>n / N (%)</code>, where N is the number of non-missing values in the column (the percentage’s denominator). Before, only <code>n (%)</code> was shown, and N could not be read from the table. The new <code>show_denominator</code> argument controls this: <code>"ifmissing"</code> (default), <code>"always"</code> or <code>"no"</code>. It only changes variables that use the default <code>"{n} ({p}%)"</code> statistic. “N missing” rows likewise show <code>n / N (%)</code>, with N the total number of observations in the column (e.g. <code>30 / 200 (15%)</code>), unless <code>show_denominator = "no"</code>. The table note now reads “Category percentages are n / N, where N excludes missing values.”</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.9.0" id="statplot-090---2026-11-17">statplot 0.9.0 - 2026-11-17<a class="anchor" aria-label="anchor" href="#statplot-090---2026-11-17"></a></h2>
 <div class="section level3">

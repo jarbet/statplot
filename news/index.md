@@ -1,5 +1,20 @@
 # Changelog
 
+## statplot (development version)
+
+### Changed
+
+- `table1viz`: categorical variables with missing values now show counts
+  as `n / N (%)`, where N is the number of non-missing values in the
+  column (the percentage’s denominator). Before, only `n (%)` was shown,
+  and N could not be read from the table. The new `show_denominator`
+  argument controls this: `"ifmissing"` (default), `"always"` or `"no"`.
+  It only changes variables that use the default `"{n} ({p}%)"`
+  statistic. “N missing” rows likewise show `n / N (%)`, with N the
+  total number of observations in the column (e.g. `30 / 200 (15%)`),
+  unless `show_denominator = "no"`. The table note now reads “Category
+  percentages are n / N, where N excludes missing values.”
+
 ## statplot 0.9.0 - 2026-11-17
 
 ### Added
