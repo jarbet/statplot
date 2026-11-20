@@ -12,6 +12,7 @@ table1viz(
   stats_col_label = "Overall",
   missing = c("ifany", "no", "always"),
   missing_group = c("exclude", "show"),
+  show_denominator = c("ifmissing", "always", "no"),
   statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{min}; {max}"),
     gtsummary::all_categorical() ~ c("{n} ({p}\%)")),
   digits = NULL,
@@ -51,14 +52,25 @@ unless \code{missing_group = "show"}.}
 \item{stats_col_label}{character(1). Header label for the overall column.}
 
 \item{missing}{character(1). When to show an "N missing" row for each
-variable: "ifany" (default), "no", or "always". The row shows \verb{n (\%)}
-missing, where \% is out of all observations in the column, with a hatched
+variable: "ifany" (default), "no", or "always". The row shows
+\verb{n / N (\%)} missing (\verb{n (\%)} if \code{show_denominator = "no"}), where N and
+\% are out of all observations in the column, with a hatched
 bar on the same 0-100\% scale as the category bars.}
 
 \item{missing_group}{character(1). Rows with a missing \code{name_groupvar}:
 \code{"exclude"} (default) drops them and reports how many in a table note;
 \code{"show"} keeps them as an extra "Missing" group column (colored brown,
 \verb{#8C564B}, unless \code{colors} is named and includes \code{"Missing"}).}
+
+\item{show_denominator}{character(1). When to show category counts as
+\verb{n / N (\%)} instead of \verb{n (\%)}, where N is the number of non-missing
+values in the column (the percentage's denominator): \code{"ifmissing"}
+(default) for categorical variables with missing values, so the
+denominator is visible when it differs from the column N; \code{"always"} for
+all categorical variables; or \code{"no"}. Only applies to variables whose
+\code{statistic} is the default \code{"{n} ({p}\%)"}. Unless \code{"no"}, "N missing"
+rows also show \verb{n / N (\%)}, with N the total number of observations in
+the column.}
 
 \item{statistic, digits}{Passed to \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}}. By default
 continuous variables show mean (SD) and min; max; the graphic already
@@ -185,9 +197,11 @@ its sample size; N is given in each column header.
 }
 
 Percentages are column percentages (within each group), so bars are
-comparable across groups. Category percentages exclude missing values; the
-"N missing" row gives \% missing out of all observations in the column. A
-table note states this whenever it matters.
+comparable across groups. Category percentages exclude missing values, so
+for variables with missing values counts are shown as \verb{n / N (\%)} with N
+the non-missing count (see \code{show_denominator}); the "N missing" row gives
+\% missing out of all observations in the column. A table note states this
+whenever it matters.
 }
 \examples{
 # Simulated cohort: group, two continuous, two categorical variables
@@ -214,7 +228,7 @@ table1viz(df)
 # comparison
 table1viz(df, name_groupvar = "grp")
 
-# Missing data, whole cohort: "N missing" rows show n (\%) with hatched bars
+# Missing data, whole cohort: "N missing" rows show n / N (\%) with hatched bars
 table1viz(df_miss)
 
 # Missing data by group

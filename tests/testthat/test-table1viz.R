@@ -243,7 +243,7 @@ test_that("N missing row shows n (%) with hatched bars in both layouts", {
         tab <- table1viz(make_miss_df(), "grp", plot_layout = layout)
         tb <- tab[["_data"]]
         miss <- tb[tb$variable == "sex" & tb$row_type == "missing", ]
-        expect_match(miss$stat_0, "^[0-9]+ \\([0-9.]+%\\)$")
+        expect_match(miss$stat_0, "^[0-9]+ / [0-9,]+ \\([0-9.]+%\\)$")
         html <- as.character(gt::as_raw_html(tab, inline_css = FALSE))
         expect_match(html, 'fill="url\\(#tv-hatch-')
         expect_match(html, "<pattern id=\"tv-hatch-")
@@ -294,7 +294,59 @@ test_that("denominator notes appear only when relevant", {
     expect_false(grepl("Category percentages exclude", html)) # no missing categories
     expect_match(html, "% missing is out of all observations") # age has an NA
     html <- as.character(gt::as_raw_html(table1viz(make_miss_df(), "grp"), inline_css = FALSE))
+    expect_match(html, "Category percentages are n / N, where N excludes missing values.")
+    html <- as.character(gt::as_raw_html(
+        table1viz(make_miss_df(), "grp", show_denominator = "no"),
+        inline_css = FALSE
+    ))
     expect_match(html, "Category percentages exclude missing values.")
+})
+
+test_that("show_denominator shows n / N (%) for categorical variables", {
+    d <- data.frame(
+        g = c("a", "a", "a", "b", "b", "b"),
+        x = c("u", NA, "v", "u", "v", "v"),
+        z = c("p", "q", "p", "q", "p", "p")
+    )
+    for (layout in c("combined", "columns")) {
+        tb <- table1viz(d, "g", plot_layout = layout, output = "gt")[["_data"]]
+        lev <- tb[tb$variable == "x" & tb$row_type == "level", ]
+        # x has an NA in group a: denominators are non-missing counts per column
+        expect_match(lev$stat_0, "^\\d+ / 5 \\(")
+        expect_match(lev$stat_1, "^\\d+ / 2 \\(")
+        expect_match(lev$stat_2, "^\\d+ / 3 \\(")
+        # z has no missing values: plain n (%)
+        z <- tb$stat_1[tb$variable == "z" & tb$row_type == "level"]
+        expect_false(any(grepl("/", z)))
+    }
+    tb <- table1viz(d, "g", show_denominator = "always", output = "gt")[["_data"]]
+    expect_match(tb$stat_1[tb$variable == "z" & tb$row_type == "level"], " / 3 \\(")
+    # N missing row: n / N (%) out of all observations in the column
+    miss <- tb[tb$variable == "x" & tb$row_type == "missing", ]
+    expect_equal(miss$stat_1, "1 / 3 (33%)")
+    expect_equal(miss$stat_2, "0 / 3 (0%)")
+    tb <- table1viz(d, "g", show_denominator = "no", output = "gt")[["_data"]]
+    expect_false(any(grepl("/", tb$stat_1[tb$variable == "x" & tb$row_type == "level"])))
+    expect_equal(tb$stat_1[tb$variable == "x" & tb$row_type == "missing"], "1 (33%)")
+    # user digits keep applying to n and p (not shifted onto the new N)
+    for (dg in list(
+        list(gtsummary::all_categorical() ~ c(0, 2)),
+        list(x ~ c(0, 2)),
+        list(gtsummary::all_categorical() ~ list(p = 2))
+    )) {
+        tb <- table1viz(d, "g", digits = dg, output = "gt")[["_data"]]
+        expect_equal(
+            tb$stat_1[tb$variable == "x" & tb$row_type == "level"],
+            c("1 / 2 (50.00%)", "1 / 2 (50.00%)")
+        )
+    }
+    # custom categorical statistics are left as given
+    tb <- table1viz(
+        d, "g",
+        statistic = list(gtsummary::all_categorical() ~ "{n}"),
+        output = "gt"
+    )[["_data"]]
+    expect_false(any(grepl("/", tb$stat_1[tb$variable == "x" & tb$row_type == "level"])))
 })
 
 test_that("header_align left-aligns column labels by default, center optional", {
