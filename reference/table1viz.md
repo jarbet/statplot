@@ -40,7 +40,8 @@ table1viz(
   overall_divider = TRUE,
   variable_divider = TRUE,
   row_lines = FALSE,
-  output = c("auto", "gt", "flextable")
+  output = c("auto", "gt", "flextable"),
+  type = NULL
 )
 ```
 
@@ -224,6 +225,20 @@ table1viz(
   flextable when knitting to Word (`.docx`, e.g. Quarto `format: docx`)
   and a gt table otherwise; `"gt"` or `"flextable"` force one. Requires
   the flextable and xml2 packages for `"flextable"`.
+
+- type:
+
+  Optional named list of variable type overrides, e.g.
+  `list(score = "continuous", stage = "categorical")`. Values must be
+  `"continuous"` (numeric variables only) or `"categorical"`. Continuous
+  overrides use the usual multi-row summaries and continuous graphics;
+  categorical overrides show every level, even for binary variables.
+  Overrides take precedence over `binary_01_only_show1`. Unspecified
+  variables keep automatic detection: numeric variables with fewer than
+  10 distinct non-missing values are generally categorical, with
+  separate rules for binary variables. `NULL` (default) keeps automatic
+  detection for all variables. The grouping variable cannot be
+  overridden.
 
 ## Value
 

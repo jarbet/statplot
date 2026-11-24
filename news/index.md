@@ -2,6 +2,13 @@
 
 ## statplot (development version)
 
+### Added
+
+- [`table1viz()`](https://github.com/jarbet/statplot/reference/table1viz.md)
+  gains a `type` argument for per-variable continuous or categorical
+  overrides. Unspecified variables keep automatic detection; explicit
+  categorical overrides show both levels of binary variables.
+
 ### Changed
 
 - `table1viz`: continuous variables now show median (MAD) and min; max
