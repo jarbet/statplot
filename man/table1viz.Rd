@@ -34,7 +34,8 @@ table1viz(
   overall_divider = TRUE,
   variable_divider = TRUE,
   row_lines = FALSE,
-  output = c("auto", "gt", "flextable")
+  output = c("auto", "gt", "flextable"),
+  type = NULL
 )
 }
 \arguments{
@@ -161,6 +162,17 @@ variable.}
 returns a flextable when knitting to Word (\code{.docx}, e.g. Quarto
 \code{format: docx}) and a gt table otherwise; \code{"gt"} or \code{"flextable"} force
 one. Requires the flextable and xml2 packages for \code{"flextable"}.}
+
+\item{type}{Optional named list of variable type overrides, e.g.
+\code{list(score = "continuous", stage = "categorical")}. Values must be
+\code{"continuous"} (numeric variables only) or \code{"categorical"}. Continuous
+overrides use the usual multi-row summaries and continuous graphics;
+categorical overrides show every level, even for binary variables.
+Overrides take precedence over \code{binary_01_only_show1}. Unspecified
+variables keep automatic detection: numeric variables with fewer than
+10 distinct non-missing values are generally categorical, with separate
+rules for binary variables. \code{NULL} (default) keeps automatic detection
+for all variables. The grouping variable cannot be overridden.}
 }
 \value{
 A \code{gt::gt_tbl} (\code{output = "gt"}) or a \code{flextable} with class
@@ -229,6 +241,10 @@ table1viz(df)
 # By group: groups drawn together in one "Distribution" column for direct
 # comparison
 table1viz(df, name_groupvar = "grp")
+
+# Keep a numeric variable continuous even with few distinct values
+df$score <- sample(1:5, nrow(df), replace = TRUE)
+table1viz(df, type = list(score = "continuous", diabetes = "categorical"))
 
 # Missing data, whole cohort: "N missing" rows show n / N (\%) with hatched bars
 table1viz(df_miss)

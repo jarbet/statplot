@@ -1,5 +1,9 @@
 # statplot (development version)
 
+## Added
+
+* `table1viz()` gains a `type` argument for per-variable continuous or categorical overrides. Unspecified variables keep automatic detection; explicit categorical overrides show both levels of binary variables.
+
 ## Changed
 
 * `table1viz`: continuous variables now show median (MAD) and min; max by default, instead of mean (SD) and min; max. MAD is the median absolute deviation, `median(abs(x - median(x)))`, without the 1.4826 scaling factor that `stats::mad()` uses. A table note defines MAD whenever it is shown, and `"{MAD}"` can be used in your own `statistic` strings. To get mean (SD) back, pass `statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{min}; {max}"), gtsummary::all_categorical() ~ "{n} ({p}%)")`.
