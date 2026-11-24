@@ -8,6 +8,50 @@ make_df <- function(n = 120) {
     )
 }
 
+test_that("type overrides low-cardinality numeric variables and preserves detection", {
+    d <- data.frame(score = rep(1:4, 5), other = rep(1:4, 5))
+    automatic <- table1viz(d)[["_data"]]
+    expect_equal(unique(automatic$var_type), "categorical")
+
+    tab <- table1viz(d, type = list(score = "continuous"))[["_data"]]
+    expect_equal(unique(tab$var_type[tab$variable == "score"]), "continuous2")
+    expect_equal(unique(tab$var_type[tab$variable == "other"]), "categorical")
+    score <- tab[tab$variable == "score" & tab$row_type == "level", ]
+    expect_equal(score$label, c("Median (MAD)", "Min; Max"))
+    expect_equal(score$stat_0, c("3 (1)", "1; 4"))
+})
+
+test_that("explicit types take precedence over binary settings in grouped tables", {
+    d <- data.frame(
+        grp = rep(c("A", "B"), each = 8),
+        binary = rep(0:1, 8),
+        score = rep(0:1, each = 8),
+        stage = seq_len(16)
+    )
+    for (binary_setting in c(TRUE, FALSE)) {
+        tab <- table1viz(
+            d, "grp", binary_01_only_show1 = binary_setting,
+            type = list(binary = "categorical", score = "continuous", stage = "categorical")
+        )[["_data"]]
+        expect_equal(unique(tab$var_type[tab$variable == "score"]), "continuous2")
+        expect_equal(unique(tab$var_type[tab$variable == "stage"]), "categorical")
+        binary <- tab[tab$variable == "binary" & tab$row_type == "level", ]
+        expect_equal(binary$label, c("0", "1"))
+        expect_equal(binary$stat_0, rep("8 (50%)", 2))
+        expect_equal(binary$stat_1, rep("4 (50%)", 2))
+    }
+})
+
+test_that("invalid type overrides give clear errors", {
+    d <- data.frame(grp = c("A", "B"), x = 1:2, text = c("a", "b"))
+    expect_snapshot(error = TRUE, table1viz(d, type = list("continuous")))
+    expect_snapshot(error = TRUE, table1viz(d, type = list(x = "continuous", x = "categorical")))
+    expect_snapshot(error = TRUE, table1viz(d, type = list(absent = "continuous")))
+    expect_snapshot(error = TRUE, table1viz(d, "grp", type = list(grp = "categorical")))
+    expect_snapshot(error = TRUE, table1viz(d, type = list(x = "invalid")))
+    expect_snapshot(error = TRUE, table1viz(d, type = list(text = "continuous")))
+})
+
 test_that("ungrouped table returns gt with svg graphics", {
     tab <- table1viz(make_df()[, -1])
     expect_s3_class(tab, "gt_tbl")

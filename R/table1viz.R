@@ -61,6 +61,16 @@
 #'   `list(gtsummary::all_continuous() ~ 1)` to fix them.
 #' @param binary_01_only_show1 logical(1). If `TRUE`, binary variables only show
 #'   one row (e.g. the "1"/"Yes" level). Default `TRUE`.
+#' @param type Optional named list of variable type overrides, e.g.
+#'   `list(score = "continuous", stage = "categorical")`. Values must be
+#'   `"continuous"` (numeric variables only) or `"categorical"`. Continuous
+#'   overrides use the usual multi-row summaries and continuous graphics;
+#'   categorical overrides show every level, even for binary variables.
+#'   Overrides take precedence over `binary_01_only_show1`. Unspecified
+#'   variables keep automatic detection: numeric variables with fewer than
+#'   10 distinct non-missing values are generally categorical, with separate
+#'   rules for binary variables. `NULL` (default) keeps automatic detection
+#'   for all variables. The grouping variable cannot be overridden.
 #' @param continuous_plot character(1). Graphic for continuous variables:
 #'   `"violin_box"` (violin with inner boxplot and outlier dots; default),
 #'   `"boxplot"` (boxplot with outlier dots), or `"density"` (density
@@ -165,6 +175,10 @@
 #' # comparison
 #' table1viz(df, name_groupvar = "grp")
 #'
+#' # Keep a numeric variable continuous even with few distinct values
+#' df$score <- sample(1:5, nrow(df), replace = TRUE)
+#' table1viz(df, type = list(score = "continuous", diabetes = "categorical"))
+#'
 #' # Missing data, whole cohort: "N missing" rows show n / N (%) with hatched bars
 #' table1viz(df_miss)
 #'
@@ -260,7 +274,8 @@ table1viz <- function(
     overall_divider = TRUE,
     variable_divider = TRUE,
     row_lines = FALSE,
-    output = c("auto", "gt", "flextable")
+    output = c("auto", "gt", "flextable"),
+    type = NULL
 ) {
     missing <- match.arg(missing)
     missing_group <- match.arg(missing_group)
@@ -285,6 +300,28 @@ table1viz <- function(
                 length(name_groupvar) == 1 &&
                 name_groupvar %in% colnames(d))
     )
+    if (!is.null(type)) {
+        if (!is.list(type) ||
+            (length(type) > 0L &&
+                (is.null(names(type)) || anyNA(names(type)) ||
+                    any(!nzchar(names(type))) || anyDuplicated(names(type))))) {
+            stop('`type` must be a named list with unique variable names.', call. = FALSE)
+        }
+        if (any(!names(type) %in% setdiff(names(d), name_groupvar))) {
+            stop('`type` names must identify non-grouping variables in `d`.', call. = FALSE)
+        }
+        valid_type <- vapply(type, function(x) {
+            is.character(x) && length(x) == 1L && !is.na(x) &&
+                x %in% c('continuous', 'categorical')
+        }, logical(1))
+        if (!all(valid_type)) {
+            stop('`type` values must be "continuous" or "categorical".', call. = FALSE)
+        }
+        continuous_vars <- names(type)[vapply(type, identical, logical(1), 'continuous')]
+        if (any(!vapply(d[continuous_vars], is.numeric, logical(1)))) {
+            stop('Variables overridden as "continuous" must be numeric.', call. = FALSE)
+        }
+    }
     stopifnot(is.logical(overall) && length(overall) == 1)
     stopifnot(
         is.logical(overall_divider) &&
@@ -366,6 +403,9 @@ table1viz <- function(
     suppressMessages(gtsummary::reset_gtsummary_theme())
     gtsummary::set_gtsummary_theme(new_theme)
 
+    type_overrides <- lapply(type, function(x) {
+        if (x == 'continuous') 'continuous2' else x
+    })
     type <- if (binary_01_only_show1) {
         list(gtsummary::all_continuous() ~ 'continuous2')
     } else {
@@ -374,6 +414,7 @@ table1viz <- function(
             gtsummary::all_dichotomous() ~ 'categorical'
         )
     }
+    type <- c(type, type_overrides)
     fmt_n <- function(n) format(n, big.mark = ",", scientific = FALSE)
 
     # ---- column subsets (stat_0 = overall, stat_k = k-th group level) ----
