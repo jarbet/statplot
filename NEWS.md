@@ -2,6 +2,8 @@
 
 ## Changed
 
+* `table1viz`: continuous variables now show median (MAD) and min; max by default, instead of mean (SD) and min; max. MAD is the median absolute deviation, `median(abs(x - median(x)))`, without the 1.4826 scaling factor that `stats::mad()` uses. A table note defines MAD whenever it is shown, and `"{MAD}"` can be used in your own `statistic` strings. To get mean (SD) back, pass `statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{min}; {max}"), gtsummary::all_categorical() ~ "{n} ({p}%)")`.
+
 * `table1viz`: categorical variables with missing values now show counts as `n / N (%)`, where N is the number of non-missing values in the column (the percentage's denominator). Before, only `n (%)` was shown, and N could not be read from the table. The new `show_denominator` argument controls this: `"ifmissing"` (default), `"always"` or `"no"`. It only changes variables that use the default `"{n} ({p}%)"` statistic. "N missing" rows likewise show `n / N (%)`, with N the total number of observations in the column (e.g. `30 / 200 (15%)`), unless `show_denominator = "no"`. The table note now reads "Category percentages are n / N, where N excludes missing values.", and a new note says that hatched (striped) bars show % missing.
 
 # statplot 0.9.0 - 2026-11-17

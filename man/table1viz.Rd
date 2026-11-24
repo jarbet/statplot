@@ -13,7 +13,7 @@ table1viz(
   missing = c("ifany", "no", "always"),
   missing_group = c("exclude", "show"),
   show_denominator = c("ifmissing", "always", "no"),
-  statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{min}; {max}"),
+  statistic = list(gtsummary::all_continuous() ~ c("{median} ({MAD})", "{min}; {max}"),
     gtsummary::all_categorical() ~ c("{n} ({p}\%)")),
   digits = NULL,
   binary_01_only_show1 = TRUE,
@@ -73,10 +73,12 @@ rows also show \verb{n / N (\%)}, with N the total number of observations in
 the column.}
 
 \item{statistic, digits}{Passed to \code{\link[gtsummary:tbl_summary]{gtsummary::tbl_summary()}}. By default
-continuous variables show mean (SD) and min; max; the graphic already
-shows the median and quartiles. For skewed variables, consider adding a
-"Median (Q1, Q3)" row with e.g.
-\code{statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{median} ({p25}, {p75})", "{min}; {max}"), gtsummary::all_categorical() ~ "{n} ({p}\%)")}. \code{digits = NULL} (default)
+continuous variables show median (MAD) and min; max, where MAD is the
+median absolute deviation, \code{median(abs(x - median(x)))}, without the
+1.4826 scaling factor that \code{\link[stats:mad]{stats::mad()}} uses. \code{"{MAD}"} can be used in
+your own \code{statistic} strings; a table note defines MAD whenever it is
+shown. For mean (SD) instead, use e.g.
+\code{statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{min}; {max}"), gtsummary::all_categorical() ~ "{n} ({p}\%)")}. \code{digits = NULL} (default)
 lets gtsummary choose the decimals for each variable from its spread, so
 variables on a small scale (e.g. 0.03) are not rounded to 0.0; pass e.g.
 \code{list(gtsummary::all_continuous() ~ 1)} to fix them.}
@@ -257,7 +259,7 @@ table1viz(df_miss, name_groupvar = "grp", row_lines = TRUE)
 # No thicker lines between variables
 table1viz(df_miss, name_groupvar = "grp", variable_divider = FALSE)
 
-# Add a median (IQR) row for continuous variables
+# Mean (SD) and median (Q1, Q3) rows instead of median (MAD)
 table1viz(
   df,
   name_groupvar = "grp",

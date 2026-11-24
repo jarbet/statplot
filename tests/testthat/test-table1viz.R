@@ -691,31 +691,49 @@ test_that("variable_divider draws lines in Word output", {
     expect_false(any(off$body$styles$cells$border.color.bottom$data[, 1] == "#D3D3D3"))
 })
 
-test_that("continuous variables show Mean (SD) and min; max by default; median (Q1, Q3) can be added", {
+test_that("continuous variables show Median (MAD) and min; max by default; other statistics can be used", {
     # >= 10 distinct values so gtsummary treats x as continuous
     d <- data.frame(grp = rep(c("A", "B"), 6), x = c(-5, 1:10, 2500.5))
-    tab <- table1viz(d, "grp", digits = list(gtsummary::all_continuous() ~ 1))[["_data"]]
-    expect_equal(tab$label[tab$row_type == "level"], c("Mean (SD)", "Min; Max"))
+    gt_out <- table1viz(d, "grp", digits = list(gtsummary::all_continuous() ~ 1))
+    tab <- gt_out[["_data"]]
+    expect_equal(tab$label[tab$row_type == "level"], c("Median (MAD)", "Min; Max"))
+    # MAD is median(|x - median(x)|), without stats::mad()'s 1.4826 factor
+    expect_equal(tab$stat_0[tab$label == "Median (MAD)"], "5.5 (3.0)")
     # ";" keeps min and max apart from thousands commas
     expect_equal(tab$stat_0[tab$label == "Min; Max"], "-5.0; 2,500.5")
-    with_median <- table1viz(
+    expect_true(any(grepl("MAD = median absolute deviation", unlist(gt_out[["_source_notes"]]))))
+    with_mean <- table1viz(
         d,
         "grp",
         statistic = list(
             gtsummary::all_continuous() ~ c("{mean} ({sd})", "{median} ({p25}, {p75})", "{min}; {max}"),
             gtsummary::all_categorical() ~ "{n} ({p}%)"
         )
-    )[["_data"]]$label
+    )
+    labs <- with_mean[["_data"]]$label
+    expect_true(all(c("Mean (SD)", "Median (Q1, Q3)") %in% labs))
     # gtsummary's label is kept: the IQR is one number, not (Q1, Q3)
-    expect_true("Median (Q1, Q3)" %in% with_median)
-    expect_false("Median (IQR)" %in% with_median)
+    expect_false("Median (IQR)" %in% labs)
+    # no MAD shown, so no MAD note
+    expect_false(any(grepl("MAD", unlist(with_mean[["_source_notes"]]))))
+})
+
+test_that("MAD can be used in user-supplied statistics", {
+    d <- data.frame(x = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 100, NA))
+    tab <- table1viz(
+        d,
+        statistic = list(gtsummary::all_continuous() ~ "{MAD}"),
+        digits = list(gtsummary::all_continuous() ~ 1)
+    )[["_data"]]
+    expect_equal(tab$stat_0[tab$label == "MAD"], "2.5")
+    expect_equal(MAD(c(1:9, 100, NA)), 2.5)
 })
 
 test_that("default digits adapt to each variable's scale", {
     set.seed(1)
     d <- data.frame(small = rlnorm(100, -4, 1))
     tab <- table1viz(d)[["_data"]]
-    stat <- tab$stat_0[tab$label == "Mean (SD)"]
+    stat <- tab$stat_0[tab$label == "Median (MAD)"]
     expect_false(grepl("^0\\.0 \\(0\\.0\\)$", stat))
     expect_true(grepl("0\\.0[1-9]", stat))
 })
