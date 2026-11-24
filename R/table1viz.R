@@ -49,12 +49,13 @@
 #'   rows also show `n / N (%)`, with N the total number of observations in
 #'   the column.
 #' @param statistic,digits Passed to [gtsummary::tbl_summary()]. By default
-#'   continuous variables show mean (SD) and min; max; the graphic already
-#'   shows the median and quartiles. For skewed variables, consider adding a
-#'   "Median (Q1, Q3)" row with e.g.
+#'   continuous variables show median (MAD) and min; max, where MAD is the
+#'   median absolute deviation, `median(abs(x - median(x)))`, without the
+#'   1.4826 scaling factor that [stats::mad()] uses. `"{MAD}"` can be used in
+#'   your own `statistic` strings; a table note defines MAD whenever it is
+#'   shown. For mean (SD) instead, use e.g.
 #'   `statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})",
-#'   "{median} ({p25}, {p75})", "{min}; {max}"),
-#'   gtsummary::all_categorical() ~ "{n} ({p}%)")`. `digits = NULL` (default)
+#'   "{min}; {max}"), gtsummary::all_categorical() ~ "{n} ({p}%)")`. `digits = NULL` (default)
 #'   lets gtsummary choose the decimals for each variable from its spread, so
 #'   variables on a small scale (e.g. 0.03) are not rounded to 0.0; pass e.g.
 #'   `list(gtsummary::all_continuous() ~ 1)` to fix them.
@@ -193,7 +194,7 @@
 #' # No thicker lines between variables
 #' table1viz(df_miss, name_groupvar = "grp", variable_divider = FALSE)
 #'
-#' # Add a median (IQR) row for continuous variables
+#' # Mean (SD) and median (Q1, Q3) rows instead of median (MAD)
 #' table1viz(
 #'   df,
 #'   name_groupvar = "grp",
@@ -235,7 +236,7 @@ table1viz <- function(
     show_denominator = c("ifmissing", "always", "no"),
     statistic = list(
         gtsummary::all_continuous() ~ c(
-            '{mean} ({sd})',
+            '{median} ({MAD})',
             '{min}; {max}' # ";", not ",", since numbers use "," for thousands
         ),
         gtsummary::all_categorical() ~ c('{n} ({p}%)')
@@ -721,7 +722,14 @@ table1viz <- function(
     cat_vars <- unique(tb$variable[tb$var_type %in% c('categorical', 'dichotomous')])
     any_miss_cat <- any(vapply(cat_vars, function(v) anyNA(d[[v]]), logical(1)))
     any_miss_row <- any(tb$row_type == 'missing')
+    cont_vars <- unique(tb$variable[tb$var_type %in% c('continuous', 'continuous2')])
+    uses_mad <- any(vapply(
+        cont_vars,
+        function(v) any(grepl('{MAD}', tbl$inputs$statistic[[v]], fixed = TRUE)),
+        logical(1)
+    ))
     note <- c(
+        if (uses_mad) 'MAD = median absolute deviation, median(|x - median(x)|).',
         if (any_miss_cat) {
             if (any(vapply(denom_vars, function(v) anyNA(d[[v]]), logical(1)))) {
                 'Category percentages are n / N, where N excludes missing values.'
@@ -936,6 +944,12 @@ divider_color <- '#D3D3D3'
 header_line_color <- '#9E9E9E'
 
 # ---- internal helpers -------------------------------------------------------
+
+# Median absolute deviation, median(|x - median(x)|): stats::mad() without
+# its 1.4826 scaling factor. Named "MAD" (not "mad", which gtsummary would
+# take to be the scaled stats::mad()) so "{MAD}" in `statistic` finds it and
+# the row is labelled e.g. "Median (MAD)".
+MAD <- function(x) stats::mad(x, constant = 1, na.rm = TRUE)
 
 check_axis_breaks <- function(axis_breaks, d) {
     if (is.null(axis_breaks)) {
