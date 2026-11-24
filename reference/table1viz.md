@@ -19,7 +19,7 @@ table1viz(
   missing = c("ifany", "no", "always"),
   missing_group = c("exclude", "show"),
   show_denominator = c("ifmissing", "always", "no"),
-  statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{min}; {max}"),
+  statistic = list(gtsummary::all_continuous() ~ c("{median} ({MAD})", "{min}; {max}"),
     gtsummary::all_categorical() ~ c("{n} ({p}%)")),
   digits = NULL,
   binary_01_only_show1 = TRUE,
@@ -100,10 +100,13 @@ table1viz(
 
   Passed to
   [`gtsummary::tbl_summary()`](https://www.danieldsjoberg.com/gtsummary/reference/tbl_summary.html).
-  By default continuous variables show mean (SD) and min; max; the
-  graphic already shows the median and quartiles. For skewed variables,
-  consider adding a "Median (Q1, Q3)" row with e.g.
-  `statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{median} ({p25}, {p75})", "{min}; {max}"), gtsummary::all_categorical() ~ "{n} ({p}%)")`.
+  By default continuous variables show median (MAD) and min; max, where
+  MAD is the median absolute deviation, `median(abs(x - median(x)))`,
+  without the 1.4826 scaling factor that
+  [`stats::mad()`](https://rdrr.io/r/stats/mad.html) uses. `"{MAD}"` can
+  be used in your own `statistic` strings; a table note defines MAD
+  whenever it is shown. For mean (SD) instead, use e.g.
+  `statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{min}; {max}"), gtsummary::all_categorical() ~ "{n} ({p}%)")`.
   `digits = NULL` (default) lets gtsummary choose the decimals for each
   variable from its spread, so variables on a small scale (e.g. 0.03)
   are not rounded to 0.0; pass e.g.

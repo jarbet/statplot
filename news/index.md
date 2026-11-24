@@ -4,6 +4,14 @@
 
 ### Changed
 
+- `table1viz`: continuous variables now show median (MAD) and min; max
+  by default, instead of mean (SD) and min; max. MAD is the median
+  absolute deviation, `median(abs(x - median(x)))`, without the 1.4826
+  scaling factor that [`stats::mad()`](https://rdrr.io/r/stats/mad.html)
+  uses. A table note defines MAD whenever it is shown, and `"{MAD}"` can
+  be used in your own `statistic` strings. To get mean (SD) back, pass
+  `statistic = list(gtsummary::all_continuous() ~ c("{mean} ({sd})", "{min}; {max}"), gtsummary::all_categorical() ~ "{n} ({p}%)")`.
+
 - `table1viz`: categorical variables with missing values now show counts
   as `n / N (%)`, where N is the number of non-missing values in the
   column (the percentage’s denominator). Before, only `n (%)` was shown,
