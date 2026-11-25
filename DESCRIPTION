@@ -51,7 +51,8 @@ Imports:
     UpSetR,
     grDevices,
     stats,
-    utils
+    utils,
+    DT
 URL: https://github.com/jarbet/statplot
 BugReports: https://github.com/jarbet/statplot/issues
 Depends: 

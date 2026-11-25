@@ -2,6 +2,8 @@
 
 ## Added
 
+* New `table_basic_interactive()`: interactive counterpart of `table_basic()` for HTML output. Shows a data frame as a searchable, paged DT table with a filter box above each column and no row-number column, using column labels as headers where available. `filter`, `options` (merged with the defaults) and `...` (passed to `DT::datatable()`, e.g. `caption`, `class`, `extensions`) allow further customization. Adds DT to Imports.
+
 * `table1viz()` gains a `type` argument for per-variable continuous or categorical overrides. Unspecified variables keep automatic detection; explicit categorical overrides show both levels of binary variables.
 
 ## Changed
