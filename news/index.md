@@ -4,6 +4,18 @@
 
 ### Added
 
+- New
+  [`table_basic_interactive()`](https://github.com/jarbet/statplot/reference/table_basic_interactive.md):
+  interactive counterpart of
+  [`table_basic()`](https://github.com/jarbet/statplot/reference/table_basic.md)
+  for HTML output. Shows a data frame as a searchable, paged DT table
+  with a filter box above each column and no row-number column, using
+  column labels as headers where available. `filter`, `options` (merged
+  with the defaults) and `...` (passed to
+  [`DT::datatable()`](https://rdrr.io/pkg/DT/man/datatable.html),
+  e.g. `caption`, `class`, `extensions`) allow further customization.
+  Adds DT to Imports.
+
 - [`table1viz()`](https://github.com/jarbet/statplot/reference/table1viz.md)
   gains a `type` argument for per-variable continuous or categorical
   overrides. Unspecified variables keep automatic detection; explicit

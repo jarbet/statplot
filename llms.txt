@@ -96,6 +96,8 @@ pak::pak("jarbet/statplot")
   : Visual "Table 1": summary table with inline distribution graphics
 - [`table_basic()`](https://github.com/jarbet/statplot/reference/table_basic.md)
   : Create a basic table using tinytable
+- [`table_basic_interactive()`](https://github.com/jarbet/statplot/reference/table_basic_interactive.md)
+  : Create a basic interactive table using DT
 - [`table_overall()`](https://github.com/jarbet/statplot/reference/table_overall.md)
   : Create a table that summarizes the entire cohort.
 - [`table_overall_and_group()`](https://github.com/jarbet/statplot/reference/table_overall_and_group.md)
